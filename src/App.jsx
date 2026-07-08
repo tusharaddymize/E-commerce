@@ -8,7 +8,7 @@ import BestSellingSection from "./components/best-selling/BestSellingSection";
 import NewArrivalsSection from "./components/new-arrivals/NewArrivalsSection";
 import DealSection from "./components/dealOfDay/DealSection";
 import TestimonialsSection from "./components/testimonials/TestimonialsSection";
-import NewsletterSection from "./components/newsletter/NewsletterSection";
+import NewsletterSection from "./components/newsLetter/NewsletterSection";
 import FeaturesSection from "./components/features/FeaturesSection";
 import Footer from "./components/footer/Footer";
 function App() {
