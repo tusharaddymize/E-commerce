@@ -4,7 +4,7 @@ import BackgroundGlow from "./BackgroundGlow";
 import FloatingParticles from "./FloatingParticles";
 import FloatingLeaves from "./FloatingLeaves";
 import NewArrivalCard from "./NewArrivalCard";
-import { newArrivals } from "./newArrivalData";
+import { newArrivals } from "./NewArrivalData";
 
 const NewArrivalsSection = () => {
   return (
