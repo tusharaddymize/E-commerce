@@ -1,14 +1,23 @@
-import { BrowserRouter } from "react-router-dom";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./styles/index.css"; // <-- Ye line add karo (ya "./index.css")
 
-import "./styles/index.css";
 import App from "./App";
+import { BrowserRouter } from "react-router-dom";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import { OrderProvider } from "./context/OrderContext";
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <CartProvider>
+        <WishlistProvider>
+          <OrderProvider>
+            <App />
+          </OrderProvider>
+        </WishlistProvider>
+      </CartProvider>
     </BrowserRouter>
-  </StrictMode>
+  </React.StrictMode>
 );

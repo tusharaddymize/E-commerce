@@ -1,49 +1,60 @@
-import Header from "./components/header/Header";
-import HeroVideo from "./components/video/HeroVideo";
-import HeroSlider from "./components/hero/HeroSlider";
-import Categories from "./components/categories/Categories";
-import ProductGrid from "./components/product-card/ProductGrid";
-import OffersSection from "./components/offers/OffersSection";
-import BestSellingSection from "./components/best-selling/BestSellingSection";
-import NewArrivalsSection from "./components/new-arrivals/NewArrivalsSection";
-import DealSection from "./components/dealOfDay/DealSection";
-import TestimonialsSection from "./components/testimonials/TestimonialsSection";
-import NewsletterSection from "./components/newsLetter/NewsletterSection";
-import FeaturesSection from "./components/features/FeaturesSection";
-import Footer from "./components/footer/Footer";
+import { Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Wishlist from "./pages/Wishlist";
+import Orders from "./pages/Orders";
+import ProductDetails from "./components/product-details/ProductDetails";
+import CartPage from "./components/cart/CartPage";
+import CheckoutPage from "./components/checkout/CheckoutPage";
+import OrderSuccess from "./components/checkout/OrderSuccess";
+import OrderDetails from "./pages/OrderDetails";
 function App() {
   return (
-    <>
-      <Header />
+    <Routes>
+      <Route
+        path="/"
+        element={<Home />}
+      />
 
-<HeroVideo />
+      <Route
+        path="/product/:id"
+        element={<ProductDetails />}
+      />
 
-      <HeroSlider />
+      <Route
+        path="/cart"
+        element={<CartPage />}
+      />
 
-      <Categories />
+      <Route
+        path="/checkout"
+        element={<CheckoutPage />}
+      />
 
-      <ProductGrid />
-
-      <OffersSection />
-
-      <BestSellingSection />
-
-      <NewArrivalsSection />
-
-      <DealSection />
-
-      <TestimonialsSection />
-
-      <NewsletterSection />
-
-         {/* Features */}
-      <FeaturesSection />
+      <Route
+        path="/wishlist"
+        element={<Wishlist />}
+      />
 
 
+      <Route
+  path="/order-success"
+  element={<OrderSuccess />}
+/>
 
-      <Footer />
 
-    </>
+<Route
+  path="/orders"
+  element={<Orders />}
+/>
+
+<Route
+  path="/orders/:id"
+  element={<OrderDetails />}
+/>
+    </Routes>
+
+    
   );
 }
 

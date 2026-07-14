@@ -1,35 +1,48 @@
+import { Link } from "react-router-dom";
 import { FiShoppingCart } from "react-icons/fi";
+import { useCart } from "../../context/CartContext";
 
 const CartIcon = () => {
-  return (
-    <button className="relative flex items-center gap-2">
+  const { cartCount } = useCart();
 
+  return (
+    <Link
+      to="/cart"
+      className="relative flex items-center gap-2 hover:text-[#355E3B] transition"
+    >
       <div className="relative">
 
         <FiShoppingCart size={22} />
 
-        <span
-          className="
-          absolute
-          -top-2
-          -right-2
-          bg-orange-500
-          text-white
-          rounded-full
-          text-[10px]
-          px-1.5
-          "
-        >
-          
-        </span>
+        {cartCount > 0 && (
+          <span
+            className="
+            absolute
+            -top-2
+            -right-2
+            min-w-[18px]
+            h-[18px]
+            px-1
+            flex
+            items-center
+            justify-center
+            rounded-full
+            bg-orange-500
+            text-white
+            text-[10px]
+            font-bold
+            "
+          >
+            {cartCount}
+          </span>
+        )}
 
       </div>
 
-      <span className="hidden xl:block text-sm">
+      <span className="hidden xl:block text-sm font-medium">
         Cart
       </span>
-
-    </button>
+    </Link>
   );
 };
 
