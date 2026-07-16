@@ -45,7 +45,7 @@ const RelatedProducts = ({ products = [] }) => {
         {products.map((product, index) => (
 
           <motion.div
-            key={product.id}
+           key={product._id}
             initial={{
               opacity: 0,
               y: 40,

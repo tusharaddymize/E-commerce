@@ -17,16 +17,17 @@ const { subTotal } = useCart();
     setCoupon(couponData);
   };
 
-  const [form, setForm] = useState({
-    fullName: "",
-    mobile: "",
-    email: "",
-    country: "India",
-    state: "",
-    city: "",
-    pincode: "",
-    address: "",
-  });
+const [form, setForm] = useState({
+  fullName: "",
+  mobile: "",
+  email: "",
+  country: "India",
+  state: "",
+  city: "",
+  pincode: "",
+  address: "",
+  paymentMethod: "COD",
+});
 
   return (
     <section className="bg-[#f8faf8] min-h-screen py-10">
@@ -54,7 +55,10 @@ const { subTotal } = useCart();
   setForm={setForm}
 />
 
-<PaymentMethod />
+<PaymentMethod
+  form={form}
+  setForm={setForm}
+/>
 
 <CouponBox
   subTotal={subTotal}

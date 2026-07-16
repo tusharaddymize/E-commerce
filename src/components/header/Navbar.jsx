@@ -5,26 +5,48 @@ import UserActions from "./UserActions";
 
 const Navbar = ({ openSidebar }) => {
   return (
-    <nav className="w-full bg-white border-b">
-      <div className="max-w-[1450px] mx-auto px-6">
+    <nav className="w-full bg-white border-b border-gray-200">
+      <div className="max-w-[1450px] mx-auto px-3 sm:px-5 lg:px-8">
 
-        <div className="h-20 flex items-center gap-6">
-
+        <div
+          className="
+          h-16
+          md:h-20
+          flex
+          items-center
+          justify-between
+          gap-3
+          "
+        >
           {/* Left */}
-          <div className="flex items-center gap-3 shrink-0">
+
+          <div className="flex items-center gap-3 flex-shrink-0">
+
             <Hamburger onClick={openSidebar} />
+
             <Logo />
+
           </div>
 
-          {/* Center */}
-          <div className="flex-1">
+          {/* Search */}
+
+          <div className="hidden md:flex flex-1 max-w-4xl">
+
             <SearchBar />
+
           </div>
 
           {/* Right */}
-          <div className="shrink-0">
-            <UserActions />
-          </div>
+
+          <UserActions />
+
+        </div>
+
+        {/* Mobile Search */}
+
+        <div className="md:hidden pb-3">
+
+          <SearchBar />
 
         </div>
 

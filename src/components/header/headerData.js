@@ -1,97 +1,17 @@
-// export const navLinks = [
-//   {
-//     id: 1,
-//     title: "Home",
-//     path: "/",
-//   },
-//   {
-//     id: 2,
-//     title: "Categories",
-//     path: "/categories",
-//   },
-//   {
-//     id: 3,
-//     title: "Best Sellers",
-//     path: "/best-sellers",
-//   },
-//   {
-//     id: 4,
-//     title: "New Arrivals",
-//     path: "/new-arrivals",
-//   },
-//   {
-//     id: 5,
-//     title: "Today's Deals",
-//     path: "/deals",
-//   },
-//   {
-//     id: 6,
-//     title: "Electronics",
-//     path: "/electronics",
-//   },
-//   {
-//     id: 7,
-//     title: "Fashion",
-//     path: "/fashion",
-//   },
-//   {
-//     id: 8,
-//     title: "Home & Living",
-//     path: "/home-living",
-//   },
-//   {
-//     id: 9,
-//     title: "More",
-//     path: "/more",
-//   },
-// ];
-
-// export const categories = [
-//   {
-//     id: 1,
-//     name: "Electronics",
-//     icon: "📱",
-//   },
-//   {
-//     id: 2,
-//     name: "Fashion",
-//     icon: "👕",
-//   },
-//   {
-//     id: 3,
-//     name: "Home & Kitchen",
-//     icon: "🏠",
-//   },
-//   {
-//     id: 4,
-//     name: "Beauty",
-//     icon: "💄",
-//   },
-//   {
-//     id: 5,
-//     name: "Sports",
-//     icon: "⚽",
-//   },
-//   {
-//     id: 6,
-//     name: "Books",
-//     icon: "📚",
-//   },
-// ];
-
-
 
 
 export const navLinks = [
-  {
-    id: 1,
-    title: "Home",
-    path: "/",
-  },
+ {
+  id: 1,
+  title: "Home",
+  path: "/",
+},
 
   {
     id: 2,
     title: "Categories",
+   
+    path: "/categories",
     megaMenu: true,
 
     sections: [
@@ -124,30 +44,13 @@ export const navLinks = [
       },
 
       {
-        title: "Electronics",
+        title: "Kids",
         items: [
-          "Mobiles",
-          "Laptops",
-          "Headphones",
-          "Smart Watches",
-          "Camera",
-          "Gaming",
-          "Power Bank",
-          "TV",
-        ],
-      },
-
-      {
-        title: "Home",
-        items: [
-          "Furniture",
-          "Kitchen",
-          "Decor",
-          "Lighting",
-          "Storage",
-          "Bedsheets",
-          "Curtains",
-          "Plants",
+          "Boys",
+          "Girls",
+          "School Bags",
+          "Toys",
+          "Footwear",
         ],
       },
 
@@ -158,9 +61,6 @@ export const navLinks = [
           "Skincare",
           "Hair Care",
           "Perfume",
-          "Lipstick",
-          "Face Wash",
-          "Body Lotion",
         ],
       },
     ],
@@ -168,25 +68,9 @@ export const navLinks = [
 
   {
     id: 3,
-    title: "Best Sellers",
-    path: "/best-sellers",
-  },
-
-  {
-    id: 4,
-    title: "New Arrivals",
-    path: "/new-arrivals",
-  },
-
-  {
-    id: 5,
-    title: "Today's Deals",
-    path: "/deals",
-  },
-
-  {
-    id: 6,
     title: "Electronics",
+
+    path: "/electronics",
     megaMenu: true,
 
     sections: [
@@ -198,7 +82,6 @@ export const navLinks = [
           "OnePlus",
           "Realme",
           "Nothing",
-          "Motorola",
         ],
       },
 
@@ -209,7 +92,6 @@ export const navLinks = [
           "Monitor",
           "Keyboard",
           "Mouse",
-          "Printer",
           "SSD",
         ],
       },
@@ -219,9 +101,7 @@ export const navLinks = [
         items: [
           "Headphones",
           "Speaker",
-          "Charger",
           "Power Bank",
-          "Smart Watch",
           "Camera",
         ],
       },
@@ -229,8 +109,10 @@ export const navLinks = [
   },
 
   {
-    id: 7,
+    id: 4,
     title: "Fashion",
+
+    path: "/fashion",
     megaMenu: true,
 
     sections: [
@@ -241,39 +123,36 @@ export const navLinks = [
           "Jeans",
           "Shoes",
           "Jackets",
-          "Kurta",
-          "Blazers",
         ],
       },
 
       {
         title: "Women Fashion",
         items: [
-          "Saree",
-          "Kurti",
+          "Sarees",
+          "Kurtis",
           "Lehenga",
           "Dress",
-          "Top",
-          "Handbags",
         ],
       },
 
       {
-        title: "Kids Fashion",
+        title: "Accessories",
         items: [
-          "Boys",
-          "Girls",
-          "Baby Care",
-          "Shoes",
-          "School Bags",
+          "Watch",
+          "Wallet",
+          "Belt",
+          "Cap",
         ],
       },
     ],
   },
 
   {
-    id: 8,
+    id: 5,
     title: "Home & Living",
+
+    path: "/home-living",
     megaMenu: true,
 
     sections: [
@@ -282,9 +161,8 @@ export const navLinks = [
         items: [
           "Sofa",
           "Bed",
-          "Dining Table",
           "Chair",
-          "Cupboard",
+          "Dining",
         ],
       },
 
@@ -292,29 +170,69 @@ export const navLinks = [
         title: "Kitchen",
         items: [
           "Cookware",
-          "Mixer",
           "Bottle",
+          "Mixer",
           "Dinner Set",
-          "Storage",
         ],
       },
 
       {
         title: "Decoration",
         items: [
-          "Wall Art",
-          "Lamps",
           "Plants",
           "Clock",
-          "Vases",
+          "Lamps",
+          "Wall Art",
         ],
       },
     ],
   },
 
   {
-    id: 9,
+    id: 6,
+    title: "Beauty",
+
+    path: "/beauty",
+    megaMenu: true,
+
+    sections: [
+      {
+        title: "Beauty",
+        items: [
+          "Lipstick",
+          "Perfume",
+          "Face Wash",
+          "Body Lotion",
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 7,
+    title: "Books",
+
+    path: "/books",
+    megaMenu: true,
+
+    sections: [
+      {
+        title: "Books",
+        items: [
+          "Education",
+          "Novel",
+          "Biography",
+          "Comics",
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 8,
     title: "More",
+
+    path: "/more",
     megaMenu: true,
 
     sections: [
@@ -325,16 +243,6 @@ export const navLinks = [
           "Football",
           "Gym",
           "Cycling",
-        ],
-      },
-
-      {
-        title: "Books",
-        items: [
-          "Education",
-          "Novel",
-          "Comics",
-          "Biography",
         ],
       },
 

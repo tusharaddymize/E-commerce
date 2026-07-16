@@ -3,11 +3,22 @@ import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import OrderCard from "../components/checkout/OrderCard";
 import { getOrders } from "../services/orderService";
-
+import EmptyOrders from "../components/orders/EmptyOrders";
+import SkeletonCard from "../components/common/SkeletonCard";
+import ErrorState from "../components/common/ErrorState";
 const Orders = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+const [orders, setOrders] = useState([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
+
+const [search, setSearch] = useState("");
+const [statusFilter, setStatusFilter] = useState("All");
+
+
+const [currentPage, setCurrentPage] = useState(1);
+
+const ordersPerPage = 6;
+
 
   useEffect(() => {
     fetchOrders();
@@ -30,6 +41,40 @@ const Orders = () => {
     }
   };
 
+
+const filteredOrders = orders.filter((order) => {
+const matchSearch = (order._id || "")
+  .toLowerCase()
+  .includes(search.toLowerCase());
+
+  const matchStatus =
+    statusFilter === "All"
+      ? true
+      : order.orderStatus === statusFilter;
+
+  return matchSearch && matchStatus;
+});
+
+
+const indexOfLastOrder =
+  currentPage * ordersPerPage;
+
+const indexOfFirstOrder =
+  indexOfLastOrder - ordersPerPage;
+
+const currentOrders =
+  filteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
+
+const totalPages = Math.ceil(
+  filteredOrders.length / ordersPerPage
+);
+
+
+
+
   return (
     <>
       <Header />
@@ -39,74 +84,140 @@ const Orders = () => {
 
           {/* Heading */}
 
-          <div className="mb-10">
+<div className="mb-10">
 
-            <h1 className="text-5xl font-black">
-              My Orders
-            </h1>
+  <h1 className="text-5xl font-black">
+    My Orders
+  </h1>
 
-            <p className="text-gray-500 mt-2">
-              Track all your orders.
-            </p>
+  <p className="text-gray-500 mt-2">
+    Track all your orders.
+  </p>
 
-          </div>
+  <div className="flex flex-col md:flex-row gap-4 mt-8">
+
+    <input
+      type="text"
+      placeholder="Search Order ID..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="flex-1 h-12 border rounded-xl px-4 outline-none focus:border-[#355E3B]"
+    />
+
+    <select
+      value={statusFilter}
+      onChange={(e) =>
+        setStatusFilter(e.target.value)
+      }
+      className="h-12 border rounded-xl px-4"
+    >
+      <option value="All">All</option>
+      <option value="Pending">Pending</option>
+      <option value="Processing">Processing</option>
+      <option value="Shipped">Shipped</option>
+      <option value="Delivered">Delivered</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+
+  </div>
+
+</div>
 
           {/* Loading */}
 
-          {loading && (
-            <div className="text-center py-20">
-              <h2 className="text-2xl font-bold">
-                Loading Orders...
-              </h2>
-            </div>
-          )}
+{loading && (
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {[...Array(6)].map((_, index) => (
+      <SkeletonCard key={index} />
+    ))}
+  </div>
+)}
 
           {/* Error */}
 
-          {!loading && error && (
-            <div className="text-center py-20">
-
-              <h2 className="text-2xl font-bold text-red-500">
-                {error}
-              </h2>
-
-            </div>
-          )}
+{!loading && error && (
+  <ErrorState
+    title="Failed to Load Orders"
+    message={error}
+    onRetry={fetchOrders}
+  />
+)}
 
           {/* Empty Orders */}
+{/* Empty Orders */}
 
-          {!loading &&
-            !error &&
-            orders.length === 0 && (
-              <div className="text-center py-20">
+{!loading &&
+  !error &&
+filteredOrders.length === 0 && (
+    <EmptyOrders />
+)}
 
-                <h2 className="text-3xl font-bold">
-                  No Orders Found
-                </h2>
+{/* Orders */}
 
-                <p className="text-gray-500 mt-3">
-                  Start shopping to place your first order.
-                </p>
+{!loading &&
+  !error &&
+  filteredOrders.length > 0 && (
+    <>
+      <div className="space-y-6">
 
-              </div>
-            )}
+        {currentOrders.map((order) => (
+          <OrderCard
+            key={order._id}
+            order={order}
+          />
+        ))}
 
-          {/* Orders */}
+      </div>
 
-          {!loading &&
-            !error &&
-            orders.length > 0 && (
-              <div className="space-y-6">
+      {/* Pagination */}
 
-                {orders.map((order) => (
-                  <OrderCard
-                    key={order._id}
-                    order={order}
-                  />
-                ))}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-3 mt-10">
 
-              </div>
-            )}
+          <button
+            disabled={currentPage === 1}
+            onClick={() =>
+              setCurrentPage((prev) => prev - 1)
+            }
+            className="px-5 py-2 rounded-lg border disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              onClick={() =>
+                setCurrentPage(index + 1)
+              }
+              className={`w-10 h-10 rounded-lg ${
+                currentPage === index + 1
+                  ? "bg-[#355E3B] text-white"
+                  : "border"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() =>
+              setCurrentPage((prev) => prev + 1)
+            }
+            className="px-5 py-2 rounded-lg border disabled:opacity-50"
+          >
+            Next
+          </button>
+
+        </div>
+      )}
+    </>
+)}
+
+
+
+
 
         </div>
       </section>

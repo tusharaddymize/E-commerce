@@ -11,38 +11,67 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setSticky(window.scrollY > 20);
+      setSticky(window.scrollY > 10);
     };
 
     window.addEventListener("scroll", handleScroll);
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () =>
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
   }, []);
 
   return (
-    <header
-      className={`w-full top-0 z-50 transition-all duration-300 ${
-        sticky
-          ? "fixed bg-white shadow-lg"
-          : "relative bg-white"
-      }`}
-    >
-      <Navbar openSidebar={() => setSidebarOpen(true)} />
+    <>
+      <header
+        className={`
+        fixed
+        top-0
+        left-0
+        right-0
+        z-50
+        transition-all
+        duration-300
+        ${
+          sticky
+            ? "bg-white/95 backdrop-blur-md shadow-lg"
+            : "bg-white"
+        }
+        `}
+      >
+        <Navbar
+          openSidebar={() =>
+            setSidebarOpen(true)
+          }
+        />
 
-      <Navigation />
+        <Navigation />
+      </header>
+
+      {/* Header Spacer */}
+
+      <div className="h-[120px] md:h-[136px]" />
+
+      {/* Overlay */}
 
       <Overlay
         open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={() =>
+          setSidebarOpen(false)
+        }
       />
+
+      {/* Sidebar */}
 
       <MobileSidebar
         open={sidebarOpen}
-        closeSidebar={() => setSidebarOpen(false)}
+        closeSidebar={() =>
+          setSidebarOpen(false)
+        }
       />
-    </header>
+    </>
   );
 };
 

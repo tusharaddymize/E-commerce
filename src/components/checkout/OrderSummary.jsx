@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaSpinner } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
 import { placeOrder } from "../../services/orderService";
 import { useOrder } from "../../context/OrderContext";
-
+import toast from "react-hot-toast";
 const OrderSummary = ({ form, coupon }) => {
 
   const navigate = useNavigate();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const { addOrder, setLoading, setError } = useOrder();
 
@@ -48,27 +51,27 @@ const handlePlaceOrder = async () => {
       !form.pincode.trim() ||
       !form.address.trim()
     ) {
-      alert("⚠ Please fill all delivery details.");
+      toast.error("Please fill all delivery details.");
       return;
     }
 
     if (!isEmailValid) {
-      alert("⚠ Please enter a valid email address.");
+      toast.error("Please enter a valid email address.");
       return;
     }
 
     if (!isMobileValid) {
-      alert("⚠ Please enter a valid 10 digit mobile number.");
+      toast.error("Please enter a valid 10 digit mobile number.");
       return;
     }
 
     if (!isPincodeValid) {
-      alert("⚠ Please enter a valid 6 digit pincode.");
+      toast.error("Please enter a valid 6 digit pincode.");
       return;
     }
 
     if (cartItems.length === 0) {
-      alert("🛒 Your cart is empty.");
+      toast.error("🛒 Your cart is empty.");
       return;
     }
 
@@ -76,9 +79,10 @@ const handlePlaceOrder = async () => {
 const orderData = {
   items: cartItems,
 
+
   shippingAddress: form,
 
-  paymentMethod: "COD",
+paymentMethod: form.paymentMethod,
 
   subtotal: subTotal,
 
@@ -92,16 +96,18 @@ const orderData = {
 };
 
 try {
-
   setLoading(true);
+  setIsPlacingOrder(true);
 
   const response = await placeOrder(orderData);
 
-  addOrder(response.order);
+addOrder(response.order);
 
-  clearCart();
+toast.success("Order placed successfully 🎉");
 
-  navigate("/order-success");
+clearCart();
+
+navigate("/order-success");
 
 } catch (error) {
 
@@ -111,14 +117,13 @@ try {
     error.response?.data?.message || "Order Failed"
   );
 
-  alert("Failed to place order.");
+  toast.error("Failed to place order.");
 
-} finally {
-
+}finally {
   setLoading(false);
-
+  setIsPlacingOrder(false);
 }
-
+}; 
 
   return (
     <div
@@ -255,15 +260,22 @@ try {
       {/* Place Order */}
 <button
   onClick={handlePlaceOrder}
-  disabled={cartItems.length === 0}
-  className={`w-full h-14 mt-8 rounded-2xl text-white font-bold transition ${
-    cartItems.length === 0
+  disabled={cartItems.length === 0 || isPlacingOrder}
+  className={`w-full h-14 mt-8 rounded-2xl text-white font-bold flex items-center justify-center gap-3 transition ${
+    cartItems.length === 0 || isPlacingOrder
       ? "bg-gray-400 cursor-not-allowed"
       : "bg-[#355E3B] hover:bg-[#27452d]"
   }`}
 >
-        Place Order
-      </button>
+  {isPlacingOrder ? (
+    <>
+      <FaSpinner className="animate-spin" />
+      <span>Placing Order...</span>
+    </>
+  ) : (
+    "Place Order"
+  )}
+</button>
 
     </div>
   );

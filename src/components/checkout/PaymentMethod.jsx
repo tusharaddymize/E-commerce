@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import {
   FaGooglePay,
   FaCreditCard,
@@ -6,9 +6,9 @@ import {
   FaMoneyBillWave,
 } from "react-icons/fa";
 
-const PaymentMethod = () => {
+const PaymentMethod = ({ form, setForm }) => {
 
-  const [payment, setPayment] = useState("cod");
+
 
   return (
 
@@ -70,8 +70,14 @@ const PaymentMethod = () => {
 
         <input
           type="radio"
-          checked={payment === "upi"}
-          onChange={() => setPayment("upi")}
+checked={form.paymentMethod === "UPI"}
+
+onChange={() =>
+  setForm({
+    ...form,
+    paymentMethod: "UPI",
+  })
+}
         />
 
       </label>
@@ -117,8 +123,14 @@ const PaymentMethod = () => {
 
         <input
           type="radio"
-          checked={payment === "card"}
-          onChange={() => setPayment("card")}
+checked={form.paymentMethod === "Credit Card"}
+
+onChange={() =>
+  setForm({
+    ...form,
+    paymentMethod: "Credit Card",
+  })
+}
         />
 
       </label>
@@ -164,8 +176,14 @@ const PaymentMethod = () => {
 
         <input
           type="radio"
-          checked={payment === "bank"}
-          onChange={() => setPayment("bank")}
+checked={form.paymentMethod === "Net Banking"}
+
+onChange={() =>
+  setForm({
+    ...form,
+    paymentMethod: "Net Banking",
+  })
+}
         />
 
       </label>
@@ -211,8 +229,14 @@ const PaymentMethod = () => {
 
         <input
           type="radio"
-          checked={payment === "cod"}
-          onChange={() => setPayment("cod")}
+checked={form.paymentMethod === "COD"}
+
+onChange={() =>
+  setForm({
+    ...form,
+    paymentMethod: "COD",
+  })
+}
         />
 
       </label>

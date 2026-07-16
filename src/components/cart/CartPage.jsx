@@ -9,11 +9,9 @@ import EmptyCart from "./EmptyCart";
 const CartPage = () => {
 
   const { cartItems } = useCart();
-
-  if (cartItems.length === 0) {
-    return <EmptyCart />;
-  }
-
+if (cartItems.length === 0) {
+  return <EmptyCart />;
+}
   return (
 
     <section className="bg-[#f8faf8] min-h-screen py-10">

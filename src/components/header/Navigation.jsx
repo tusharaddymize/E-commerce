@@ -10,14 +10,26 @@ const Navigation = () => {
 
   return (
     <nav
-      className="relative border-t border-gray-200 bg-white"
+      className="
+      hidden
+      lg:block
+      border-t
+      border-gray-200
+      bg-white
+      relative
+      z-40
+      "
       onMouseLeave={() => setActiveMenu(null)}
     >
       <div className="max-w-[1450px] mx-auto px-6">
+
         <ul className="flex items-center justify-center gap-10 h-14">
+
           {navLinks.map((link) => (
+
             <li
               key={link.id}
+              className="relative"
               onMouseEnter={() => {
                 if (link.megaMenu) {
                   setActiveMenu(link);
@@ -27,33 +39,65 @@ const Navigation = () => {
               }}
             >
               <NavLink
-                to={link.path || "#"}
+                to={link.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-1 text-[15px] font-medium transition-all duration-300 ${
+                  `
+                  flex
+                  items-center
+                  gap-2
+                  text-[15px]
+                  font-medium
+                  transition-all
+                  duration-300
+                  ${
                     isActive
                       ? "text-[#355E3B]"
                       : "text-gray-700 hover:text-[#355E3B]"
-                  }`
+                  }
+                  `
                 }
               >
+                {/* Icon */}
+
+                {/* <span className="text-lg">
+                  {link.icon}
+                </span> */}
+
+                {/* Title */}
+
                 {link.title}
+
+                {/* Arrow */}
 
                 {link.megaMenu && (
                   <FiChevronDown
-                    size={16}
-                    className={`transition-transform duration-300 ${
-                      activeMenu?.id === link.id ? "rotate-180" : ""
-                    }`}
+                    className={`
+                    transition-transform
+                    duration-300
+                    ${
+                      activeMenu?.id === link.id
+                        ? "rotate-180"
+                        : ""
+                    }
+                    `}
                   />
                 )}
               </NavLink>
+
             </li>
+
           ))}
+
         </ul>
+
       </div>
 
-      {/* Full Width Mega Menu */}
-      {activeMenu && <MegaMenu activeMenu={activeMenu} />}
+      {/* Mega Menu */}
+
+      {activeMenu && (
+        <MegaMenu activeMenu={activeMenu} />
+      )}
+
     </nav>
   );
 };

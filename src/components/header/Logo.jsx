@@ -1,14 +1,24 @@
+import { Link } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 
 const Logo = () => {
   return (
-    <a href="/" className="flex items-center shrink-0">
+    <Link
+      to="/"
+      className="flex items-center flex-shrink-0"
+    >
       <img
         src={logo}
         alt="Naturio"
-        className="w-20 h-20 object-contain"
+        className="
+        w-14
+        h-14
+        md:w-20
+        md:h-20
+        object-contain
+        "
       />
-    </a>
+    </Link>
   );
 };
 

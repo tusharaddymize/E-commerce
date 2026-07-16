@@ -4,7 +4,7 @@ import CartIcon from "./CartIcon";
 
 const UserActions = () => {
   return (
-    <div className="flex items-center gap-6 shrink-0">
+    <div className="flex items-center gap-2 sm:gap-4 lg:gap-5 flex-shrink-0">
       <LoginButton />
       <WishlistIcon />
       <CartIcon />

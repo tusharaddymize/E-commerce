@@ -72,9 +72,7 @@ const OrderCard = ({ order }) => {
             </div>
 
             <span
-              className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(
-                order.status
-              )}`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(order.orderStatus)}`}
             >
               {order.status}
             </span>

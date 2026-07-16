@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const ProductGallery = ({ images }) => {
 
-  const [selectedImage, setSelectedImage] = useState(images[0]);
+const [selectedImage, setSelectedImage] = useState(
+  images?.[0] || "/placeholder.png"
+);
+
+useEffect(() => {
+  setSelectedImage(
+    images?.[0] || "/placeholder.png"
+  );
+}, [images]);
 
   return (
 
@@ -35,7 +43,7 @@ const ProductGallery = ({ images }) => {
         "
       >
 
-        {images.map((image, index) => (
+        {(images || []).map((image, index) => (
 
           <button
             key={index}
@@ -88,7 +96,11 @@ const ProductGallery = ({ images }) => {
 >
 <img
   src={selectedImage}
-  alt=""
+  alt="Product"
+  loading="lazy"
+  onError={(e) => {
+    e.target.src = "/placeholder.png";
+  }}
   className="w-full h-auto object-contain block"
 />
 

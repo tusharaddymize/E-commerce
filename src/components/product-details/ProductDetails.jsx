@@ -1,222 +1,209 @@
-// import { motion } from "framer-motion";
-// import { useParams } from "react-router-dom";
-
-// import "./styles.css";
-
-// import ProductBreadcrumb from "./ProductBreadcrumb";
-// import ProductGallery from "./ProductGallery";
-// import ProductInfo from "./ProductInfo";
-// import ProductHighlights from "./ProductHighlights";
-// import ProductTabs from "./ProductTabs";
-// import DeliverySection from "./DeliverySection";
-// import SellerSection from "./SellerSection";
-// import RelatedProducts from "./RelatedProducts";
-
-// import { products } from "../product-card/productData";
-
-// const ProductDetails = () => {
-//   const { id } = useParams();
-
-//   const product = products.find(
-//     (item) => item.id === Number(id)
-//   );
-
-//   if (!product) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <h1 className="text-3xl font-bold">
-//           Product Not Found
-//         </h1>
-//       </div>
-//     );
-//   }
-
-//   // Same category products
-//   const relatedProducts = products.filter(
-//     (item) =>
-//       item.id !== product.id &&
-//       item.brand === product.brand
-//   );
-
-//   return (
-//     <motion.section
-//       initial={{
-//         opacity: 0,
-//         y: 30,
-//       }}
-//       animate={{
-//         opacity: 1,
-//         y: 0,
-//       }}
-//       transition={{
-//         duration: 0.5,
-//       }}
-//       className="bg-[#f8faf8] min-h-screen pb-24"
-//     >
-//       <div className="product-container">
-
-//         {/* Breadcrumb */}
-
-//         <ProductBreadcrumb
-//           product={product}
-//         />
-
-//         {/* Product */}
-
-//         <div
-//           className="
-//           mt-10
-//           grid
-//           grid-cols-1
-//           lg:grid-cols-2
-//           gap-12
-//           items-start
-//           "
-//         >
-
-//           <ProductGallery
-//             images={
-//               product.images || [product.image]
-//             }
-//           />
-
-//           <ProductInfo
-//             product={product}
-//           />
-
-//         </div>
-
-//         {/* Highlights */}
-
-//         <ProductHighlights
-//           product={product}
-//         />
-
-//         {/* Tabs */}
-
-//         <ProductTabs
-//           product={product}
-//         />
-
-//         {/* Delivery */}
-
-//         <DeliverySection />
-
-//         {/* Seller */}
-
-//         <SellerSection
-//           product={product}
-//         />
-
-//         {/* Related Products */}
-
-//         <RelatedProducts
-//           products={relatedProducts}
-//         />
-
-//       </div>
-
-//       {/* Mobile Bottom Buttons */}
-
-//       <div
-//         className="
-//         fixed
-//         bottom-0
-//         left-0
-//         right-0
-//         lg:hidden
-//         bg-white
-//         border-t
-//         p-4
-//         flex
-//         gap-3
-//         z-50
-//         "
-//       >
-
-//         <button
-//           className="
-//           flex-1
-//           h-12
-//           rounded-xl
-//           bg-[#355E3B]
-//           text-white
-//           font-bold
-//           "
-//         >
-//           Add To Cart
-//         </button>
-
-//         <button
-//           className="
-//           flex-1
-//           h-12
-//           rounded-xl
-//           bg-orange-500
-//           text-white
-//           font-bold
-//           "
-//         >
-//           Buy Now
-//         </button>
-
-//       </div>
-
-//     </motion.section>
-//   );
-// };
-
-// export default ProductDetails;
-
-
-
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { products } from "../product-card/productData";
+
+import { getProductById, getProducts } from "../../services/productService";
+
 import ProductGallery from "./ProductGallery";
 import ProductInfo from "./ProductInfo";
 import ProductHighlights from "./ProductHighlights";
 import ProductTabs from "./ProductTabs";
 import DeliverySection from "./DeliverySection";
 import SellerSection from "./SellerSection";
- import RelatedProducts from "./RelatedProducts";
-
-import { bestSellingProducts } from "../best-selling/bestSellingData";
+import RelatedProducts from "./RelatedProducts";
+import RecentlyViewed from "./RecentlyViewed";
 
 const ProductDetails = () => {
+
   const { id } = useParams();
 
-const allProducts = [
-  ...products,
-  ...bestSellingProducts,
-];
+  const [product, setProduct] = useState(null);
 
-const product = allProducts.find(
-  (item) => item.id === Number(id)
-);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
-  if (!product) {
-    return <h1>Product Not Found</h1>;
+  const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+
+    loadProduct();
+
+  }, [id]);
+
+  const loadProduct = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const data = await getProductById(id);
+
+      const currentProduct = data.product;
+
+      setProduct(currentProduct);
+
+      // ==========================
+      // Related Products
+      // ==========================
+
+      const related = await getProducts({
+        category: currentProduct.category,
+        limit: 8,
+      });
+
+      setRelatedProducts(
+        related.products.filter(
+          (item) => item._id !== currentProduct._id
+        )
+      );
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError("Product not found.");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  // ==========================
+  // Loading
+  // ==========================
+
+  if (loading) {
+
+    return (
+      <div className="max-w-7xl mx-auto py-24 text-center">
+        <h2 className="text-3xl font-bold">
+          Loading Product...
+        </h2>
+      </div>
+    );
+
   }
 
-const relatedProducts = allProducts.filter(
-  (item) =>
-    item.id !== product.id &&
-    item.brand === product.brand
-);
+  // ==========================
+  // Error
+  // ==========================
 
-  return (
-    <div className="max-w-7xl mx-auto p-10">
-      <div className="grid lg:grid-cols-2 gap-10">
-        <ProductGallery images={product.images} />
-        <ProductInfo product={product} />
-        <ProductHighlights product={product} />
-        <ProductTabs product={product} />
-        <DeliverySection />
-        <SellerSection product={product} />
-        <RelatedProducts products={relatedProducts} />
+  if (error || !product) {
+
+    return (
+      <div className="max-w-7xl mx-auto py-24 text-center">
+
+        <h2 className="text-4xl font-bold">
+
+          Product Not Found
+
+        </h2>
+
+        <p className="mt-5 text-gray-500">
+
+          This product doesn't exist.
+
+        </p>
+
       </div>
+    );
+
+  }
+    return (
+
+    <div className="max-w-7xl mx-auto px-5 lg:px-8 py-10">
+
+      {/* Top Section */}
+
+      <div
+        className="
+        grid
+        lg:grid-cols-2
+        gap-12
+        items-start
+        "
+      >
+
+        {/* Product Gallery */}
+
+        <ProductGallery
+          images={
+            product.images?.length
+              ? product.images
+              : [
+                  product.thumbnail ||
+                  product.image
+                ]
+          }
+        />
+
+        {/* Product Info */}
+
+        <ProductInfo
+          product={product}
+        />
+
+      </div>
+
+      {/* Product Highlights */}
+
+      <div className="mt-14">
+
+        <ProductHighlights
+          product={product}
+        />
+
+      </div>
+
+      {/* Product Tabs */}
+
+      <div className="mt-14">
+
+        <ProductTabs
+          product={product}
+        />
+
+      </div>
+
+      {/* Delivery */}
+
+      <div className="mt-14">
+
+        <DeliverySection />
+
+      </div>
+
+      {/* Seller */}
+
+      <div className="mt-14">
+
+        <SellerSection
+          product={product}
+        />
+
+      </div>
+
+      {/* Related Products */}
+
+      <div className="mt-20">
+
+        <RelatedProducts
+          products={relatedProducts}
+        />
+
+      </div>
+
+      <RecentlyViewed
+          currentProduct={product}
+        />
+
     </div>
+
   );
+
 };
 
 export default ProductDetails;

@@ -8,40 +8,15 @@ const CartIcon = () => {
   return (
     <Link
       to="/cart"
-      className="relative flex items-center gap-2 hover:text-[#355E3B] transition"
+      className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition"
     >
-      <div className="relative">
+      <FiShoppingCart className="text-[22px]" />
 
-        <FiShoppingCart size={22} />
-
-        {cartCount > 0 && (
-          <span
-            className="
-            absolute
-            -top-2
-            -right-2
-            min-w-[18px]
-            h-[18px]
-            px-1
-            flex
-            items-center
-            justify-center
-            rounded-full
-            bg-orange-500
-            text-white
-            text-[10px]
-            font-bold
-            "
-          >
-            {cartCount}
-          </span>
-        )}
-
-      </div>
-
-      <span className="hidden xl:block text-sm font-medium">
-        Cart
-      </span>
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-orange-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
+          {cartCount}
+        </span>
+      )}
     </Link>
   );
 };

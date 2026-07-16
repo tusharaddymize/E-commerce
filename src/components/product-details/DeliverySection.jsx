@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   FaMapMarkerAlt,
   FaTruck,
@@ -14,7 +15,7 @@ const DeliverySection = () => {
     if (pincode.length === 6) {
       setChecked(true);
     } else {
-      alert("Please enter a valid 6-digit pincode.");
+      toast.error("Please enter a valid 6-digit pincode.");
     }
   };
 

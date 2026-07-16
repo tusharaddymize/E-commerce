@@ -1,37 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
+import EmptyWishlist from "../components/wishlist/EmptyWishlist";
 const Wishlist = () => {
   const { wishlist, removeWishlist } = useWishlist();
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
-  if (wishlist.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto py-20 px-5">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 mb-8 text-[#355E3B] font-semibold hover:underline"
-        >
-          ← Back to Home
-        </Link>
-
-        <div className="text-center">
-          <h2 className="text-4xl font-bold">
-            Your Wishlist is Empty ❤️
-          </h2>
-
-          <Link
-            to="/"
-            className="inline-block mt-8 bg-[#355E3B] text-white px-8 py-3 rounded-lg hover:bg-[#27452d]"
-          >
-            Continue Shopping
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+if (wishlist.length === 0) {
+  return <EmptyWishlist />;
+}
   return (
     <div className="max-w-7xl mx-auto py-10 px-5">
 

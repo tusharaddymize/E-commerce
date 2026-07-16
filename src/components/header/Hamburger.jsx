@@ -4,7 +4,16 @@ const Hamburger = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-className="text-3xl text-[#355E3B] hover:text-[#e67e22] transition"
+      className="
+      lg:hidden
+      flex
+      items-center
+      justify-center
+      text-3xl
+      text-[#355E3B]
+      hover:text-orange-500
+      transition
+      "
     >
       <HiOutlineMenuAlt3 />
     </button>
