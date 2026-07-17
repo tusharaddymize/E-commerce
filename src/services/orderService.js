@@ -68,3 +68,53 @@ export const deleteOrder = async (id) => {
   const response = await API.delete(`/${id}`);
   return response.data;
 };
+
+
+// ============================
+// Admin Orders (Search + Filter + Pagination)
+// ============================
+
+export const getAdminOrders = async ({
+  page = 1,
+  limit = 10,
+  search = "",
+  status = "",
+} = {}) => {
+  const response = await API.get("/", {
+    params: {
+      page,
+      limit,
+      search,
+      status,
+    },
+  });
+
+  return response.data;
+};
+
+// ============================
+// Admin Update Order Status
+// ============================
+
+export const updateOrderStatus = async (
+  id,
+  orderStatus,
+  paymentStatus
+) => {
+  const response = await API.put(`/${id}`, {
+    orderStatus,
+    paymentStatus,
+  });
+
+  return response.data;
+};
+
+// ============================
+// Admin Delete Order
+// ============================
+
+export const deleteAdminOrder = async (id) => {
+  const response = await API.delete(`/${id}`);
+
+  return response.data;
+};

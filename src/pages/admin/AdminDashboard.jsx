@@ -1,9 +1,25 @@
+import AdminSidebar from "../../components/admin/AdminSidebar";
+import AdminNavbar from "../../components/admin/AdminNavbar";
+import DashboardStats from "../../components/admin/DashboardStats";
+
 const AdminDashboard = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-green-700">
-        Welcome Admin 🎉
-      </h1>
+    <div className="flex bg-gray-100 min-h-screen">
+
+      <AdminSidebar />
+
+      <div className="flex-1">
+
+        <AdminNavbar />
+
+        <main className="p-8">
+
+          <DashboardStats />
+
+        </main>
+
+      </div>
+
     </div>
   );
 };

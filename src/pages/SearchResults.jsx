@@ -5,7 +5,7 @@ import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import ProductCard from "../components/product-card/ProductCard";
 
-import { searchProducts } from "../services/productService";
+import { getProducts } from "../services/productService";
 
 const SearchResults = () => {
 
@@ -27,10 +27,12 @@ const SearchResults = () => {
 
       setLoading(true);
 
-      const data =
-        await searchProducts(keyword, 100);
+const data = await getProducts({
+  search: keyword,
+  limit: 100,
+});
 
-      setProducts(data.products);
+setProducts(data.products || []);npm 
 
     } catch (err) {
 

@@ -15,26 +15,90 @@ export const getProducts = async (params = {}) => {
 };
 
 // ===========================
-// Search Products
+// Get Product By Id (Admin)
 // ===========================
 
-export const searchProducts = async (
-  keyword,
-  limit = 8
-) => {
+export const getAdminProductById = async (id) => {
+  const { data } = await API.get(`/products/${id}`);
+  return data;
+};
 
-  const { data } = await API.get(
-    "/products/search",
+
+// ===========================
+// Create Product
+// ===========================
+
+export const createProduct = async (formData) => {
+  const { data } = await API.post(
+    "/products",
+    formData,
     {
-      params: {
-        search: keyword,
-        limit,
+      headers: {
+        "Content-Type": "multipart/form-data",
       },
     }
   );
 
   return data;
+};
 
+// ===========================
+// Update Product
+// ===========================
+
+export const updateProduct = async (
+  id,
+  formData
+) => {
+  const { data } = await API.put(
+    `/products/${id}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return data;
+};
+
+// ===========================
+// Delete Product
+// ===========================
+
+export const deleteProduct = async (id) => {
+  const { data } = await API.delete(
+    `/products/${id}`
+  );
+
+  return data;
+};
+
+// ===========================
+// Search Products
+// ===========================
+
+export const getAdminProducts = async ({
+  page = 1,
+  limit = 10,
+  search = "",
+  category = "",
+  brand = "",
+  sort = "latest",
+} = {}) => {
+  const { data } = await API.get("/products", {
+    params: {
+      page,
+      limit,
+      search,
+      category,
+      brand,
+      sort,
+    },
+  });
+
+  return data;
 };
 
 // ===========================
@@ -52,3 +116,7 @@ export const getProductById = async (
   return data;
 
 };
+
+
+
+

@@ -17,27 +17,28 @@ import ProductProvider from "./context/ProductContext";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <CartProvider>
-        <WishlistProvider>
-          <OrderProvider>
-            <ProductProvider>
-              <AuthProvider>
-                
-<AdminProvider>
+<CartProvider>
+  <WishlistProvider>
+    <OrderProvider>
+      <ProductProvider>
+        <AuthProvider>
+          <AdminProvider>
 
-<App/>
-
-</AdminProvider>
-              </AuthProvider>
-            </ProductProvider>
+            <App />
 
             <Toaster
               position="top-right"
-              reverseOrder={false}
+              toastOptions={{
+                duration: 3000,
+              }}
             />
-          </OrderProvider>
-        </WishlistProvider>
-      </CartProvider>
+
+          </AdminProvider>
+        </AuthProvider>
+      </ProductProvider>
+    </OrderProvider>
+  </WishlistProvider>
+</CartProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,61 +1,43 @@
 import { useEffect, useState } from "react";
 
 import {
-  searchProducts,
+  getProducts,
 } from "../services/productService";
 
 const useSearch = (keyword) => {
-
-  const [products, setProducts] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-
     if (!keyword.trim()) {
-
       setProducts([]);
-
       return;
-
     }
 
     const timer = setTimeout(async () => {
-
       try {
-
         setLoading(true);
 
-        const data =
-          await searchProducts(keyword);
+        const data = await getProducts({
+          search: keyword,
+          limit: 8,
+        });
 
-        setProducts(data.products);
-
+        setProducts(data.products || []);
       } catch (err) {
-
         console.log(err);
-
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
-
     }, 400);
 
-    return () =>
-      clearTimeout(timer);
-
+    return () => clearTimeout(timer);
   }, [keyword]);
 
   return {
-
     products,
-
     loading,
-
   };
-
 };
 
 export default useSearch;

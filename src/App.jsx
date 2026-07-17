@@ -19,15 +19,22 @@ import OrderSuccess from "./components/checkout/OrderSuccess";
 
 import PrivateRoute from "./components/auth/PrivateRoute";
 
-
+// =========================
+// Admin
+// =========================
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AddProduct from "./pages/admin/AddProduct";
+import ProductList from "./pages/admin/ProductList";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
+import ProductAnalytics from "./pages/admin/ProductAnalytics";
+import OrderManagement from "./pages/admin/OrderManagement";
+import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
+import UserManagement from "./pages/admin/UserManagement";
 
 function App() {
   return (
     <Routes>
-
       {/* ========================= */}
       {/* Public Routes */}
       {/* ========================= */}
@@ -59,17 +66,20 @@ function App() {
         element={<Register />}
       />
 
+      {/* ========================= */}
+      {/* Admin Login */}
+      {/* ========================= */}
+
       <Route
-  path="/admin/login"
-  element={<AdminLogin />}
-/>
+        path="/admin/login"
+        element={<AdminLogin />}
+      />
 
       {/* ========================= */}
-      {/* Protected Routes */}
+      {/* User Protected Routes */}
       {/* ========================= */}
 
       <Route element={<PrivateRoute />}>
-
         <Route
           path="/profile"
           element={<Profile />}
@@ -109,18 +119,51 @@ function App() {
           path="/order-success"
           element={<OrderSuccess />}
         />
+      </Route>
 
+      <Route
+  path="/admin/orders"
+  element={<OrderManagement />}
+/>
+
+
+<Route
+  path="/admin/orders/:id"
+  element={<AdminOrderDetails />}
+/>
+
+
+<Route
+  path="/admin/users"
+  element={<UserManagement />}
+/>
+      {/* ========================= */}
+      {/* Admin Protected Routes */}
+      {/* ========================= */}
+
+      <Route element={<AdminProtectedRoute />}>
+        <Route
+          path="/admin/dashboard"
+          element={<AdminDashboard />}
+        />
+
+        <Route
+          path="/admin/add-product"
+          element={<AddProduct />}
+        />
+
+        <Route
+          path="/admin/products"
+          element={<ProductList />}
+        />
       </Route>
 
 
-<Route element={<AdminProtectedRoute />}>
+      <Route
+  path="/admin/analytics"
+  element={<ProductAnalytics />}
+/>
 
-  <Route
-    path="/admin/dashboard"
-    element={<AdminDashboard />}
-  />
-
-</Route>
       {/* ========================= */}
       {/* 404 */}
       {/* ========================= */}
@@ -129,7 +172,6 @@ function App() {
         path="*"
         element={<NotFound />}
       />
-
     </Routes>
   );
 }
