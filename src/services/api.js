@@ -16,7 +16,9 @@ const API = axios.create({
 
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token =
+  localStorage.getItem("adminToken") ||
+  localStorage.getItem("token");
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -39,8 +41,12 @@ API.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("admin");
+
       if (
-        window.location.pathname !== "/login"
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/admin/login"
       ) {
         window.location.href = "/login";
       }

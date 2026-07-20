@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import toast from "react-hot-toast";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminNavbar from "../../components/admin/AdminNavbar";
 import ProductSearch from "../../components/admin/ProductSearch";

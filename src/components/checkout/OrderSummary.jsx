@@ -82,8 +82,12 @@ const orderData = {
 
   shippingAddress: form,
 
-paymentMethod: form.paymentMethod,
-
+paymentMethod:
+  form.paymentMethod === "Cash On Delivery"
+    ? "COD"
+    : form.paymentMethod === "Credit / Debit Card"
+    ? "Credit Card"
+    : form.paymentMethod,
   subtotal: subTotal,
 
   shipping,

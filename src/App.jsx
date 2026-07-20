@@ -31,6 +31,10 @@ import ProductAnalytics from "./pages/admin/ProductAnalytics";
 import OrderManagement from "./pages/admin/OrderManagement";
 import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import UserManagement from "./pages/admin/UserManagement";
+import AdminSettings from "./pages/admin/AdminSettings";
+import EditProduct from "./pages/admin/EditProduct"
+
+
 
 function App() {
   return (
@@ -121,48 +125,58 @@ function App() {
         />
       </Route>
 
-      <Route
-  path="/admin/orders"
-  element={<OrderManagement />}
-/>
 
-
-<Route
-  path="/admin/orders/:id"
-  element={<AdminOrderDetails />}
-/>
-
-
-<Route
-  path="/admin/users"
-  element={<UserManagement />}
-/>
       {/* ========================= */}
       {/* Admin Protected Routes */}
       {/* ========================= */}
 
-      <Route element={<AdminProtectedRoute />}>
-        <Route
-          path="/admin/dashboard"
-          element={<AdminDashboard />}
-        />
+<Route element={<AdminProtectedRoute />}>
+  <Route
+    path="/admin/dashboard"
+    element={<AdminDashboard />}
+  />
 
-        <Route
-          path="/admin/add-product"
-          element={<AddProduct />}
-        />
+  <Route
+    path="/admin/add-product"
+    element={<AddProduct />}
+  />
 
-        <Route
-          path="/admin/products"
-          element={<ProductList />}
-        />
-      </Route>
+  <Route
+    path="/admin/products"
+    element={<ProductList />}
+  />
 
+  <Route
+    path="/admin/settings"
+    element={<AdminSettings />}
+  />
 
-      <Route
-  path="/admin/analytics"
-  element={<ProductAnalytics />}
-/>
+  <Route
+    path="/admin/analytics"
+    element={<ProductAnalytics />}
+  />
+
+  <Route
+    path="/admin/orders"
+    element={<OrderManagement />}
+  />
+
+  <Route
+    path="/admin/orders/:id"
+    element={<AdminOrderDetails />}
+  />
+
+  <Route
+    path="/admin/users"
+    element={<UserManagement />}
+  />
+
+  <Route
+    path="/admin/products/edit/:id"
+    element={<EditProduct />}
+  />
+  
+</Route>
 
       {/* ========================= */}
       {/* 404 */}

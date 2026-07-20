@@ -258,7 +258,7 @@ const AddProduct = () => {
                 required
               />
 
-              <div className="col-span-2">
+              {/* <div className="col-span-2">
 
                 <input
                   type="file"
@@ -266,21 +266,56 @@ const AddProduct = () => {
                   onChange={handleImage}
                 />
 
-              </div>
+              </div> */}
 
-              {preview && (
 
-                <div className="col-span-2">
 
-                  <img
-                    src={preview}
-                    alt="preview"
-                    className="h-44 rounded-lg border"
-                  />
+              <div className="col-span-2">
+  <label className="block mb-2 text-sm font-medium text-gray-700">
+    Product Image
+  </label>
 
-                </div>
+  <label
+    htmlFor="thumbnail"
+    className="flex items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-green-600 hover:bg-green-50 transition-all duration-300"
+  >
+    <div className="text-center">
+      <p className="text-lg font-semibold text-gray-700">
+        📁 Choose Product Image
+      </p>
 
-              )}
+      <p className="text-sm text-gray-500 mt-2">
+        JPG, PNG, WEBP (Max 5MB)
+      </p>
+
+      {thumbnail && (
+        <p className="mt-3 text-green-600 font-medium">
+          ✅ {thumbnail.name}
+        </p>
+      )}
+    </div>
+
+    <input
+      id="thumbnail"
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleImage}
+    />
+  </label>
+</div>
+
+            {preview && (
+  <div className="col-span-2 flex justify-center">
+    <div className="border rounded-xl p-3 bg-gray-50 shadow-sm">
+      <img
+        src={preview}
+        alt="Preview"
+        className="h-56 w-56 object-cover rounded-lg"
+      />
+    </div>
+  </div>
+)}
 
               <div className="flex gap-6 col-span-2">
 
