@@ -14,14 +14,15 @@ const ProductSearch = ({
   }, [value]);
 
   // Debounced Search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onSearch(keyword.trim());
-    }, 500);
+useEffect(() => {
+  if (keyword === value) return;
 
-    return () => clearTimeout(timer);
-  }, [keyword, onSearch]);
+  const timer = setTimeout(() => {
+    onSearch(keyword.trim());
+  }, 500);
 
+  return () => clearTimeout(timer);
+}, [keyword]);
   // Clear Search
   const handleClear = () => {
     setKeyword("");
