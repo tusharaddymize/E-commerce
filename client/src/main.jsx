@@ -26,12 +26,36 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
             <App />
 
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-              }}
-            />
+<Toaster
+  position="top-right"
+  reverseOrder={false}
+  gutter={10}
+  containerStyle={{
+    top: 20,
+    right: 20,
+  }}
+  toastOptions={{
+    duration: 3000,
+
+    style: {
+      borderRadius: "12px",
+      background: "#fff",
+      color: "#111827",
+      fontSize: "15px",
+      fontWeight: 500,
+      padding: "14px 16px",
+      maxWidth: "420px",
+    },
+
+    success: {
+      duration: 2500,
+    },
+
+    error: {
+      duration: 4000,
+    },
+  }}
+/>
 
           </AdminProvider>
         </AuthProvider>

@@ -6,37 +6,35 @@ import {
   useState,
 } from "react";
 
+import {
+  successToast,
+  infoToast,
+} from "../utils/toast";
+
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-
   const [cartItems, setCartItems] = useState(() => {
-
     const savedCart = localStorage.getItem("cart");
 
-    return savedCart
-      ? JSON.parse(savedCart)
-      : [];
-
+    return savedCart ? JSON.parse(savedCart) : [];
   });
 
   useEffect(() => {
-
     localStorage.setItem(
       "cart",
       JSON.stringify(cartItems)
     );
-
   }, [cartItems]);
 
   // ===========================
-  // Add To Cart (Updated)
+  // Add To Cart
   // ===========================
 
   const addToCart = (product) => {
+    let isExisting = false;
 
     setCartItems((prev) => {
-
       const existingItem = prev.find(
         (item) =>
           item.id === product.id &&
@@ -45,56 +43,48 @@ export const CartProvider = ({ children }) => {
       );
 
       // Same Product + Same Size + Same Color
-
       if (existingItem) {
+        isExisting = true;
 
         return prev.map((item) =>
-
           item.id === product.id &&
           item.selectedSize === product.selectedSize &&
           item.selectedColor === product.selectedColor
-
             ? {
                 ...item,
-
                 quantity:
                   item.quantity +
                   product.quantity,
               }
-
             : item
-
         );
-
       }
 
       // New Product
-
       return [
-
         ...prev,
-
         {
-
           ...product,
-
           quantity:
             product.quantity || 1,
-
           selectedSize:
             product.selectedSize || "",
-
           selectedColor:
             product.selectedColor || "",
-
         },
-
       ];
-
     });
 
+if (isExisting) {
+  infoToast("Cart quantity updated");
+} else {
+  successToast(
+    `${product.title || "Product"} added to cart`
+  );
+}
   };
-    // ===========================
+
+  // ===========================
   // Remove From Cart
   // ===========================
 
@@ -103,25 +93,30 @@ export const CartProvider = ({ children }) => {
     selectedSize,
     selectedColor
   ) => {
-
     setCartItems((prev) =>
       prev.filter(
         (item) =>
           !(
             item.id === id &&
-            item.selectedSize === selectedSize &&
-            item.selectedColor === selectedColor
+            item.selectedSize ===
+              selectedSize &&
+            item.selectedColor ===
+              selectedColor
           )
       )
     );
 
+    successToast(
+      "Product removed from cart"
+    );
   };
 
   // ===========================
   // Increase Quantity
   // ===========================
 
-  const increaseQuantity = (
+
+    const increaseQuantity = (
     id,
     selectedSize,
     selectedColor
@@ -143,6 +138,8 @@ export const CartProvider = ({ children }) => {
 
       )
     );
+
+    infoToast("Quantity Updated");
 
   };
 
@@ -177,6 +174,8 @@ export const CartProvider = ({ children }) => {
 
     );
 
+    infoToast("Quantity Updated");
+
   };
 
   // ===========================
@@ -184,7 +183,11 @@ export const CartProvider = ({ children }) => {
   // ===========================
 
   const clearCart = () => {
+
     setCartItems([]);
+
+    successToast("Cart Cleared");
+
   };
 
   // ===========================
@@ -274,4 +277,4 @@ export const CartProvider = ({ children }) => {
 
 };
 
-export const useCart = () =>useContext(CartContext);
+export const useCart = () => useContext(CartContext);

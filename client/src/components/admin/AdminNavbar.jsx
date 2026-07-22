@@ -1,10 +1,10 @@
 import {
-  Bell,
   UserCircle,
   Search,
   Menu,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 
 const AdminNavbar = ({ setSidebarOpen }) => {
   return (
@@ -66,15 +66,8 @@ const AdminNavbar = ({ setSidebarOpen }) => {
         {/* Right */}
         <div className="flex items-center gap-2 sm:gap-4">
 
-          {/* Notifications */}
-          <NavLink
-            to="/admin/notifications"
-            className="relative p-2.5 rounded-xl hover:bg-gray-100 transition"
-          >
-            <Bell size={22} />
-
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
-          </NavLink>
+          {/* Notification Bell */}
+          <NotificationBell />
 
           {/* Profile */}
           <NavLink

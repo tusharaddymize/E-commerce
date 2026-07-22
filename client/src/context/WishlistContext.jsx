@@ -1,4 +1,14 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  successToast,
+  infoToast,
+} from "../utils/toast";
 
 const WishlistContext = createContext();
 
@@ -9,23 +19,53 @@ export const WishlistProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    localStorage.setItem(
+      "wishlist",
+      JSON.stringify(wishlist)
+    );
   }, [wishlist]);
 
+  // ===========================
+  // Add To Wishlist
+  // ===========================
+
   const addWishlist = (product) => {
-    const exists = wishlist.find((item) => item.id === product.id);
+    const exists = wishlist.find(
+      (item) => item.id === product.id
+    );
 
-    if (exists) return;
+    if (exists) {
+      infoToast("Product already in wishlist");
+      return;
+    }
 
-    setWishlist([...wishlist, product]);
+    setWishlist((prev) => [...prev, product]);
+
+    successToast(
+      `${product.name || "Product"} added to wishlist`
+    );
   };
+
+  // ===========================
+  // Remove From Wishlist
+  // ===========================
 
   const removeWishlist = (id) => {
-    setWishlist(wishlist.filter((item) => item.id !== id));
+    setWishlist((prev) =>
+      prev.filter((item) => item.id !== id)
+    );
+
+    successToast("Product removed from wishlist");
   };
 
+  // ===========================
+  // Check Wishlist
+  // ===========================
+
   const isInWishlist = (id) => {
-    return wishlist.some((item) => item.id === id);
+    return wishlist.some(
+      (item) => item.id === id
+    );
   };
 
   return (
@@ -42,4 +82,5 @@ export const WishlistProvider = ({ children }) => {
   );
 };
 
-export const useWishlist = () => useContext(WishlistContext);
+export const useWishlist = () =>
+  useContext(WishlistContext);

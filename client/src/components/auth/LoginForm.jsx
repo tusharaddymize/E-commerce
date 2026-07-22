@@ -11,6 +11,10 @@ import {
 } from "react-icons/fa";
 
 import useAuth from "../../hooks/useAuth";
+import {
+  successToast,
+  errorToast,
+} from "../../utils/toast";
 
 const loginSchema = z.object({
   email: z
@@ -47,11 +51,18 @@ const LoginForm = () => {
 
       await login(formData);
 
+      // ✅ Success Toast
+      successToast("Login Successful");
+
       navigate("/");
     } catch (error) {
-      setServerError(
-        error.response?.data?.message || "Login failed"
-      );
+      const message =
+        error.response?.data?.message || "Login Failed";
+
+      setServerError(message);
+
+      // ✅ Error Toast
+      errorToast(message);
     } finally {
       setLoading(false);
     }
@@ -60,6 +71,7 @@ const LoginForm = () => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
 
+      {/* Heading */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">
           Welcome Back 👋
@@ -70,21 +82,19 @@ const LoginForm = () => {
         </p>
       </div>
 
+      {/* Form */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-5"
       >
 
         {/* Email */}
-
         <div>
-
           <label className="font-medium">
             Email
           </label>
 
           <div className="border rounded-lg flex items-center mt-2 px-3">
-
             <FaEnvelope className="text-gray-400" />
 
             <input
@@ -93,7 +103,6 @@ const LoginForm = () => {
               className="w-full p-3 outline-none"
               {...register("email")}
             />
-
           </div>
 
           {errors.email && (
@@ -101,19 +110,15 @@ const LoginForm = () => {
               {errors.email.message}
             </p>
           )}
-
         </div>
 
         {/* Password */}
-
         <div>
-
           <label className="font-medium">
             Password
           </label>
 
           <div className="border rounded-lg flex items-center mt-2 px-3">
-
             <FaLock className="text-gray-400" />
 
             <input
@@ -139,7 +144,6 @@ const LoginForm = () => {
                 <FaEye />
               )}
             </button>
-
           </div>
 
           {errors.password && (
@@ -147,21 +151,17 @@ const LoginForm = () => {
               {errors.password.message}
             </p>
           )}
-
         </div>
 
         {/* Server Error */}
-
         {serverError && (
           <div className="bg-red-100 text-red-600 p-3 rounded-lg text-sm">
             {serverError}
           </div>
         )}
 
-        {/* Remember */}
-
+        {/* Remember & Forgot Password */}
         <div className="flex justify-between items-center text-sm">
-
           <label className="flex gap-2">
             <input type="checkbox" />
             Remember me
@@ -173,22 +173,19 @@ const LoginForm = () => {
           >
             Forgot Password?
           </Link>
-
         </div>
 
-        {/* Button */}
-
+        {/* Login Button */}
         <button
           disabled={loading}
           className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-
       </form>
 
+      {/* Register */}
       <p className="text-center mt-6">
-
         Don't have an account?
 
         <Link
@@ -197,7 +194,6 @@ const LoginForm = () => {
         >
           Register
         </Link>
-
       </p>
 
     </div>

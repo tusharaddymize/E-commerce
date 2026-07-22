@@ -1,34 +1,59 @@
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+} from "react";
+
+import {
+  successToast,
+  infoToast,
+} from "../utils/toast";
 
 const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
   // Current Order
-  const [currentOrder, setCurrentOrder] = useState(null);
+  const [currentOrder, setCurrentOrder] =
+    useState(null);
 
   // All Orders
   const [orders, setOrders] = useState([]);
 
   // Loading State
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
   // Error State
   const [error, setError] = useState("");
 
+  // ===========================
   // Add New Order
+  // ===========================
+
   const addOrder = (order) => {
     setOrders((prev) => [order, ...prev]);
+
     setCurrentOrder(order);
+
+    successToast("Order Placed Successfully");
   };
 
+  // ===========================
   // Replace All Orders
+  // ===========================
+
   const setAllOrders = (data) => {
     setOrders(data);
   };
 
+  // ===========================
   // Clear Current Order
+  // ===========================
+
   const clearCurrentOrder = () => {
     setCurrentOrder(null);
+
+    infoToast("Current Order Cleared");
   };
 
   return (
@@ -53,4 +78,5 @@ export const OrderProvider = ({ children }) => {
   );
 };
 
-export const useOrder = () => useContext(OrderContext);
+export const useOrder = () =>
+  useContext(OrderContext);

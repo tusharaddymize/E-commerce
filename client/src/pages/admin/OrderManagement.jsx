@@ -377,11 +377,11 @@ const OrderManagement = () => {
                               <td className="px-5 py-5">
 
                                 <h3 className="font-semibold text-gray-800">
-                                  {order.userId?.name || "Unknown"}
+                                {order.shippingAddress?.fullName || order.userId?.name || "Unknown"}
                                 </h3>
 
                                 <p className="mt-1 text-sm text-gray-500">
-                                  {order.userId?.email}
+                                  {order.shippingAddress?.email || order.userId?.email}
                                 </p>
 
                               </td>

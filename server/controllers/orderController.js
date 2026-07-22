@@ -1,6 +1,17 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 
+import { createNotification } from "../utils/notificationService.js";
+import sendLowStockEmail from "../utils/sendLowStockEmail.js";
+
+
+import {
+  sendOrderConfirmationEmail,
+  sendShippedEmail,
+  sendDeliveredEmail,
+  sendCancelledEmail,
+} from "../services/emailServices.js";
 // ===============================
 // Create Order
 // ===============================
@@ -32,9 +43,19 @@ const {
       });
     }
 
+const orderItems = items.map((item) => ({
+  productId: item.productId || item._id,
+  title: item.title,
+  image: item.image || item.thumbnail, // ✅ thumbnail ko image me save karo
+  quantity: item.quantity,
+  price: item.price,
+  selectedColor: item.selectedColor || "",
+  selectedSize: item.selectedSize || "",
+}));
+
 const order = await Order.create({
   userId: req.user._id,
-  items,
+  items: orderItems,
   shippingAddress,
   paymentMethod,
   subtotal,
@@ -44,34 +65,115 @@ const order = await Order.create({
   total,
 });
 
+// ===============================
 // Update Product Stock & Sold Count
+// ===============================
+// for (const item of items) {
+//   const product = await Product.findById(item.productId);
+
+//   if (!product) continue;
+
+//   // Stock Update
+//   product.stock -= item.quantity;
+
+//   if (product.stock < 0) {
+//     product.stock = 0;
+//   }
+
+//   // Sold Count Update
+//   product.sold += item.quantity;
+
+//   await product.save();
+
+//   // ===============================
+//   // Low Stock Notification
+//   // ===============================
+//   if (product.stock <= 10) {
+//     await createNotification({
+//       title: "⚠️ Low Stock",
+//       message: `${product.name} has only ${product.stock} items remaining.`,
+//       type: "low_stock",
+//       referenceId: product._id,
+//     });
+
+//     await sendLowStockEmail(product);
+//   }
+// }
 for (const item of items) {
-  await Product.findByIdAndUpdate(item.productId, {
-    $inc: {
-      stock: -item.quantity,
-      sold: item.quantity,
-    },
+  const productId = item.productId || item._id;
+
+  console.log("=================================");
+  console.log("Searching Product ID:", productId);
+
+  const product = await Product.findById(productId);
+
+  console.log("Product Found:", product);
+
+  if (!product) {
+    console.log("❌ Product Not Found");
+    continue;
+  }
+
+  console.log("Current Stock:", product.stock);
+
+  product.stock -= item.quantity;
+
+  if (product.stock < 0) {
+    product.stock = 0;
+  }
+
+  product.sold += item.quantity;
+
+  await product.save();
+
+  console.log("Updated Stock:", product.stock);
+
+if (product.stock <= 10) {
+  await createNotification({
+    title: "⚠️ Low Stock",
+    message: `${product.title} has only ${product.stock} items remaining.`,
+    type: "low_stock",
+    referenceId: product._id,
+  });
+
+  // Email disabled
+  // await sendLowStockEmail(product);
+}
+}
+
+// ===============================
+// Send Order Confirmation Email
+// ===============================
+
+const user = await User.findById(req.user._id);
+
+// await sendOrderConfirmationEmail(
+//   user,
+//   order
+// );
+
+res.status(201).json({
+  success: true,
+  message: "Order placed successfully.",
+  order,
+});
+} catch (error) {
+  console.error("========== ORDER ERROR ==========");
+  console.error(error);
+  console.error("Message:", error.message);
+  console.error("Stack:", error.stack);
+
+  if (error.response) {
+    console.error(error.response);
+  }
+
+  res.status(500).json({
+    success: false,
+    message: error.message,
   });
 }
 
-
-
-    res.status(201).json({
-      success: true,
-      message: "Order placed successfully.",
-      order,
-    });
-  } catch (error) {
-    console.error(error);
-    console.error("Validation Errors:", error.errors);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to place order.",
-      error: error.message,
-    });
-  }
-};
+}; // ✅ Ye line missing hai
 
 // ===============================
 // Get All Orders
@@ -207,21 +309,51 @@ export const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    // ===============================
+    // Send Email Based On Order Status
+    // ===============================
+
+    const user = await User.findById(order.userId);
+
+    if (user) {
+
+      // Order Confirmed
+      if (order.orderStatus === "Processing") {
+        await sendOrderConfirmationEmail(user, order);
+      }
+
+      // Shipped
+if (order.orderStatus === "Shipped") {
+    await sendShippedEmail(user, order);
+}
+
+if (order.orderStatus === "Delivered") {
+  await sendDeliveredEmail(user, order);
+}
+
+      // Cancelled
+if (order.orderStatus === "Cancelled") {
+  await sendCancelledEmail(user, order);
+}
+    }
+
     res.status(200).json({
       success: true,
       message: "Order updated successfully.",
       order,
     });
+
   } catch (error) {
+
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
-
 // ===============================
 // Cancel Order
 // ===============================

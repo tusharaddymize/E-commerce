@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import { sendWelcomeEmail } from "../services/emailServices.js";
 
 // ==========================================
 // @desc    Register User
@@ -42,6 +43,7 @@ export const registerUser = async (req, res) => {
       email,
       password,
     });
+    await sendWelcomeEmail(user.name, user.email);
 
     res.status(201).json({
       success: true,

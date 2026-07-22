@@ -12,6 +12,10 @@ import {
 } from "react-icons/fa";
 
 import useAuth from "../../hooks/useAuth";
+import {
+  successToast,
+  errorToast,
+} from "../../utils/toast";
 
 const registerSchema = z
   .object({
@@ -68,11 +72,19 @@ const RegisterForm = () => {
 
       await registerUser(payload);
 
+      // ✅ Success Toast
+      successToast("Registration Successful");
+
       navigate("/");
     } catch (error) {
-      setServerError(
-        error.response?.data?.message || "Registration failed"
-      );
+      const message =
+        error.response?.data?.message ||
+        "Registration Failed";
+
+      setServerError(message);
+
+      // ✅ Error Toast
+      errorToast(message);
     } finally {
       setLoading(false);
     }
@@ -95,15 +107,14 @@ const RegisterForm = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-5"
       >
-        {/* Name */}
 
+        {/* Name */}
         <div>
           <label className="font-medium">
             Full Name
           </label>
 
           <div className="border rounded-lg flex items-center mt-2 px-3">
-
             <FaUser className="text-gray-400" />
 
             <input
@@ -112,7 +123,6 @@ const RegisterForm = () => {
               className="w-full p-3 outline-none"
               {...register("name")}
             />
-
           </div>
 
           {errors.name && (
@@ -123,14 +133,12 @@ const RegisterForm = () => {
         </div>
 
         {/* Email */}
-
         <div>
           <label className="font-medium">
             Email
           </label>
 
           <div className="border rounded-lg flex items-center mt-2 px-3">
-
             <FaEnvelope className="text-gray-400" />
 
             <input
@@ -139,7 +147,6 @@ const RegisterForm = () => {
               className="w-full p-3 outline-none"
               {...register("email")}
             />
-
           </div>
 
           {errors.email && (
@@ -150,14 +157,12 @@ const RegisterForm = () => {
         </div>
 
         {/* Password */}
-
         <div>
           <label className="font-medium">
             Password
           </label>
 
           <div className="border rounded-lg flex items-center mt-2 px-3">
-
             <FaLock className="text-gray-400" />
 
             <input
@@ -179,7 +184,6 @@ const RegisterForm = () => {
                 <FaEye />
               )}
             </button>
-
           </div>
 
           {errors.password && (
@@ -190,14 +194,12 @@ const RegisterForm = () => {
         </div>
 
         {/* Confirm Password */}
-
         <div>
           <label className="font-medium">
             Confirm Password
           </label>
 
           <div className="border rounded-lg flex items-center mt-2 px-3">
-
             <FaLock className="text-gray-400" />
 
             <input
@@ -225,7 +227,6 @@ const RegisterForm = () => {
                 <FaEye />
               )}
             </button>
-
           </div>
 
           {errors.confirmPassword && (
@@ -236,7 +237,6 @@ const RegisterForm = () => {
         </div>
 
         {/* Server Error */}
-
         {serverError && (
           <div className="bg-red-100 text-red-600 p-3 rounded-lg text-sm">
             {serverError}
@@ -244,7 +244,6 @@ const RegisterForm = () => {
         )}
 
         {/* Button */}
-
         <button
           type="submit"
           disabled={loading}
@@ -254,6 +253,7 @@ const RegisterForm = () => {
             ? "Creating Account..."
             : "Register"}
         </button>
+
       </form>
 
       <p className="text-center mt-6">
@@ -266,6 +266,7 @@ const RegisterForm = () => {
           Login
         </Link>
       </p>
+
     </div>
   );
 };
