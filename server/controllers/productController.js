@@ -217,27 +217,28 @@ export const getProduct = async (
 
 export const createProduct = async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      brand,
-      category,
-      price,
-      oldPrice,
-      discount,
-      stock,
-      sku,
-      sizes,
-      colors,
-      fabric,
-      pattern,
-      occasion,
-      country,
-      isFeatured,
-      isTrending,
-      status,
-    } = req.body;
-
+const {
+  title,
+  description,
+  brand,
+  category,
+  price,
+  oldPrice,
+  discount,
+  stock,
+  sku,
+  sizes,
+  colors,
+  fabric,
+  pattern,
+  occasion,
+  country,
+  isFeatured,
+  isTrending,
+  isNewArrival,
+  isBestSelling,
+  status,
+} = req.body;
     // ==========================
     // Validation
     // ==========================
@@ -314,11 +315,20 @@ export const createProduct = async (req, res) => {
       pattern,
       occasion,
       country,
-      isFeatured:
-        isFeatured === true || isFeatured === "true",
-      isTrending:
-        isTrending === true || isTrending === "true",
-      status: status || "active",
+     
+isFeatured:
+  isFeatured === true || isFeatured === "true",
+
+isTrending:
+  isTrending === true || isTrending === "true",
+
+isNewArrival:
+  isNewArrival === true || isNewArrival === "true",
+
+isBestSelling:
+  isBestSelling === true || isBestSelling === "true",
+
+status: status || "active",
     });
 
     res.status(201).json({
@@ -395,6 +405,14 @@ export const updateProduct = async (req, res) => {
     product.isTrending =
       req.body.isTrending === "true" ||
       req.body.isTrending === true;
+
+      product.isNewArrival =
+  req.body.isNewArrival === "true" ||
+  req.body.isNewArrival === true;
+
+product.isBestSelling =
+  req.body.isBestSelling === "true" ||
+  req.body.isBestSelling === true;
 
     product.sizes = req.body.sizes
       ? req.body.sizes.split(",").map((i) => i.trim())

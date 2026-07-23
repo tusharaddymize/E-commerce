@@ -121,7 +121,15 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+isNewArrival: {
+  type: Boolean,
+  default: false,
+},
 
+isBestSelling: {
+  type: Boolean,
+  default: false,
+},
     status: {
       type: String,
       enum: ["active", "draft"],

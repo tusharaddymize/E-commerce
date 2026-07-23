@@ -34,8 +34,9 @@ import UserManagement from "./pages/admin/UserManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
 import EditProduct from "./pages/admin/EditProduct"
 
-
-
+import WebsiteSettings from "./pages/admin/WebsiteSettings";
+import FlashDealList from "./pages/admin/FlashDealList";
+import AddFlashDeal from "./pages/admin/AddFlashDeal";
 function App() {
   return (
     <Routes>
@@ -175,6 +176,19 @@ function App() {
     path="/admin/products/edit/:id"
     element={<EditProduct />}
   />
+  <Route
+  path="/admin/website-settings"
+  element={<WebsiteSettings />}
+/>
+<Route
+  path="/admin/flash-deals"
+  element={<FlashDealList />}
+/>
+
+<Route
+  path="/admin/add-flash-deal"
+  element={<AddFlashDeal />}
+/>
   
 </Route>
 

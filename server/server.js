@@ -15,6 +15,8 @@ import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import websiteSettingRoutes from "./routes/websiteSettingRoutes.js";
+import flashDealRoutes from "./routes/flashDealRoutes.js";
 // import dotenv from "dotenv";
 // dotenv.config();
 
@@ -36,10 +38,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/address", addressRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/flash-deals", flashDealRoutes);
 app.use("/api/admin",adminRoutes);
 app.use("/api/admin/analytics", analyticsRoutes);
 app.use("/api/admin/dashboard", dashboardRoutes);
-
+app.use(
+  "/api/website-settings",
+  websiteSettingRoutes
+);
 app.use("/api/notifications", notificationRoutes);
 // =============================
 // Test Route

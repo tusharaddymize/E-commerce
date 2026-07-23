@@ -6,7 +6,9 @@ import {
   Settings,
   LogOut,
   BarChart3,
+  Globe,
   X,
+  Zap,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -51,6 +53,16 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       icon: <Settings size={20} />,
       path: "/admin/settings",
     },
+    {
+  name: "Website Settings",
+  icon: <Globe size={20} />,
+  path: "/admin/website-settings",
+},
+{
+  name: "Flash Deals",
+  icon: <Zap size={20} />,
+  path: "/admin/flash-deals",
+},
   ];
 
   return (
