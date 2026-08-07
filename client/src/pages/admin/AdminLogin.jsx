@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+
 import toast from "react-hot-toast";
 import { useAdmin } from "../../context/AdminContext";
+import API from "../../services/api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -29,12 +30,12 @@ const AdminLogin = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:5000/api/admin/login",
-        formData
-      );
+const { data } = await API.post(
+  "/admin/login",
+  formData
+);
 
-      login(res.data);
+login(data);
 
       toast.success("Admin Login Successful");
 
