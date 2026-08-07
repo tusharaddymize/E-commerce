@@ -1,27 +1,3 @@
-// import express from "express";
-
-// import { adminLogin } from "../controllers/adminController.js";
-
-// import adminProtect from "../middleware/adminMiddleware.js";
-
-// const router=express.Router();
-
-// router.post("/login",adminLogin);
-
-// router.get("/dashboard",adminProtect,(req,res)=>{
-
-//     res.json({
-
-//         success:true,
-
-//         message:"Welcome Admin"
-
-//     });
-
-// });
-
-// export default router;
-
 
 
 
