@@ -3,16 +3,18 @@ import generateToken from "../utils/generateToken.js";
 import { sendWelcomeEmail } from "../services/emailServices.js";
 
 // ==========================================
-// @desc    Register User
-// @route   POST /api/auth/register
-// @access  Public
+// Register User
+// POST /api/auth/register
 // ==========================================
 
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // ===============================
     // Validation
+    // ===============================
+
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -27,8 +29,13 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Check existing user
-    const existingUser = await User.findOne({ email });
+    // ===============================
+    // Check Existing User
+    // ===============================
+
+    const existingUser = await User.findOne({
+      email: email.toLowerCase(),
+    });
 
     if (existingUser) {
       return res.status(400).json({
@@ -37,13 +44,36 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Create user
+    // ===============================
+    // Create User
+    // ===============================
+
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password,
     });
-    await sendWelcomeEmail(user.name, user.email);
+
+    // ===============================
+    // Send Email (Background)
+    // ===============================
+
+    sendWelcomeEmail(user.name, user.email)
+      .then(() => {
+        console.log(
+          `✅ Welcome email sent to ${user.email}`
+        );
+      })
+      .catch((err) => {
+        console.error(
+          "Welcome Email Error:",
+          err.message
+        );
+      });
+
+    // ===============================
+    // Response
+    // ===============================
 
     res.status(201).json({
       success: true,
@@ -66,18 +96,19 @@ export const registerUser = async (req, res) => {
     });
   }
 };
-
 // ==========================================
-// @desc    Login User
-// @route   POST /api/auth/login
-// @access  Public
+// Login User
+// POST /api/auth/login
 // ==========================================
 
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // ===============================
     // Validation
+    // ===============================
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -85,8 +116,13 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // Get User
-    const user = await User.findOne({ email }).select("+password");
+    // ===============================
+    // Find User
+    // ===============================
+
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+    }).select("+password");
 
     if (!user) {
       return res.status(401).json({
@@ -95,7 +131,10 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    // ===============================
     // Compare Password
+    // ===============================
+
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
@@ -104,6 +143,10 @@ export const loginUser = async (req, res) => {
         message: "Invalid email or password",
       });
     }
+
+    // ===============================
+    // Login Success
+    // ===============================
 
     res.status(200).json({
       success: true,
@@ -117,6 +160,7 @@ export const loginUser = async (req, res) => {
         avatar: user.avatar,
       },
     });
+
   } catch (error) {
     console.error("Login Error:", error);
 
@@ -128,9 +172,8 @@ export const loginUser = async (req, res) => {
 };
 
 // ==========================================
-// @desc    Get Current User
-// @route   GET /api/auth/me
-// @access  Private
+// Get Current User
+// GET /api/auth/me
 // ==========================================
 
 export const getCurrentUser = async (req, res) => {
@@ -148,8 +191,9 @@ export const getCurrentUser = async (req, res) => {
       success: true,
       user,
     });
+
   } catch (error) {
-    console.error("Get User Error:", error);
+    console.error("Get Current User Error:", error);
 
     res.status(500).json({
       success: false,
@@ -157,12 +201,9 @@ export const getCurrentUser = async (req, res) => {
     });
   }
 };
-
-
 // ==========================================
-// @desc    Update Profile
-// @route   PUT /api/auth/profile
-// @access  Private
+// Update Profile
+// PUT /api/auth/profile
 // ==========================================
 
 export const updateProfile = async (req, res) => {
@@ -178,9 +219,21 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    user.name = name || user.name;
-    user.phone = phone || user.phone;
-    user.avatar = avatar || user.avatar;
+    // ===============================
+    // Update Fields
+    // ===============================
+
+    if (name) {
+      user.name = name;
+    }
+
+    if (phone) {
+      user.phone = phone;
+    }
+
+    if (avatar) {
+      user.avatar = avatar;
+    }
 
     await user.save();
 
@@ -196,6 +249,7 @@ export const updateProfile = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
     console.error("Update Profile Error:", error);
 
@@ -206,32 +260,45 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-
 // ==========================================
-// @desc    Change Password
-// @route   PUT /api/auth/password
-// @access  Private
+// Change Password
+// PUT /api/auth/password
 // ==========================================
 
 export const changePassword = async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const {
+      currentPassword,
+      newPassword,
+    } = req.body;
+
+    // ===============================
+    // Validation
+    // ===============================
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: "Please provide both passwords",
+        message:
+          "Please provide both passwords",
       });
     }
 
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "New password must be at least 6 characters",
+        message:
+          "New password must be at least 6 characters",
       });
     }
 
-    const user = await User.findById(req.user._id).select("+password");
+    // ===============================
+    // Find User
+    // ===============================
+
+    const user = await User.findById(
+      req.user._id
+    ).select("+password");
 
     if (!user) {
       return res.status(404).json({
@@ -240,26 +307,45 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    const isMatch = await user.matchPassword(currentPassword);
+    // ===============================
+    // Check Current Password
+    // ===============================
+
+    const isMatch =
+      await user.matchPassword(
+        currentPassword
+      );
 
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Current password is incorrect",
+        message:
+          "Current password is incorrect",
       });
     }
 
+    // ===============================
+    // Update Password
+    // ===============================
+
     user.password = newPassword;
 
-    // User model ka pre("save") hook password ko automatically hash karega.
+    // Password hash automatically
+    // in User model pre("save")
+
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: "Password changed successfully",
+      message:
+        "Password changed successfully",
     });
+
   } catch (error) {
-    console.error("Change Password Error:", error);
+    console.error(
+      "Change Password Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
