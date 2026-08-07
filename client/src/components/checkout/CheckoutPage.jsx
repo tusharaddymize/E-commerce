@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
+
 import { useCart } from "../../context/CartContext";
 
 import AddressForm from "./AddressForm";
@@ -7,33 +10,69 @@ import OrderSummary from "./OrderSummary";
 import CouponBox from "./CouponBox";
 
 const CheckoutPage = () => {
+  const { subTotal } = useCart();
 
-const { subTotal } = useCart();
   const [coupon, setCoupon] = useState({
     code: "",
     discount: 0,
   });
-    const handleCoupon = (couponData) => {
+
+  const handleCoupon = (couponData) => {
     setCoupon(couponData);
   };
 
-const [form, setForm] = useState({
-  fullName: "",
-  mobile: "",
-  email: "",
-  country: "India",
-  state: "",
-  city: "",
-  pincode: "",
-  address: "",
-  paymentMethod: "COD",
-});
+  const [form, setForm] = useState({
+    fullName: "",
+    mobile: "",
+    email: "",
+    country: "India",
+    state: "",
+    city: "",
+    pincode: "",
+    address: "",
+    paymentMethod: "COD",
+  });
 
   return (
     <section className="bg-[#f8faf8] min-h-screen py-10">
       <div className="max-w-[1450px] mx-auto px-5">
 
+        {/* ========================= */}
+        {/* Back Button */}
+        {/* ========================= */}
+
+        <Link
+          to="/cart"
+          className="
+            inline-flex
+            items-center
+            gap-2
+            mb-6
+            px-4
+            py-2
+            bg-white
+            border
+            border-gray-200
+            rounded-xl
+            shadow-sm
+            text-sm
+            font-semibold
+            text-gray-700
+            transition-all
+            duration-300
+            hover:border-[var(--primary-color,#355E3B)]
+            hover:text-[var(--primary-color,#355E3B)]
+            hover:shadow-md
+          "
+        >
+          <FiArrowLeft size={18} />
+          Back to Cart
+        </Link>
+
+        {/* ========================= */}
         {/* Heading */}
+        {/* ========================= */}
+
         <div className="mb-10">
           <h1 className="text-4xl lg:text-5xl font-black">
             Checkout
@@ -44,37 +83,42 @@ const [form, setForm] = useState({
           </p>
         </div>
 
+        {/* ========================= */}
         {/* Layout */}
+        {/* ========================= */}
+
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
           {/* Left Side */}
+
           <div className="xl:col-span-2 space-y-8">
 
-           <AddressForm
-  form={form}
-  setForm={setForm}
-/>
+            <AddressForm
+              form={form}
+              setForm={setForm}
+            />
 
-<PaymentMethod
-  form={form}
-  setForm={setForm}
-/>
+            <PaymentMethod
+              form={form}
+              setForm={setForm}
+            />
 
-<CouponBox
-  subTotal={subTotal}
-  onApply={handleCoupon}
-/>
+            <CouponBox
+              subTotal={subTotal}
+              onApplyCoupon={handleCoupon}
+            />
 
           </div>
 
           {/* Right Side */}
+
           <div>
             <div className="sticky top-24">
 
-            <OrderSummary
-  form={form}
-  coupon={coupon}
-/>
+              <OrderSummary
+                form={form}
+                coupon={coupon}
+              />
 
             </div>
           </div>

@@ -81,11 +81,7 @@ const AdminSidebar = ({
       icon: <Package size={20} />,
       path: "/admin/categories",
     },
-    {
-      name: "Filters",
-      icon: <Package size={20} />,
-      path: "/admin/filters",
-    },
+ 
   ];
 
   return (
