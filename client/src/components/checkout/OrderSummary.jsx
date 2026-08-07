@@ -202,7 +202,7 @@ const OrderSummary = ({ form, coupon }) => {
             className="flex gap-4"
           >
             <img
-              src={item.image}
+             src={item.image || item.images?.[0]?.url}
               alt={item.title}
               className="
                 w-20

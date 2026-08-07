@@ -222,11 +222,12 @@ const Wishlist = () => {
                     "
                   >
                     <img
-                      src={product.image}
-                      alt={
-                        product.title ||
-                        "Product"
-                      }
+                     src={
+    product.image ||
+    product.images?.[0]?.url ||
+    product.images?.[0] ||
+    "/placeholder.png"
+  }
                       className="
                         w-full
                         h-full

@@ -72,7 +72,7 @@ const CartItem = ({ item }) => {
           }}
         >
           <img
-            src={item.image}
+          src={item.image || item.images?.[0]?.url}
             alt={item.title}
             className="w-full h-full object-cover"
           />
