@@ -131,6 +131,7 @@ export const CartProvider = ({ children }) => {
   // ==========================================
 
   const addToCart = (product) => {
+    console.log("Cart Product:", product);
     if (!isAuthenticated) {
       infoToast(
         "Please login to add products to cart"
