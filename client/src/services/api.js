@@ -10,13 +10,22 @@ API.interceptors.request.use(
     const userToken = localStorage.getItem("token");
     const adminToken = localStorage.getItem("adminToken");
 
-    const isAdminRequest =
-      config.url?.startsWith("/admin");
+const adminRoutes = [
+  "/admin",
+  "/website-settings",
+  "/flash-deals",
+  "/coupons",
+  "/categories",
+  "/filters",
+];
 
-    const token = isAdminRequest
-      ? adminToken
-      : userToken;
+const isAdminRequest = adminRoutes.some((route) =>
+  config.url?.startsWith(route)
+);
 
+const token = isAdminRequest
+  ? adminToken
+  : userToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
