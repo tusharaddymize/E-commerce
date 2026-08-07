@@ -29,7 +29,6 @@ import flashDealRoutes from "./routes/flashDealRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import filterRoutes from "./routes/filterRoutes.js";
 
-
 const app = express();
 
 // =============================================
@@ -39,35 +38,47 @@ const app = express();
 connectDB();
 
 // =============================================
-// Middlewares
+// Debug Logs
 // =============================================
 
 console.log("CLIENT_URL:", process.env.CLIENT_URL);
 
+// =============================================
+// CORS
+// =============================================
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.CLIENT_URL,
-    ],
+    origin(origin, callback) {
+      console.log("Origin:", origin);
+
+      // Allow Postman / Mobile Apps / Direct Browser
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("Blocked Origin:", origin);
+
+      return callback(new Error("CORS Not Allowed"));
+    },
     credentials: true,
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.CLIENT_URL,
-    ],
-    credentials: true,
-  })
-);
+// =============================================
+// Body Parser
+// =============================================
 
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
 
 // =============================================
@@ -105,21 +116,14 @@ app.use("/api/products", productRoutes);
 // =============================================
 
 app.use("/api/reviews", reviewRoutes);
+
 // =============================================
 // Categories
 // =============================================
 
 app.use("/api/categories", categoryRoutes);
-
-app.use(
-  "/api/menu-groups",
-  menuGroupRoutes
-);
-
-app.use(
-  "/api/sub-categories",
-  subCategoryRoutes
-);
+app.use("/api/menu-groups", menuGroupRoutes);
+app.use("/api/sub-categories", subCategoryRoutes);
 
 // =============================================
 // Orders
@@ -131,10 +135,7 @@ app.use("/api/orders", orderRoutes);
 // Flash Deals
 // =============================================
 
-app.use(
-  "/api/flash-deals",
-  flashDealRoutes
-);
+app.use("/api/flash-deals", flashDealRoutes);
 
 // =============================================
 // Coupons
@@ -142,39 +143,26 @@ app.use(
 
 app.use("/api/coupons", couponRoutes);
 app.use("/api/filters", filterRoutes);
+
 // =============================================
 // Website Settings
 // =============================================
 
-app.use(
-  "/api/website-settings",
-  websiteSettingRoutes
-);
+app.use("/api/website-settings", websiteSettingRoutes);
 
 // =============================================
 // Notifications
 // =============================================
 
-app.use(
-  "/api/notifications",
-  notificationRoutes
-);
+app.use("/api/notifications", notificationRoutes);
 
 // =============================================
 // Admin
 // =============================================
 
 app.use("/api/admin", adminRoutes);
-
-app.use(
-  "/api/admin/analytics",
-  analyticsRoutes
-);
-
-app.use(
-  "/api/admin/dashboard",
-  dashboardRoutes
-);
+app.use("/api/admin/analytics", analyticsRoutes);
+app.use("/api/admin/dashboard", dashboardRoutes);
 
 // =============================================
 // 404
@@ -188,17 +176,15 @@ app.use((req, res) => {
 });
 
 // =============================================
-// Global Error Handler
+// Error Handler
 // =============================================
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err);
 
   res.status(err.status || 500).json({
     success: false,
-    message:
-      err.message ||
-      "Internal Server Error",
+    message: err.message || "Internal Server Error",
   });
 });
 
@@ -206,11 +192,8 @@ app.use((err, req, res, next) => {
 // Server
 // =============================================
 
-const PORT =
-  process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `✅ Server running on port ${PORT}`
-  );
+  console.log(`✅ Server running on port ${PORT}`);
 });
