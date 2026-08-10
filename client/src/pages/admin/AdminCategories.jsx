@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { FiArrowLeft, FiPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 
-import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminNavbar from "../../components/admin/AdminNavbar";
 
 import CategoryTable from "../../components/admin/category/CategoryTable";
@@ -18,27 +17,22 @@ import {
 } from "../../services/categoryService";
 
 const AdminCategories = () => {
-  /* ==========================================
-      States
-  ========================================== */
+  // ==========================================
+  // States
+  // ==========================================
 
   const [categories, setCategories] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [search, setSearch] = useState("");
 
   const [openForm, setOpenForm] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
-  const [deleteModal, setDeleteModal] =
-    useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const [selectedCategory, setSelectedCategory] =
-    useState(null);
-
-  /* ==========================================
-      Load Categories
-  ========================================== */
+  // ==========================================
+  // Load Categories
+  // ==========================================
 
   const fetchCategories = async () => {
     try {
@@ -63,9 +57,9 @@ const AdminCategories = () => {
     fetchCategories();
   }, []);
 
-  /* ==========================================
-      Search
-  ========================================== */
+  // ==========================================
+  // Search
+  // ==========================================
 
   const filteredCategories = useMemo(() => {
     return categories.filter((category) =>
@@ -75,9 +69,9 @@ const AdminCategories = () => {
     );
   }, [categories, search]);
 
-  /* ==========================================
-      Add Category
-  ========================================== */
+  // ==========================================
+  // Create Category
+  // ==========================================
 
   const handleCreate = async (payload) => {
     try {
@@ -87,7 +81,7 @@ const AdminCategories = () => {
         "Category created successfully."
       );
 
-      fetchCategories();
+      await fetchCategories();
 
       setOpenForm(false);
     } catch (error) {
@@ -98,9 +92,9 @@ const AdminCategories = () => {
     }
   };
 
-  /* ==========================================
-      Update Category
-  ========================================== */
+  // ==========================================
+  // Update Category
+  // ==========================================
 
   const handleUpdate = async (payload) => {
     try {
@@ -113,10 +107,9 @@ const AdminCategories = () => {
         "Category updated successfully."
       );
 
-      fetchCategories();
+      await fetchCategories();
 
       setSelectedCategory(null);
-
       setOpenForm(false);
     } catch (error) {
       toast.error(
@@ -126,9 +119,9 @@ const AdminCategories = () => {
     }
   };
 
-  /* ==========================================
-      Delete Category
-  ========================================== */
+  // ==========================================
+  // Delete Category
+  // ==========================================
 
   const handleDelete = async () => {
     try {
@@ -140,10 +133,9 @@ const AdminCategories = () => {
         "Category deleted successfully."
       );
 
-      fetchCategories();
+      await fetchCategories();
 
       setDeleteModal(false);
-
       setSelectedCategory(null);
     } catch (error) {
       toast.error(
@@ -152,149 +144,137 @@ const AdminCategories = () => {
       );
     }
   };
-    return (
-    <div className="flex min-h-screen bg-gray-100">
+
+  // ==========================================
+  // Render
+  // ==========================================
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       {/* ==========================================
-          Sidebar
+          Navbar
       ========================================== */}
 
-      <AdminSidebar />
+      <AdminNavbar />
 
       {/* ==========================================
           Main Content
       ========================================== */}
 
-      <div className="flex-1 flex flex-col">
-        <AdminNavbar />
+      <main className="p-4 md:p-6 lg:p-8">
+        {/* ==========================================
+            Header
+        ========================================== */}
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {/* ==========================================
-              Header
-          ========================================== */}
-
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <Link
-                to="/admin/dashboard"
-                className="
-                  inline-flex
-                  items-center
-                  gap-2
-                  text-sm
-                  text-gray-500
-                  hover:text-[var(--primary-color)]
-                  transition-colors
-                "
-              >
-                <FiArrowLeft />
-                Back to Dashboard
-              </Link>
-
-              <h1
-                className="
-                  mt-2
-                  text-3xl
-                  font-bold
-                  text-[var(--primary-color)]
-                "
-              >
-                Category Management
-              </h1>
-
-              <p className="mt-1 text-gray-500">
-                Manage all product categories.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                setSelectedCategory(null);
-                setOpenForm(true);
-              }}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <Link
+              to="/admin/dashboard"
               className="
                 inline-flex
                 items-center
-                justify-center
                 gap-2
-
-                rounded-xl
-
-                px-5
-                py-3
-
-                font-semibold
-
-                text-white
-
-                transition-all
-                duration-300
-
-                hover:scale-105
+                text-sm
+                text-gray-500
+                hover:text-[var(--primary-color)]
+                transition-colors
               "
-              style={{
-                backgroundColor:
-                  "var(--button-color)",
-              }}
             >
-              <FiPlus />
+              <FiArrowLeft />
+              Back to Dashboard
+            </Link>
 
-              Add Category
-            </button>
-          </div>
-
-          {/* ==========================================
-              Search
-          ========================================== */}
-
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Search category..."
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
+            <h1
               className="
-                w-full
-
-                rounded-xl
-
-                border
-                border-gray-300
-
-                bg-white
-
-                px-4
-                py-3
-
-                outline-none
-
-                focus:border-[var(--primary-color)]
+                mt-2
+                text-3xl
+                font-bold
+                text-[var(--primary-color)]
               "
-            />
+            >
+              Category Management
+            </h1>
+
+            <p className="mt-1 text-gray-500">
+              Manage all product categories.
+            </p>
           </div>
 
-          {/* ==========================================
-              Table
-          ========================================== */}
-
-          <CategoryTable
-            categories={filteredCategories}
-            loading={loading}
-            onEdit={(category) => {
-              setSelectedCategory(category);
+          <button
+            onClick={() => {
+              setSelectedCategory(null);
               setOpenForm(true);
             }}
-            onDelete={(category) => {
-              setSelectedCategory(category);
-              setDeleteModal(true);
+            className="
+              inline-flex
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              px-5
+              py-3
+              font-semibold
+              text-white
+              transition-all
+              duration-300
+              hover:scale-105
+            "
+            style={{
+              backgroundColor:
+                "var(--button-color)",
             }}
+          >
+            <FiPlus />
+            Add Category
+          </button>
+        </div>
+
+        {/* ==========================================
+            Search
+        ========================================== */}
+
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search category..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="
+              w-full
+              rounded-xl
+              border
+              border-gray-300
+              bg-white
+              px-4
+              py-3
+              outline-none
+              focus:border-[var(--primary-color)]
+            "
           />
-        </main>
-      </div>
+        </div>
+
+        {/* ==========================================
+            Category Table
+        ========================================== */}
+
+        <CategoryTable
+          categories={filteredCategories}
+          loading={loading}
+          onEdit={(category) => {
+            setSelectedCategory(category);
+            setOpenForm(true);
+          }}
+          onDelete={(category) => {
+            setSelectedCategory(category);
+            setDeleteModal(true);
+          }}
+        />
+      </main>
 
       {/* ==========================================
-          Form Modal
+          Category Form Modal
       ========================================== */}
 
       <CategoryFormModal
