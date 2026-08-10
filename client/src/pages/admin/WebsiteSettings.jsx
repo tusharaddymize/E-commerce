@@ -41,9 +41,9 @@ import SettingsAccordion from "../../components/admin/settings/SettingsAccordion
 // Theme Context
 // ==========================================
 
-import {
-  useTheme,
-} from "../../context/ThemeContext";
+// import {
+//   useTheme,
+// } from "../../context/ThemeContext";
 
 const WebsiteSettings = () => {
   const navigate = useNavigate();
@@ -52,10 +52,10 @@ const WebsiteSettings = () => {
   // Global Theme
   // ==========================================
 
-  const {
-    updateLocalTheme,
-    refreshTheme,
-  } = useTheme();
+  // const {
+  //   updateLocalTheme,
+  //   refreshTheme,
+  // } = useTheme();
 
   // ==========================================
   // Loading
@@ -535,80 +535,52 @@ const WebsiteSettings = () => {
   // Save Theme
   // ==========================================
 
-  const handleSaveTheme =
-    async () => {
-      try {
-        setSaving(true);
+const handleSaveTheme = async () => {
+  try {
+    setSaving(true);
 
-        // ======================================
-        // Save Theme In Backend / MongoDB
-        // ======================================
+    // ======================================
+    // Save Theme To Backend / MongoDB
+    // ======================================
 
-        const response =
-          await updateThemeSettings(
-            theme
-          );
+    const response =
+      await updateThemeSettings(theme);
 
-        // Backend may return:
-        //
-        // {
-        //   success: true,
-        //   data: {
-        //      primaryColor,
-        //      secondaryColor,
-        //      ...
-        //   }
-        // }
+    const savedTheme =
+      response?.data || theme;
 
-        const savedTheme =
-          response?.data ||
-          theme;
+    // ======================================
+    // Update Local Form State
+    // ======================================
 
-        // ======================================
-        // Apply New Theme Immediately
-        // ======================================
+    setTheme((previous) => ({
+      ...previous,
+      ...savedTheme,
+    }));
 
-        updateLocalTheme(
-          savedTheme
-        );
+    // ======================================
+    // Theme saved successfully
+    // ======================================
 
-        // ======================================
-        // Update Local Form State
-        // ======================================
+    toast.success(
+      "Theme updated successfully."
+    );
 
-        setTheme((previous) => ({
-          ...previous,
-          ...savedTheme,
-        }));
+  } catch (error) {
+    console.error(
+      "Theme Update Error:",
+      error
+    );
 
-        // ======================================
-        // Reload Theme From Backend
-        //
-        // This ensures ThemeContext contains
-        // exactly what MongoDB has saved.
-        // ======================================
-
-        await refreshTheme();
-
-        toast.success(
-          "Theme updated successfully."
-        );
-      } catch (error) {
-        console.error(
-          "Theme Update Error:",
-          error
-        );
-
-        toast.error(
-          error?.response?.data
-            ?.message ||
-            error?.message ||
-            "Failed to update theme."
-        );
-      } finally {
-        setSaving(false);
-      }
-    };
+    toast.error(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update theme."
+    );
+  } finally {
+    setSaving(false);
+  }
+};
 
   // ==========================================
   // Loading UI

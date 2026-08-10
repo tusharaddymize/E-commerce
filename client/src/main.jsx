@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import ReactDOM from "react-dom/client";
+import React from "react";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -19,149 +19,85 @@ import { OrderProvider } from "./context/OrderContext";
 import ProductProvider from "./context/ProductContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { CategoryProvider } from "./context/CategoryContext";
+
 import "react-toastify/dist/ReactToastify.css";
-// ==========================================
-// Services
-// ==========================================
-
-import { getWebsiteSettings } from "./services/websiteSettingService";
 
 // ==========================================
-// Dynamic Website Settings Loader
-// Handles settings outside React UI such as favicon
+// Root
 // ==========================================
 
-const WebsiteSettingsLoader = ({ children }) => {
-  useEffect(() => {
-    const loadWebsiteSettings = async () => {
-      try {
-        const response = await getWebsiteSettings();
-
-        // Supports both:
-        // { success: true, data: {...} }
-        // OR direct settings object
-        const settings = response?.data || response;
-
-        if (!settings) return;
-
-        // ======================================
-        // Dynamic Favicon
-        // ======================================
-
-        if (settings.favicon) {
-          let favicon = document.querySelector(
-            "link[rel='icon']"
-          );
-
-          if (!favicon) {
-            favicon = document.createElement("link");
-
-            favicon.rel = "icon";
-
-            document.head.appendChild(favicon);
-          }
-
-          favicon.href = settings.favicon;
-        }
-
-        // ======================================
-        // Dynamic SEO Title
-        // ======================================
-
-        if (settings?.seo?.title) {
-          document.title = settings.seo.title;
-        }
-
-        // ======================================
-        // Dynamic Meta Description
-        // ======================================
-
-        if (settings?.seo?.description) {
-          let description =
-            document.querySelector(
-              'meta[name="description"]'
-            );
-
-          if (!description) {
-            description =
-              document.createElement("meta");
-
-            description.name = "description";
-
-            document.head.appendChild(description);
-          }
-
-          description.content =
-            settings.seo.description;
-        }
-      } catch (error) {
-        console.error(
-          "Failed to load website settings:",
-          error
-        );
-      }
-    };
-
-    loadWebsiteSettings();
-  }, []);
-
-  return children;
-};
-
-// ==========================================
-// React App
-// ==========================================
-
-ReactDOM.createRoot(
+const root = createRoot(
   document.getElementById("root")
-).render(
+);
+
+// ==========================================
+// Render Application
+// ==========================================
+
+root.render(
   <React.StrictMode>
+
     <BrowserRouter>
 
       {/* ====================================== */}
-      {/* Authentication Provider */}
-      {/* Cart ko current logged-in user milega */}
+      {/* Authentication */}
       {/* ====================================== */}
 
       <AuthProvider>
 
         {/* ==================================== */}
-        {/* User Specific Cart */}
+        {/* Cart */}
         {/* ==================================== */}
 
         <CartProvider>
 
+          {/* ================================== */}
+          {/* Wishlist */}
+          {/* ================================== */}
+
           <WishlistProvider>
+
+            {/* ================================= */}
+            {/* Orders */}
+            {/* ================================= */}
 
             <OrderProvider>
 
+              {/* ================================= */}
+              {/* Products */}
+              {/* ================================= */}
+
               <ProductProvider>
+
+                {/* ================================= */}
+                {/* Admin */}
+                {/* ================================= */}
 
                 <AdminProvider>
 
-                  {/* ========================== */}
-                  {/* Global Dynamic Theme */}
-                  {/* ========================== */}
+                  {/* ================================= */}
+                  {/* Global Theme */}
+                  {/* ================================= */}
 
                   <ThemeProvider>
 
-                    {/* ======================== */}
-                    {/* Favicon + SEO Settings */}
-                    {/* ======================== */}
+                    {/* ================================= */}
+                    {/* Categories */}
+                    {/* ================================= */}
 
-                    <WebsiteSettingsLoader>
+                    <CategoryProvider>
 
-                      <CategoryProvider>
+                      {/* ================================= */}
+                      {/* Main Application */}
+                      {/* ================================= */}
 
-                        <App />
+                      <App />
 
-                      </CategoryProvider>
+                    </CategoryProvider>
 
-                    </WebsiteSettingsLoader>
-
-                    {/* ======================== */}
+                    {/* ================================= */}
                     {/* Toast Notifications */}
-                    {/* ======================== */}
+                    {/* ================================= */}
 
                     <Toaster
                       position="top-right"
@@ -209,5 +145,6 @@ ReactDOM.createRoot(
       </AuthProvider>
 
     </BrowserRouter>
+
   </React.StrictMode>
 );

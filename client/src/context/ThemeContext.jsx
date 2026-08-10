@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useContext,
@@ -17,16 +18,12 @@ const ThemeContext = createContext(null);
 
 // ==========================================
 // Default Theme
-// Used only when backend theme unavailable
 // ==========================================
 
 const defaultTheme = {
   primaryColor: "#355E3B",
-
   secondaryColor: "#1E3422",
-
   accentColor: "#f59e0b",
-
   buttonColor: "#355E3B",
 
   darkMode: false,
@@ -39,152 +36,151 @@ const defaultTheme = {
 };
 
 // ==========================================
+// Local Storage Keys
+// ==========================================
+
+const SETTINGS_STORAGE_KEY =
+  "websiteSettings";
+
+const THEME_STORAGE_KEY =
+  "websiteTheme";
+
+// ==========================================
+// Get Cached Settings
+// ==========================================
+
+const getCachedSettings = () => {
+  try {
+    const cachedSettings =
+      localStorage.getItem(
+        SETTINGS_STORAGE_KEY
+      );
+
+    if (!cachedSettings) {
+      return null;
+    }
+
+    return JSON.parse(cachedSettings);
+
+  } catch (error) {
+    console.error(
+      "Failed to read cached website settings:",
+      error
+    );
+
+    return null;
+  }
+};
+
+// ==========================================
+// Get Cached Theme
+// ==========================================
+
+const getCachedTheme = () => {
+  try {
+    const cachedTheme =
+      localStorage.getItem(
+        THEME_STORAGE_KEY
+      );
+
+    if (!cachedTheme) {
+      return defaultTheme;
+    }
+
+    return {
+      ...defaultTheme,
+      ...JSON.parse(cachedTheme),
+    };
+
+  } catch (error) {
+    console.error(
+      "Failed to read cached theme:",
+      error
+    );
+
+    return defaultTheme;
+  }
+};
+
+// ==========================================
 // Theme Provider
 // ==========================================
 
 export const ThemeProvider = ({
   children,
 }) => {
-  // ========================================
-  // Theme State
-  // ========================================
-
-  const [theme, setTheme] =
-    useState(defaultTheme);
-
-  const [
-    themeLoading,
-    setThemeLoading,
-  ] = useState(true);
 
   // ========================================
-  // Fetch Theme From Backend
+  // Cached Theme
   // ========================================
 
-  const fetchTheme = async () => {
-    try {
-      setThemeLoading(true);
-
-      const response =
-        await getWebsiteSettings();
-
-      // Supports:
-      //
-      // {
-      //   success: true,
-      //   data: {...}
-      // }
-      //
-      // OR direct settings object
-
-      const settings =
-        response?.data || response;
-
-      const savedTheme =
-        settings?.theme || {};
-
-      // Merge saved theme with fallback theme
-
-      setTheme({
-        ...defaultTheme,
-        ...savedTheme,
-      });
-    } catch (error) {
-      console.error(
-        "Failed to load website theme:",
-        error
-      );
-
-      // Use default only if API fails
-
-      setTheme(defaultTheme);
-    } finally {
-      setThemeLoading(false);
-    }
-  };
+  const [theme, setTheme] = useState(
+    getCachedTheme
+  );
 
   // ========================================
-  // Load Theme When Website Starts
+  // Complete Website Settings
   // ========================================
 
-  useEffect(() => {
-    fetchTheme();
-  }, []);
+  const [websiteSettings, setWebsiteSettings] =
+    useState(getCachedSettings);
+
+  // ========================================
+  // Loading State
+  // ========================================
+
+  const [themeLoading, setThemeLoading] =
+    useState(false);
 
   // ========================================
   // Apply Theme Globally
   // ========================================
-  //
-  // IMPORTANT:
-  //
-  // Existing website uses:
-  //
-  // --primary-color
-  // --secondary-color
-  // --accent-color
-  // --button-color
-  // --theme-radius
-  //
-  // New Product Page uses:
-  //
-  // --color-primary
-  // --color-secondary
-  // --color-accent
-  // --color-button
-  // --border-radius
-  //
-  // Therefore BOTH variable systems
-  // are maintained here.
-  // ========================================
 
-  useEffect(() => {
+  const applyTheme = (themeData = {}) => {
+
     const root =
       document.documentElement;
 
     // ======================================
-    // Get Safe Theme Values
+    // Safe Values
     // ======================================
 
     const primaryColor =
-      theme?.primaryColor ||
+      themeData?.primaryColor ||
       defaultTheme.primaryColor;
 
     const secondaryColor =
-      theme?.secondaryColor ||
+      themeData?.secondaryColor ||
       defaultTheme.secondaryColor;
 
     const accentColor =
-      theme?.accentColor ||
+      themeData?.accentColor ||
       defaultTheme.accentColor;
 
     const buttonColor =
-      theme?.buttonColor ||
+      themeData?.buttonColor ||
       defaultTheme.buttonColor;
 
     const borderRadius =
-      theme?.borderRadius ||
+      themeData?.borderRadius ||
       defaultTheme.borderRadius;
 
     const containerWidth =
-      theme?.containerWidth ||
+      themeData?.containerWidth ||
       defaultTheme.containerWidth;
 
     const fontFamily =
-      theme?.fontFamily ||
+      themeData?.fontFamily ||
       defaultTheme.fontFamily;
 
     // ======================================
-    // PRIMARY COLOR
+    // Primary Color
     // ======================================
-
-    // New Product Page
 
     root.style.setProperty(
       "--color-primary",
       primaryColor
     );
-
-    // Existing Landing Page / Components
 
     root.style.setProperty(
       "--primary-color",
@@ -192,17 +188,13 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // SECONDARY COLOR
+    // Secondary Color
     // ======================================
-
-    // New Product Page
 
     root.style.setProperty(
       "--color-secondary",
       secondaryColor
     );
-
-    // Existing Landing Page / Components
 
     root.style.setProperty(
       "--secondary-color",
@@ -210,17 +202,13 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // ACCENT COLOR
+    // Accent Color
     // ======================================
-
-    // New Product Page
 
     root.style.setProperty(
       "--color-accent",
       accentColor
     );
-
-    // Existing Landing Page / Components
 
     root.style.setProperty(
       "--accent-color",
@@ -228,17 +216,13 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // BUTTON COLOR
+    // Button Color
     // ======================================
-
-    // New Product Page
 
     root.style.setProperty(
       "--color-button",
       buttonColor
     );
-
-    // Existing Landing Page / Components
 
     root.style.setProperty(
       "--button-color",
@@ -246,17 +230,13 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // BORDER RADIUS
+    // Border Radius
     // ======================================
-
-    // New components
 
     root.style.setProperty(
       "--border-radius",
       borderRadius
     );
-
-    // Existing components
 
     root.style.setProperty(
       "--theme-radius",
@@ -264,7 +244,7 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // CONTAINER WIDTH
+    // Container Width
     // ======================================
 
     root.style.setProperty(
@@ -273,44 +253,411 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // FONT FAMILY
+    // Font Family
     // ======================================
 
     root.style.setProperty(
       "--font-family",
       fontFamily
     );
-
-    document.body.style.fontFamily =
-      `"${fontFamily}", sans-serif`;
+document.body.style.fontFamily =
+  fontFamily + ", sans-serif";
 
     // ======================================
-    // DARK MODE
+    // Dark Mode
     // ======================================
 
-    if (theme?.darkMode) {
+    if (themeData?.darkMode) {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
+  };
+
+  // ========================================
+  // Apply Theme Whenever Theme Changes
+  // ========================================
+
+  useEffect(() => {
+    applyTheme(theme);
   }, [theme]);
 
   // ========================================
-  // Update Theme Immediately
+  // Apply Favicon
   // ========================================
-  //
-  // Admin Save Theme ke baad use hoga.
-  //
-  // Page reload ki zarurat nahi.
+
+  const applyFavicon = (faviconUrl) => {
+
+    if (!faviconUrl) return;
+
+    let link = document.querySelector(
+      "link[rel~='icon']"
+    );
+
+    if (!link) {
+      link = document.createElement("link");
+
+      link.rel = "icon";
+
+      document.head.appendChild(link);
+    }
+
+    link.type = "image/png";
+
+    link.href = faviconUrl;
+  };
+
+  // ========================================
+  // Apply SEO
+  // ========================================
+
+  const applySEO = (seo = {}) => {
+
+    // ======================================
+    // Title
+    // ======================================
+
+    if (seo?.title) {
+      document.title = seo.title;
+    }
+
+    // ======================================
+    // Meta Description
+    // ======================================
+
+    if (seo?.description) {
+
+      let description =
+        document.querySelector(
+          'meta[name="description"]'
+        );
+
+      if (!description) {
+
+        description =
+          document.createElement("meta");
+
+        description.name =
+          "description";
+
+        document.head.appendChild(
+          description
+        );
+      }
+
+      description.content =
+        seo.description;
+    }
+  };
+
+  // ========================================
+  // Apply Cached Website Settings
+  // Immediately on Page Load
+  // ========================================
+
+  useEffect(() => {
+
+    if (!websiteSettings) return;
+
+    // ======================================
+    // Cached Theme
+    // ======================================
+
+    const cachedTheme = {
+      ...defaultTheme,
+      ...(websiteSettings?.theme || {}),
+    };
+
+    setTheme(cachedTheme);
+
+    // ======================================
+    // Cached Favicon
+    // ======================================
+
+    if (websiteSettings?.favicon) {
+      applyFavicon(
+        websiteSettings.favicon
+      );
+    }
+
+    // ======================================
+    // Cached SEO
+    // ======================================
+
+    if (websiteSettings?.seo) {
+      applySEO(
+        websiteSettings.seo
+      );
+    }
+
+  }, []);
+
+  // ========================================
+  // Fetch Latest Website Settings
+  // ========================================
+
+  const fetchWebsiteSettings =
+    async () => {
+
+      try {
+
+        setThemeLoading(true);
+
+        // ==================================
+        // ONE API CALL
+        // ==================================
+
+        const response =
+          await getWebsiteSettings();
+
+        const settings =
+          response?.data || response;
+
+        if (!settings) return;
+
+        // ==================================
+        // Save Complete Settings
+        // ==================================
+
+        setWebsiteSettings(
+          settings
+        );
+
+        // ==================================
+        // Save Settings to LocalStorage
+        // ==================================
+
+        localStorage.setItem(
+          SETTINGS_STORAGE_KEY,
+          JSON.stringify(settings)
+        );
+
+        // ==================================
+        // Get Latest Theme
+        // ==================================
+
+        const latestTheme = {
+          ...defaultTheme,
+          ...(settings?.theme || {}),
+        };
+
+        // ==================================
+        // Update Theme
+        // ==================================
+
+        setTheme(latestTheme);
+
+        // ==================================
+        // Save Theme Separately
+        // ==================================
+
+        localStorage.setItem(
+          THEME_STORAGE_KEY,
+          JSON.stringify(
+            latestTheme
+          )
+        );
+
+        // ==================================
+        // Apply Theme Immediately
+        // ==================================
+
+        applyTheme(
+          latestTheme
+        );
+
+        // ==================================
+        // Apply Favicon
+        // ==================================
+
+        if (settings?.favicon) {
+
+          applyFavicon(
+            settings.favicon
+          );
+        }
+
+        // ==================================
+        // Apply SEO
+        // ==================================
+
+        if (settings?.seo) {
+
+          applySEO(
+            settings.seo
+          );
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load website settings:",
+          error
+        );
+
+      } finally {
+
+        setThemeLoading(false);
+      }
+    };
+
+  // ========================================
+  // Load Latest Settings
+  // ========================================
+
+  useEffect(() => {
+
+    fetchWebsiteSettings();
+
+  }, []);
+
+  // ========================================
+  // Update Theme Locally
+  // Used After Admin Saves Theme
   // ========================================
 
   const updateLocalTheme = (
     newTheme = {}
   ) => {
-    setTheme((previousTheme) => ({
-      ...previousTheme,
-      ...newTheme,
-    }));
+
+    setTheme(
+      (previousTheme) => {
+
+        const updatedTheme = {
+          ...previousTheme,
+          ...newTheme,
+        };
+
+        // ================================
+        // Save Theme
+        // ================================
+
+        localStorage.setItem(
+          THEME_STORAGE_KEY,
+          JSON.stringify(
+            updatedTheme
+          )
+        );
+
+        // ================================
+        // Update Complete Settings
+        // ================================
+
+        setWebsiteSettings(
+          (previousSettings) => {
+
+            const updatedSettings = {
+              ...(previousSettings || {}),
+              theme: updatedTheme,
+            };
+
+            // ============================
+            // Save Complete Settings
+            // ============================
+
+            localStorage.setItem(
+              SETTINGS_STORAGE_KEY,
+              JSON.stringify(
+                updatedSettings
+              )
+            );
+
+            return updatedSettings;
+          }
+        );
+
+        // ================================
+        // Apply Immediately
+        // ================================
+
+        applyTheme(
+          updatedTheme
+        );
+
+        return updatedTheme;
+      }
+    );
+  };
+
+  // ========================================
+  // Update Complete Website Settings
+  // ========================================
+
+  const updateLocalSettings = (
+    newSettings = {}
+  ) => {
+
+    setWebsiteSettings(
+      (previousSettings) => {
+
+        const updatedSettings = {
+          ...(previousSettings || {}),
+          ...newSettings,
+        };
+
+        // ================================
+        // Save Settings
+        // ================================
+
+        localStorage.setItem(
+          SETTINGS_STORAGE_KEY,
+          JSON.stringify(
+            updatedSettings
+          )
+        );
+
+        // ================================
+        // Theme
+        // ================================
+
+        if (newSettings?.theme) {
+
+          const updatedTheme = {
+            ...defaultTheme,
+            ...newSettings.theme,
+          };
+
+          setTheme(
+            updatedTheme
+          );
+
+          localStorage.setItem(
+            THEME_STORAGE_KEY,
+            JSON.stringify(
+              updatedTheme
+            )
+          );
+
+          applyTheme(
+            updatedTheme
+          );
+        }
+
+        // ================================
+        // Favicon
+        // ================================
+
+        if (newSettings?.favicon) {
+
+          applyFavicon(
+            newSettings.favicon
+          );
+        }
+
+        // ================================
+        // SEO
+        // ================================
+
+        if (newSettings?.seo) {
+
+          applySEO(
+            newSettings.seo
+          );
+        }
+
+        return updatedSettings;
+      }
+    );
   };
 
   // ========================================
@@ -320,20 +667,46 @@ export const ThemeProvider = ({
   return (
     <ThemeContext.Provider
       value={{
-        // Current theme
+        // ================================
+        // Theme
+        // ================================
+
         theme,
 
-        // Direct state setter
         setTheme,
 
+        // ================================
+        // Complete Settings
+        // ================================
+
+        websiteSettings,
+
+        setWebsiteSettings,
+
+        // ================================
         // Loading
+        // ================================
+
         themeLoading,
 
-        // Fetch latest theme from MongoDB
-        refreshTheme: fetchTheme,
+        // ================================
+        // Refresh Latest Settings
+        // ================================
 
-        // Change theme immediately
+        refreshTheme:
+          fetchWebsiteSettings,
+
+        // ================================
+        // Update Theme
+        // ================================
+
         updateLocalTheme,
+
+        // ================================
+        // Update Complete Settings
+        // ================================
+
+        updateLocalSettings,
       }}
     >
       {children}
@@ -346,10 +719,14 @@ export const ThemeProvider = ({
 // ==========================================
 
 export const useTheme = () => {
+
   const context =
-    useContext(ThemeContext);
+    useContext(
+      ThemeContext
+    );
 
   if (!context) {
+
     throw new Error(
       "useTheme must be used inside ThemeProvider"
     );
@@ -363,3 +740,4 @@ export const useTheme = () => {
 // ==========================================
 
 export default ThemeContext;
+
