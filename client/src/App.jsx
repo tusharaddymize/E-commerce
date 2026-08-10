@@ -2,9 +2,10 @@ import { Routes, Route } from "react-router-dom";
 
 import DynamicFavicon from "./components/admin/common/DynamicFavicon";
 
-// =========================
+// ==================================================
 // Public Pages
-// =========================
+// ==================================================
+
 import Home from "./pages/Home";
 import Wishlist from "./pages/Wishlist";
 import Orders from "./pages/Orders";
@@ -25,14 +26,16 @@ import PolicyPage from "./pages/PolicyPage";
 import FlashDeals from "./pages/FlashDeals";
 import ForgotPassword from "./pages/ForgotPassword";
 
-// =========================
+// ==================================================
 // Authentication
-// =========================
+// ==================================================
+
 import PrivateRoute from "./components/auth/PrivateRoute";
 
-// =========================
+// ==================================================
 // Admin
-// =========================
+// ==================================================
+
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 
@@ -61,13 +64,16 @@ import EditFlashDeal from "./pages/admin/EditFlashDeal";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminCategories from "./pages/admin/AdminCategories";
 
+// ==================================================
+// App
+// ==================================================
 
 function App() {
   return (
     <>
-      {/* ========================= */}
-      {/* Dynamic Favicon */}
-      {/* ========================= */}
+      {/* ==================================================
+          Dynamic Favicon
+      ================================================== */}
 
       <DynamicFavicon />
 
@@ -77,25 +83,21 @@ function App() {
             PUBLIC ROUTES
         ================================================== */}
 
-        {/* Home */}
         <Route
           path="/"
           element={<Home />}
         />
 
-        {/* Flash Deals */}
         <Route
           path="/flash-deals"
           element={<FlashDeals />}
         />
 
-        {/* Product Details */}
         <Route
           path="/product/:id"
           element={<ProductDetails />}
         />
 
-        {/* Search */}
         <Route
           path="/search/:keyword"
           element={<SearchResults />}
@@ -107,48 +109,42 @@ function App() {
           element={<CategoryPage />}
         />
 
-        {/* Category Menu Group */}
+        {/* Category + Menu Group */}
         <Route
           path="/category/:categorySlug/:menuGroupSlug"
           element={<CategoryPage />}
         />
 
-        {/* Category Sub Category */}
+        {/* Category + Menu Group + Sub Category */}
         <Route
           path="/category/:categorySlug/:menuGroupSlug/:subCategorySlug"
           element={<CategoryPage />}
         />
 
-        {/* About */}
         <Route
           path="/about"
           element={<About />}
         />
 
-        {/* Policy */}
         <Route
           path="/policy/:type"
           element={<PolicyPage />}
         />
 
-        {/* Forgot Password */}
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
         />
 
-        {/* Login */}
         <Route
           path="/login"
           element={<Login />}
         />
 
-        {/* Register */}
         <Route
           path="/register"
           element={<Register />}
         />
-
 
         {/* ==================================================
             USER PROTECTED ROUTES
@@ -156,56 +152,47 @@ function App() {
 
         <Route element={<PrivateRoute />}>
 
-          {/* Profile */}
           <Route
             path="/profile"
             element={<Profile />}
           />
 
-          {/* Edit Profile */}
           <Route
             path="/edit-profile"
             element={<EditProfile />}
           />
 
-          {/* Wishlist */}
           <Route
             path="/wishlist"
             element={<Wishlist />}
           />
 
-          {/* Orders */}
           <Route
             path="/orders"
             element={<Orders />}
           />
 
-          {/* Order Details */}
           <Route
             path="/order/:id"
             element={<OrderDetails />}
           />
 
-          {/* Cart */}
           <Route
             path="/cart"
             element={<CartPage />}
           />
 
-          {/* Checkout */}
           <Route
             path="/checkout"
             element={<CheckoutPage />}
           />
 
-          {/* Order Success */}
           <Route
             path="/order-success"
             element={<OrderSuccess />}
           />
 
         </Route>
-
 
         {/* ==================================================
             ADMIN LOGIN
@@ -216,7 +203,6 @@ function App() {
           element={<AdminLogin />}
         />
 
-
         {/* ==================================================
             ADMIN PROTECTED ROUTES
         ================================================== */}
@@ -225,25 +211,23 @@ function App() {
 
           {/* ==================================================
               ADMIN LAYOUT
-
-              Sidebar + Navbar + Outlet
+              Sidebar + Content + Outlet
           ================================================== */}
 
           <Route element={<AdminLayout />}>
 
-            {/* =========================
-                Dashboard
-            ========================= */}
+            {/* ==================================================
+                DASHBOARD
+            ================================================== */}
 
             <Route
               path="/admin/dashboard"
               element={<AdminDashboard />}
             />
 
-
-            {/* =========================
-                Products
-            ========================= */}
+            {/* ==================================================
+                PRODUCTS
+            ================================================== */}
 
             <Route
               path="/admin/add-product"
@@ -260,20 +244,18 @@ function App() {
               element={<EditProduct />}
             />
 
-
-            {/* =========================
-                Analytics
-            ========================= */}
+            {/* ==================================================
+                ANALYTICS
+            ================================================== */}
 
             <Route
               path="/admin/analytics"
               element={<ProductAnalytics />}
             />
 
-
-            {/* =========================
-                Orders
-            ========================= */}
+            {/* ==================================================
+                ORDERS
+            ================================================== */}
 
             <Route
               path="/admin/orders"
@@ -285,10 +267,9 @@ function App() {
               element={<AdminOrderDetails />}
             />
 
-
-            {/* =========================
-                Users
-            ========================= */}
+            {/* ==================================================
+                USERS
+            ================================================== */}
 
             <Route
               path="/admin/users"
@@ -300,10 +281,9 @@ function App() {
               element={<AdminUserDetails />}
             />
 
-
-            {/* =========================
-                Settings
-            ========================= */}
+            {/* ==================================================
+                SETTINGS
+            ================================================== */}
 
             <Route
               path="/admin/settings"
@@ -315,10 +295,9 @@ function App() {
               element={<WebsiteSettings />}
             />
 
-
-            {/* =========================
-                Flash Deals
-            ========================= */}
+            {/* ==================================================
+                FLASH DEALS
+            ================================================== */}
 
             <Route
               path="/admin/flash-deals"
@@ -335,20 +314,18 @@ function App() {
               element={<EditFlashDeal />}
             />
 
-
-            {/* =========================
-                Coupons
-            ========================= */}
+            {/* ==================================================
+                COUPONS
+            ================================================== */}
 
             <Route
               path="/admin/coupons"
               element={<AdminCoupons />}
             />
 
-
-            {/* =========================
-                Categories
-            ========================= */}
+            {/* ==================================================
+                CATEGORY MANAGEMENT
+            ================================================== */}
 
             <Route
               path="/admin/categories"
@@ -358,7 +335,6 @@ function App() {
           </Route>
 
         </Route>
-
 
         {/* ==================================================
             404

@@ -23,6 +23,10 @@ const SubCategoryFormModal = ({
 }) => {
   const [form, setForm] = useState(defaultForm);
 
+  // ==========================================
+  // Load Edit Data
+  // ==========================================
+
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -42,7 +46,7 @@ const SubCategoryFormModal = ({
           initialData.description || "",
 
         sortOrder:
-          initialData.sortOrder || 1,
+          initialData.sortOrder ?? 1,
 
         isFeatured:
           initialData.isFeatured ?? false,
@@ -51,15 +55,20 @@ const SubCategoryFormModal = ({
           initialData.isActive ?? true,
 
         image: null,
-
         banner: null,
       });
     } else {
-      setForm(defaultForm);
+      setForm({ ...defaultForm });
     }
   }, [initialData, open]);
 
+  // ==========================================
+  // Filter Menu Groups By Category
+  // ==========================================
+
   const filteredMenuGroups = useMemo(() => {
+    if (!form.category) return [];
+
     return menuGroups.filter(
       (group) =>
         (group.category?._id ||
@@ -67,59 +76,52 @@ const SubCategoryFormModal = ({
     );
   }, [menuGroups, form.category]);
 
-  const handleChange = (
-    field,
-    value
-  ) => {
+  // ==========================================
+  // Input Change
+  // ==========================================
+
+  const handleChange = (field, value) => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
+  // ==========================================
+  // Submit
+  // ==========================================
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!form.category) return;
+    if (!form.category) {
+      return;
+    }
 
-    if (!form.menuGroup) return;
+    if (!form.menuGroup) {
+      return;
+    }
 
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      return;
+    }
 
     const data = new FormData();
 
     data.append("category", form.category);
     data.append("menuGroup", form.menuGroup);
-    data.append("name", form.name);
-    data.append(
-      "description",
-      form.description
-    );
-    data.append(
-      "sortOrder",
-      form.sortOrder
-    );
-    data.append(
-      "isFeatured",
-      form.isFeatured
-    );
-    data.append(
-      "isActive",
-      form.isActive
-    );
+    data.append("name", form.name.trim());
+    data.append("description", form.description);
+    data.append("sortOrder", form.sortOrder);
+    data.append("isFeatured", form.isFeatured);
+    data.append("isActive", form.isActive);
 
     if (form.image) {
-      data.append(
-        "image",
-        form.image
-      );
+      data.append("image", form.image);
     }
 
     if (form.banner) {
-      data.append(
-        "banner",
-        form.banner
-      );
+      data.append("banner", form.banner);
     }
 
     onSubmit(data);
@@ -128,36 +130,132 @@ const SubCategoryFormModal = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
-      <div className="w-full max-w-3xl rounded-2xl bg-white shadow-xl">
+    <div
+      className="
+        fixed
+        inset-0
+        z-[9999]
+        flex
+        items-center
+        justify-center
+        bg-black/60
+        p-3
+        sm:p-5
+        overflow-y-auto
+      "
+    >
+      {/* ==========================================
+          MODAL
+      ========================================== */}
 
-        {/* Header */}
+      <div
+        className="
+          relative
+          z-[10000]
+          w-full
+          max-w-3xl
+          max-h-[95vh]
+          overflow-y-auto
+          rounded-2xl
+         bg-white !text-black
+          shadow-2xl
+        "
+      >
+        {/* ==========================================
+            Header
+        ========================================== */}
 
-        <div className="flex items-center justify-between border-b px-6 py-5">
-          <h2 className="text-2xl font-bold">
-            {initialData
-              ? "Edit Sub Category"
-              : "Add Sub Category"}
-          </h2>
+        <div
+          className="
+            sticky
+            top-0
+            z-10
+            flex
+            items-center
+            justify-between
+            border-b
+            border-gray-200
+            bg-white
+            px-4
+            py-4
+            sm:px-6
+            sm:py-5
+          "
+        >
+          <div>
+            <h2
+              className="
+                text-xl
+                sm:text-2xl
+                font-bold
+                !text-gray-900
+              "
+            >
+              {initialData
+                ? "Edit Sub Category"
+                : "Add Sub Category"}
+            </h2>
+
+            <p
+              className="
+                mt-1
+                text-sm
+                text-slate-600
+              "
+            >
+              Manage your sub category details
+            </p>
+          </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg p-2 hover:bg-gray-100"
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              text-slate-600
+              transition
+              hover:bg-gray-100
+              hover:!text-gray-900
+            "
+            aria-label="Close modal"
           >
-            <FiX size={22} />
+            <FiX size={24} />
           </button>
         </div>
 
-        {/* Form */}
+        {/* ==========================================
+            FORM
+        ========================================== */}
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 p-6"
+          className="
+            space-y-5
+            bg-white
+            p-4
+            sm:p-6
+          "
         >
-          {/* Category */}
+          {/* ==========================================
+              Category
+          ========================================== */}
 
           <div>
-            <label className="mb-2 block font-medium">
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+               !text-gray-900
+              "
+            >
               Category
             </label>
 
@@ -174,9 +272,27 @@ const SubCategoryFormModal = ({
                   ""
                 );
               }}
-              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[var(--primary-color)]"
+              className="
+                w-full
+                rounded-xl
+                border
+                border-gray-300
+                bg-white
+                px-4
+                py-3
+                text-sm
+                !text-gray-900
+                outline-none
+                transition
+                focus:border-[var(--primary-color)]
+                focus:ring-2
+                focus:ring-[var(--primary-color)]/20
+              "
             >
-              <option value="">
+              <option
+                value=""
+                className="text-gray-500"
+              >
                 Select Category
               </option>
 
@@ -184,6 +300,7 @@ const SubCategoryFormModal = ({
                 <option
                   key={category._id}
                   value={category._id}
+                  className="!text-gray-900"
                 >
                   {category.name}
                 </option>
@@ -191,10 +308,20 @@ const SubCategoryFormModal = ({
             </select>
           </div>
 
-          {/* Menu Group */}
+          {/* ==========================================
+              Menu Group
+          ========================================== */}
 
           <div>
-            <label className="mb-2 block font-medium">
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+              !text-gray-900
+              "
+            >
               Menu Group
             </label>
 
@@ -206,10 +333,34 @@ const SubCategoryFormModal = ({
                   e.target.value
                 )
               }
-              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[var(--primary-color)]"
+              disabled={!form.category}
+              className="
+                w-full
+                rounded-xl
+                border
+                border-gray-300
+                bg-white
+                px-4
+                py-3
+                text-sm
+                !text-gray-900
+                outline-none
+                transition
+                disabled:cursor-not-allowed
+                disabled:bg-gray-100
+                disabled:text-gray-400
+                focus:border-[var(--primary-color)]
+                focus:ring-2
+                focus:ring-[var(--primary-color)]/20
+              "
             >
-              <option value="">
-                Select Menu Group
+              <option
+                value=""
+                className="text-gray-500"
+              >
+                {form.category
+                  ? "Select Menu Group"
+                  : "Select Category First"}
               </option>
 
               {filteredMenuGroups.map(
@@ -217,18 +368,37 @@ const SubCategoryFormModal = ({
                   <option
                     key={group._id}
                     value={group._id}
+                    className="!text-gray-900"
                   >
                     {group.name}
                   </option>
                 )
               )}
             </select>
+
+            {form.category &&
+              filteredMenuGroups.length === 0 && (
+                <p className="mt-2 text-xs text-red-500">
+                  No menu groups found for this
+                  category.
+                </p>
+              )}
           </div>
 
-          {/* Name */}
+          {/* ==========================================
+              Sub Category Name
+          ========================================== */}
 
           <div>
-            <label className="mb-2 block font-medium">
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                !text-gray-900
+              "
+            >
               Sub Category Name
             </label>
 
@@ -241,15 +411,41 @@ const SubCategoryFormModal = ({
                   e.target.value
                 )
               }
-              placeholder="Shirts"
-              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[var(--primary-color)]"
+              placeholder="e.g. T-Shirts"
+              className="
+                w-full
+                rounded-xl
+                border
+                border-gray-300
+                bg-white
+                px-4
+                py-3
+                text-sm
+                !text-gray-900
+                placeholder:text-gray-400
+                outline-none
+                transition
+                focus:border-[var(--primary-color)]
+                focus:ring-2
+                focus:ring-[var(--primary-color)]/20
+              "
             />
           </div>
 
-          {/* Description */}
+          {/* ==========================================
+              Description
+          ========================================== */}
 
           <div>
-            <label className="mb-2 block font-medium">
+            <label
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+               !text-gray-900
+              "
+            >
               Description
             </label>
 
@@ -262,16 +458,53 @@ const SubCategoryFormModal = ({
                   e.target.value
                 )
               }
-              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[var(--primary-color)]"
+              placeholder="Sub category description..."
+              className="
+                w-full
+                resize-none
+                rounded-xl
+                border
+                border-gray-300
+                bg-white
+                px-4
+                py-3
+                text-sm
+                !text-gray-900
+                placeholder:text-gray-400
+                outline-none
+                transition
+                focus:border-[var(--primary-color)]
+                focus:ring-2
+                focus:ring-[var(--primary-color)]/20
+              "
             />
           </div>
 
-          {/* Uploads */}
+          {/* ==========================================
+              Image + Banner
+          ========================================== */}
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-5
+              md:grid-cols-2
+            "
+          >
+            {/* Image */}
+
             <div>
-              <label className="mb-2 block font-medium">
-                Image
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                 !text-gray-900
+                "
+              >
+                Sub Category Image
               </label>
 
               <input
@@ -280,16 +513,46 @@ const SubCategoryFormModal = ({
                 onChange={(e) =>
                   handleChange(
                     "image",
-                    e.target.files[0]
+                    e.target.files?.[0] || null
                   )
                 }
-                className="w-full rounded-xl border px-4 py-3"
+                className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-gray-300
+                  bg-white
+                  px-3
+                  py-3
+                  text-sm
+                  !text-gray-900
+                  file:mr-3
+                  file:rounded-lg
+                  file:border-0
+                  file:bg-gray-100
+                  file:px-3
+                  file:py-2
+                  file:text-sm
+                  file:font-medium
+                  file:!text-gray-900
+                  hover:file:bg-gray-200
+                "
               />
             </div>
 
+            {/* Banner */}
+
             <div>
-              <label className="mb-2 block font-medium">
-                Banner
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  !text-gray-900
+                "
+              >
+                Sub Category Banner
               </label>
 
               <input
@@ -298,100 +561,225 @@ const SubCategoryFormModal = ({
                 onChange={(e) =>
                   handleChange(
                     "banner",
-                    e.target.files[0]
+                    e.target.files?.[0] || null
                   )
                 }
-                className="w-full rounded-xl border px-4 py-3"
+                className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-gray-300
+                  bg-white
+                  px-3
+                  py-3
+                  text-sm
+                  !text-gray-900
+                  file:mr-3
+                  file:rounded-lg
+                  file:border-0
+                  file:bg-gray-100
+                  file:px-3
+                  file:py-2
+                  file:text-sm
+                  file:font-medium
+                  file:!text-gray-900
+                  hover:file:bg-gray-200
+                "
               />
             </div>
           </div>
 
-          {/* Bottom Row */}
+          {/* ==========================================
+              Sort + Featured + Active
+          ========================================== */}
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-5
+              md:grid-cols-3
+            "
+          >
+            {/* Sort */}
+
             <div>
-              <label className="mb-2 block font-medium">
+              <label
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  !text-gray-900
+                "
+              >
                 Sort Order
               </label>
 
               <input
                 type="number"
+                min="0"
                 value={form.sortOrder}
                 onChange={(e) =>
                   handleChange(
                     "sortOrder",
-                    Number(
-                      e.target.value
-                    )
+                    Number(e.target.value)
                   )
                 }
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[var(--primary-color)]"
+                className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-gray-300
+                  bg-white
+                  px-4
+                  py-3
+                  text-sm
+                  !text-gray-900
+                  outline-none
+                  focus:border-[var(--primary-color)]
+                  focus:ring-2
+                  focus:ring-[var(--primary-color)]/20
+                "
               />
             </div>
 
-            <div className="flex items-center pt-8">
+            {/* Featured */}
+
+            <label
+              className="
+                flex
+                cursor-pointer
+                items-center
+                gap-3
+                rounded-xl
+                border
+                border-gray-200
+                bg-gray-50
+                px-4
+                py-3
+                transition
+                hover:bg-gray-100
+              "
+            >
               <input
-                id="featured"
                 type="checkbox"
-                checked={
-                  form.isFeatured
-                }
+                checked={form.isFeatured}
                 onChange={(e) =>
                   handleChange(
                     "isFeatured",
                     e.target.checked
                   )
                 }
+                className="
+                  h-5
+                  w-5
+                  cursor-pointer
+                  accent-green-600
+                "
               />
 
-              <label
-                htmlFor="featured"
-                className="ml-3"
-              >
+              <span className="text-sm font-medium !text-gray-900">
                 Featured
-              </label>
-            </div>
+              </span>
+            </label>
 
-            <div className="flex items-center pt-8">
+            {/* Active */}
+
+            <label
+              className="
+                flex
+                cursor-pointer
+                items-center
+                gap-3
+                rounded-xl
+                border
+                border-gray-200
+                bg-gray-50
+                px-4
+                py-3
+                transition
+                hover:bg-gray-100
+              "
+            >
               <input
-                id="active"
                 type="checkbox"
-                checked={
-                  form.isActive
-                }
+                checked={form.isActive}
                 onChange={(e) =>
                   handleChange(
                     "isActive",
                     e.target.checked
                   )
                 }
+                className="
+                  h-5
+                  w-5
+                  cursor-pointer
+                  accent-green-600
+                "
               />
 
-              <label
-                htmlFor="active"
-                className="ml-3"
-              >
+              <span className="text-sm font-medium !text-gray-900">
                 Active
-              </label>
-            </div>
+              </span>
+            </label>
           </div>
 
-          {/* Footer */}
+          {/* ==========================================
+              Footer Buttons
+          ========================================== */}
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div
+            className="
+              flex
+              flex-col-reverse
+              gap-3
+              border-t
+              border-gray-200
+              pt-5
+              sm:flex-row
+              sm:justify-end
+            "
+          >
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border px-6 py-3 hover:bg-gray-100"
+              className="
+                w-full
+                rounded-xl
+                border
+                border-gray-300
+                bg-white
+                px-6
+                py-3
+                text-sm
+                font-semibold
+                !text-gray-900
+                transition
+                hover:bg-gray-100
+                sm:w-auto
+              "
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="rounded-xl px-6 py-3 text-white"
+              className="
+                w-full
+                rounded-xl
+                px-6
+                py-3
+                text-sm
+                font-semibold
+                text-white
+                shadow-sm
+                transition
+                hover:opacity-90
+                sm:w-auto
+              "
               style={{
-                background:
+                backgroundColor:
                   "var(--button-color)",
               }}
             >

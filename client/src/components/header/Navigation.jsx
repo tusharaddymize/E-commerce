@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
 import { FiChevronDown } from "react-icons/fi";
 
 import { useCategory } from "../../context/CategoryContext";
@@ -9,100 +8,178 @@ const Navigation = () => {
   const [activeMenu, setActiveMenu] = useState(null);
 
   const {
-    categories,
-    menuGroups,
-    subCategories,
+    categories = [],
+    menuGroups = [],
+    subCategories = [],
     loading,
   } = useCategory();
 
-  /* ==========================================
-      Build Dynamic Navigation
-  ========================================== */
+  // ==========================================
+  // Helper - Get Relation ID
+  // ==========================================
+
+  const getRelationId = (value) => {
+    if (!value) return "";
+
+    // Populated MongoDB object
+    if (typeof value === "object") {
+      return String(value._id || "");
+    }
+
+    // Direct ObjectId/String
+    return String(value);
+  };
+
+  // ==========================================
+  // Build Dynamic Navigation
+  // ==========================================
 
   const navigationData = useMemo(() => {
-   return categories
-  .filter((category) => category.isActive !== false)
-  .map((category) => {
-      const sections = menuGroups
-        .filter(
-          (group) =>
-            group.category?._id === category._id &&
-            group.isActive !== false
-        )
-        .sort(
-          (a, b) =>
-            (a.sortOrder || 0) -
-            (b.sortOrder || 0)
-        )
-.map((group) => {
-const items = subCategories
-  .filter(
-    (sub) =>
-      sub.menuGroup?._id === group._id &&
-      sub.isActive !== false
-  )
-  .sort(
-    (a, b) =>
-      (a.sortOrder || 0) -
-      (b.sortOrder || 0)
-  )
-  .map((sub) => ({
-    name: sub.name,
-    slug: sub.slug,
-    categorySlug: category.slug,
-    menuGroupSlug: group.slug,
-  }));
+    return categories
+      .filter(
+        (category) =>
+          category.isActive !== false
+      )
+      .sort(
+        (a, b) =>
+          (a.sortOrder || 0) -
+          (b.sortOrder || 0)
+      )
+      .map((category) => {
+        // ======================================
+        // Menu Groups Of Current Category
+        // ======================================
 
-return {
-  title: group.name,
-  slug: group.slug,
-  items,
-};
-})
-.filter((section) => section.items.length > 0);
+        const sections = menuGroups
+          .filter((group) => {
+            const groupCategoryId =
+              getRelationId(group.category);
 
-      return {
-        id: category._id,
+            return (
+              groupCategoryId ===
+                String(category._id) &&
+              group.isActive !== false
+            );
+          })
+          .sort(
+            (a, b) =>
+              (a.sortOrder || 0) -
+              (b.sortOrder || 0)
+          )
+          .map((group) => {
+            // ==================================
+            // Sub Categories Of Current Group
+            // ==================================
 
-        title: category.name,
+            const items = subCategories
+              .filter((sub) => {
+                const subGroupId =
+                  getRelationId(
+                    sub.menuGroup
+                  );
 
-        path: `/category/${category.slug}`,
+                const subCategoryId =
+                  getRelationId(
+                    sub.category
+                  );
 
-        megaMenu:
-          sections.length > 0,
+                return (
+                  subGroupId ===
+                    String(group._id) &&
+                  subCategoryId ===
+                    String(category._id) &&
+                  sub.isActive !== false
+                );
+              })
+              .sort(
+                (a, b) =>
+                  (a.sortOrder || 0) -
+                  (b.sortOrder || 0)
+              )
+              .map((sub) => ({
+                id: sub._id,
 
-        sections,
-      };
-    });
+                name: sub.name,
+
+                slug: sub.slug,
+
+                categorySlug:
+                  category.slug,
+
+                menuGroupSlug:
+                  group.slug,
+
+                path:
+                  `/category/${category.slug}/${group.slug}/${sub.slug}`,
+              }));
+
+            // IMPORTANT:
+            // Menu group ko items empty hone par
+            // remove nahi karna hai.
+
+            return {
+              id: group._id,
+
+              title: group.name,
+
+              slug: group.slug,
+
+              categorySlug:
+                category.slug,
+
+              path:
+                `/category/${category.slug}/${group.slug}`,
+
+              items,
+            };
+          });
+
+        return {
+          id: category._id,
+
+          title: category.name,
+
+          slug: category.slug,
+
+          path:
+            `/category/${category.slug}`,
+
+          megaMenu:
+            sections.length > 0,
+
+          sections,
+        };
+      });
   }, [
     categories,
     menuGroups,
     subCategories,
   ]);
 
-  /* ==========================================
-      Loading
-  ========================================== */
+  // ==========================================
+  // Loading
+  // ==========================================
 
   if (loading) {
     return (
-      <nav
+      <div
         className="
           hidden
-          lg:flex
+          lg:block
           h-14
-          items-center
-          justify-center
           border-t
           border-gray-200
           bg-white
         "
-      >
-        <div className="h-14" />
-      </nav>
+      />
     );
   }
-    return (
+
+  // ==========================================
+  // Render
+  // ==========================================
+
+  return (
     <nav
       className="
         hidden
@@ -113,11 +190,13 @@ return {
         relative
         z-40
       "
-      onMouseLeave={() => setActiveMenu(null)}
+      onMouseLeave={() =>
+        setActiveMenu(null)
+      }
     >
-      {/* ====================================== */}
-      {/* Navigation Container */}
-      {/* ====================================== */}
+      {/* ======================================
+          Navigation Container
+      ====================================== */}
 
       <div
         className="
@@ -139,7 +218,13 @@ return {
           {navigationData.map((link) => (
             <li
               key={link.id}
-              className="relative h-full flex items-center"
+              className="
+                relative
+                h-full
+                flex
+                items-center
+                group
+              "
               onMouseEnter={() => {
                 if (link.megaMenu) {
                   setActiveMenu(link);
@@ -148,31 +233,42 @@ return {
                 }
               }}
             >
-<button
-  type="button"
-  className="
-    relative
-    flex
-    items-center
-    gap-2
-    h-full
-    text-[15px]
-    font-medium
-    text-gray-700
-    transition-colors
-    duration-300
-    hover:text-[var(--primary-color)]
-  "
->
+              {/* ==================================
+                  Category Link
+              ================================== */}
+
+              <a
+                href={link.path}
+                className="
+                  relative
+                  flex
+                  items-center
+                  gap-2
+                  h-full
+
+                  text-[15px]
+                  font-medium
+                  text-gray-700
+
+                  transition-colors
+                  duration-300
+
+                  hover:text-[var(--primary-color)]
+                "
+              >
                 {link.title}
+
+                {/* Arrow */}
 
                 {link.megaMenu && (
                   <FiChevronDown
                     className={`
                       transition-transform
                       duration-300
+
                       ${
-                        activeMenu?.id === link.id
+                        activeMenu?.id ===
+                        link.id
                           ? "rotate-180 text-[var(--primary-color)]"
                           : ""
                       }
@@ -180,31 +276,39 @@ return {
                   />
                 )}
 
+                {/* Bottom Hover Line */}
+
                 <span
                   className="
                     absolute
                     bottom-0
                     left-0
+
                     w-0
                     h-[2px]
+
                     bg-[var(--primary-color)]
+
                     transition-all
                     duration-300
+
                     group-hover:w-full
                   "
                 />
-              </button>
+              </a>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* ====================================== */}
-      {/* Mega Menu */}
-      {/* ====================================== */}
+      {/* ======================================
+          Mega Menu
+      ====================================== */}
 
       {activeMenu?.megaMenu && (
-        <MegaMenu activeMenu={activeMenu} />
+        <MegaMenu
+          activeMenu={activeMenu}
+        />
       )}
     </nav>
   );
