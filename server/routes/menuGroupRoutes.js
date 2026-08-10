@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getMenuGroups,
+  getMenuGroup,
   createMenuGroup,
   updateMenuGroup,
   deleteMenuGroup,
@@ -9,12 +10,33 @@ import {
 
 const router = express.Router();
 
+
+// GET ALL
 router.get("/", getMenuGroups);
 
-router.post("/", createMenuGroup);
 
-router.put("/:id", updateMenuGroup);
+// GET ONE
+router.get("/:id", getMenuGroup);
 
-router.delete("/:id", deleteMenuGroup);
+
+// CREATE
+router.post(
+  "/",
+  createMenuGroup
+);
+
+
+// UPDATE
+router.put(
+  "/:id",
+  updateMenuGroup
+);
+
+
+// DELETE
+router.delete(
+  "/:id",
+  deleteMenuGroup
+);
 
 export default router;

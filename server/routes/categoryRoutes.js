@@ -8,40 +8,50 @@ import {
   deleteCategory,
 } from "../controllers/categoryController.js";
 
-// import { protect, admin } from "../middleware/authMiddleware.js";
-
 const router = express.Router();
 
-/* ======================================
-   Public
-====================================== */
+// ==========================================
+// GET ALL
+// ==========================================
 
-router.get("/", getCategories);
+router.get(
+  "/",
+  getCategories
+);
 
-router.get("/:id", getCategory);
+// ==========================================
+// GET SINGLE
+// ==========================================
 
-/* ======================================
-   Admin
-====================================== */
+router.get(
+  "/:id",
+  getCategory
+);
+
+// ==========================================
+// CREATE
+// ==========================================
 
 router.post(
   "/",
-  // protect,
-  // admin,
   createCategory
 );
 
+// ==========================================
+// UPDATE
+// ==========================================
+
 router.put(
   "/:id",
-  // protect,
-  // admin,
   updateCategory
 );
 
+// ==========================================
+// DELETE
+// ==========================================
+
 router.delete(
   "/:id",
-  // protect,
-  // admin,
   deleteCategory
 );
 

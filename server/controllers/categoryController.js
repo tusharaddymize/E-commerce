@@ -1,9 +1,12 @@
 import Category from "../models/Category.js";
+import MenuGroup from "../models/MenuGroup.js";
+import SubCategory from "../models/SubCategory.js";
 import slugify from "slugify";
 
-/* ===================================================
-   GET ALL CATEGORIES
-=================================================== */
+
+// ==================================================
+// GET ALL CATEGORIES
+// ==================================================
 
 export const getCategories = async (req, res) => {
   try {
@@ -19,51 +22,69 @@ export const getCategories = async (req, res) => {
       data: categories,
     });
   } catch (error) {
-    console.error("Get Categories Error:", error);
+    console.error(
+      "Get Categories Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch categories.",
+      message:
+        "Failed to fetch categories.",
     });
   }
 };
 
-/* ===================================================
-   GET SINGLE CATEGORY
-=================================================== */
 
-export const getCategory = async (req, res) => {
+// ==================================================
+// GET SINGLE CATEGORY
+// ==================================================
+
+export const getCategory = async (
+  req,
+  res
+) => {
   try {
-    const category = await Category.findById(
-      req.params.id
-    );
+    const category =
+      await Category.findById(
+        req.params.id
+      );
 
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found.",
+        message:
+          "Category not found.",
       });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: category,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Get Category Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch category.",
+      message:
+        "Failed to fetch category.",
     });
   }
 };
 
-/* ===================================================
-   CREATE CATEGORY
-=================================================== */
 
-export const createCategory = async (req, res) => {
+// ==================================================
+// CREATE CATEGORY
+// ==================================================
+
+export const createCategory = async (
+  req,
+  res
+) => {
   try {
     const {
       name,
@@ -71,40 +92,98 @@ export const createCategory = async (req, res) => {
       image,
       description,
       sortOrder,
+      isActive,
     } = req.body;
 
-    if (!name) {
+
+    // ----------------------------------------------
+    // Validate Name
+    // ----------------------------------------------
+
+    if (!name?.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Category name is required.",
+        message:
+          "Category name is required.",
       });
     }
 
-    const slug = slugify(name, {
-      lower: true,
-      strict: true,
-    });
 
-    const exists = await Category.findOne({
-      slug,
-    });
+    // ----------------------------------------------
+    // Create Slug
+    // ----------------------------------------------
 
-    if (exists) {
+    const slug = slugify(
+      name.trim(),
+      {
+        lower: true,
+        strict: true,
+      }
+    );
+
+
+    // ----------------------------------------------
+    // Check Duplicate Name
+    // ----------------------------------------------
+
+    const nameExists =
+      await Category.findOne({
+        name: name.trim(),
+      });
+
+    if (nameExists) {
       return res.status(409).json({
         success: false,
-        message: "Category already exists.",
+        message:
+          "Category name already exists.",
       });
     }
+
+
+    // ----------------------------------------------
+    // Check Duplicate Slug
+    // ----------------------------------------------
+
+    const slugExists =
+      await Category.findOne({
+        slug,
+      });
+
+    if (slugExists) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Category already exists.",
+      });
+    }
+
+
+    // ----------------------------------------------
+    // Create Category
+    // ----------------------------------------------
 
     const category =
       await Category.create({
-        name,
+        name: name.trim(),
+
         slug,
-        icon,
-        image,
-        description,
-        sortOrder,
+
+        icon:
+          icon || "",
+
+        image:
+          image || "",
+
+        description:
+          description || "",
+
+        sortOrder:
+          Number(sortOrder) || 0,
+
+        isActive:
+          isActive ?? true,
       });
+
 
     res.status(201).json({
       success: true,
@@ -113,18 +192,24 @@ export const createCategory = async (req, res) => {
       data: category,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Create Category Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to create category.",
+      message:
+        error.message ||
+        "Failed to create category.",
     });
   }
 };
 
-/* ===================================================
-   UPDATE CATEGORY
-=================================================== */
+
+// ==================================================
+// UPDATE CATEGORY
+// ==================================================
 
 export const updateCategory = async (
   req,
@@ -140,91 +225,248 @@ export const updateCategory = async (
       isActive,
     } = req.body;
 
+
+    // ----------------------------------------------
+    // Find Category
+    // ----------------------------------------------
+
     const category =
-      await Category.findById(req.params.id);
+      await Category.findById(
+        req.params.id
+      );
 
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found.",
+        message:
+          "Category not found.",
       });
     }
 
-    if (name) {
-      category.name = name;
 
-      category.slug = slugify(name, {
-        lower: true,
-        strict: true,
-      });
+    // ----------------------------------------------
+    // Update Name + Slug
+    // ----------------------------------------------
+
+    if (name?.trim()) {
+      const newName =
+        name.trim();
+
+      const newSlug =
+        slugify(newName, {
+          lower: true,
+          strict: true,
+        });
+
+
+      // Check duplicate name
+
+      const duplicateName =
+        await Category.findOne({
+          name: newName,
+          _id: {
+            $ne: category._id,
+          },
+        });
+
+      if (duplicateName) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Another category with this name already exists.",
+        });
+      }
+
+
+      // Check duplicate slug
+
+      const duplicateSlug =
+        await Category.findOne({
+          slug: newSlug,
+          _id: {
+            $ne: category._id,
+          },
+        });
+
+      if (duplicateSlug) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Another category with this slug already exists.",
+        });
+      }
+
+
+      category.name =
+        newName;
+
+      category.slug =
+        newSlug;
     }
 
-    if (icon !== undefined)
-      category.icon = icon;
 
-    if (image !== undefined)
-      category.image = image;
+    // ----------------------------------------------
+    // Update Other Fields
+    // ----------------------------------------------
 
-    if (description !== undefined)
+    if (
+      icon !== undefined
+    ) {
+      category.icon =
+        icon;
+    }
+
+
+    if (
+      image !== undefined
+    ) {
+      category.image =
+        image;
+    }
+
+
+    if (
+      description !== undefined
+    ) {
       category.description =
         description;
+    }
 
-    if (sortOrder !== undefined)
-      category.sortOrder = sortOrder;
 
-    if (isActive !== undefined)
-      category.isActive = isActive;
+    if (
+      sortOrder !== undefined
+    ) {
+      category.sortOrder =
+        Number(sortOrder);
+    }
+
+
+    if (
+      isActive !== undefined
+    ) {
+      category.isActive =
+        isActive;
+    }
+
+
+    // ----------------------------------------------
+    // Save
+    // ----------------------------------------------
 
     await category.save();
 
-    res.json({
+
+    res.status(200).json({
       success: true,
       message:
         "Category updated successfully.",
       data: category,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Update Category Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to update category.",
+      message:
+        error.message ||
+        "Failed to update category.",
     });
   }
 };
 
-/* ===================================================
-   DELETE CATEGORY
-=================================================== */
-
+// ===================================================
+// DELETE CATEGORY
+// Also deletes related Menu Groups
+// and Sub Categories
+// ===================================================
 export const deleteCategory = async (
   req,
   res
 ) => {
   try {
     const category =
-      await Category.findById(req.params.id);
+      await Category.findById(
+        req.params.id
+      );
+
+    // ========================================
+    // Category Not Found
+    // ========================================
 
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found.",
+        message:
+          "Category not found.",
       });
     }
 
-    await category.deleteOne();
+    // ========================================
+    // Find Menu Groups
+    // ========================================
 
-    res.json({
+    const menuGroups =
+      await MenuGroup.find({
+        category: category._id,
+      }).select("_id");
+
+    const menuGroupIds =
+      menuGroups.map(
+        (group) => group._id
+      );
+
+    // ========================================
+    // Delete Sub Categories
+    // ========================================
+
+    if (menuGroupIds.length > 0) {
+      await SubCategory.deleteMany({
+        menuGroup: {
+          $in: menuGroupIds,
+        },
+      });
+    }
+
+    // ========================================
+    // Delete Menu Groups
+    // ========================================
+
+    await MenuGroup.deleteMany({
+      category: category._id,
+    });
+
+    // ========================================
+    // Delete Category
+    // ========================================
+
+    await Category.deleteOne({
+      _id: category._id,
+    });
+
+    // ========================================
+    // Success
+    // ========================================
+
+    return res.status(200).json({
       success: true,
       message:
-        "Category deleted successfully.",
+        "Category, menu groups and sub categories deleted successfully.",
     });
-  } catch (error) {
-    console.error(error);
 
-    res.status(500).json({
+  } catch (error) {
+    console.error(
+      "DELETE CATEGORY ERROR:",
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: "Failed to delete category.",
+      message:
+        error.message ||
+        "Failed to delete category.",
     });
   }
 };

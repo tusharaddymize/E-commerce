@@ -13,6 +13,7 @@ const menuGroupSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 80,
     },
 
     slug: {
@@ -20,11 +21,13 @@ const menuGroupSchema = new mongoose.Schema(
       required: true,
       lowercase: true,
       trim: true,
+      index: true,
     },
 
     description: {
       type: String,
       default: "",
+      maxlength: 500,
     },
 
     sortOrder: {
@@ -42,12 +45,33 @@ const menuGroupSchema = new mongoose.Schema(
   }
 );
 
+// ==========================================
+// Prevent duplicate menu groups
+// inside the same category
+// ==========================================
+
+menuGroupSchema.index(
+  {
+    category: 1,
+    slug: 1,
+  },
+  {
+    unique: true,
+  }
+);
+
+// ==========================================
+// Sorting
+// ==========================================
+
 menuGroupSchema.index({
   category: 1,
-  slug: 1,
+  sortOrder: 1,
 });
 
-export default mongoose.model(
+const MenuGroup = mongoose.model(
   "MenuGroup",
   menuGroupSchema
 );
+
+export default MenuGroup;
