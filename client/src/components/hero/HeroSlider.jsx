@@ -53,7 +53,6 @@ const HeroSlider = () => {
 
   // ========================================
   // Website Settings
-  // React Query Cache
   // ========================================
 
   const {
@@ -111,8 +110,7 @@ const HeroSlider = () => {
   // Current Slide
   // ========================================
 
-  const [current, setCurrent] =
-    useState(0);
+  const [current, setCurrent] = useState(0);
 
   // ========================================
   // Keep Current Index Valid
@@ -125,10 +123,7 @@ const HeroSlider = () => {
     ) {
       setCurrent(0);
     }
-  }, [
-    current,
-    slides.length,
-  ]);
+  }, [current, slides.length]);
 
   // ========================================
   // Auto Slider - 4 Seconds
@@ -222,32 +217,55 @@ const HeroSlider = () => {
 
   if (isLoading) {
     return (
-      <section className="w-full">
+      <section
+        className="
+          w-full
+
+          bg-[#fff7f5]
+
+          pt-4
+          sm:pt-5
+          lg:pt-6
+
+          pb-6
+          sm:pb-7
+          lg:pb-10
+        "
+      >
         <div
           className="
             relative
             mx-auto
+
             w-[94%]
-            overflow-hidden
-            rounded-xl
-            bg-gray-100
             sm:w-[94%]
             md:w-[92%]
             lg:w-[90%]
             xl:w-[88%]
+
             max-w-[1450px]
+
+            overflow-hidden
+
+            rounded-xl
+            lg:rounded-2xl
+
+            bg-gray-100
           "
         >
           <div
             className="
               h-[180px]
-              w-full
-              animate-pulse
-              bg-gray-200
               sm:h-[260px]
               md:h-[340px]
               lg:h-[400px]
               xl:h-[440px]
+
+              w-full
+
+              animate-pulse
+
+              bg-gray-200
             "
           />
         </div>
@@ -257,8 +275,6 @@ const HeroSlider = () => {
 
   // ========================================
   // Error
-  //
-  // Fallback banners will still show
   // ========================================
 
   if (isError) {
@@ -296,19 +312,44 @@ const HeroSlider = () => {
   // ========================================
 
   return (
-    <section className="w-full">
+    <section
+      className="
+        w-full
+
+        bg-[#fff7f5]
+
+        pt-4
+        sm:pt-5
+        lg:pt-6
+
+        pb-6
+        sm:pb-7
+        lg:pb-10
+      "
+    >
+      {/* ==================================
+          Banner Container
+      ================================== */}
+
       <div
         className="
           relative
           mx-auto
+
           w-[94%]
-          overflow-hidden
-          rounded-xl
           sm:w-[94%]
           md:w-[92%]
           lg:w-[90%]
           xl:w-[88%]
+
           max-w-[1450px]
+
+          overflow-hidden
+
+          rounded-xl
+          lg:rounded-2xl
+
+          shadow-sm
         "
       >
         {/* ==================================
@@ -358,15 +399,19 @@ const HeroSlider = () => {
             }`}
             className="
               block
-              h-[180px]
+
               w-full
-              select-none
-              object-cover
-              object-center
+
+              h-[180px]
               sm:h-[260px]
               md:h-[340px]
               lg:h-[400px]
               xl:h-[440px]
+
+              object-cover
+              object-center
+
+              select-none
             "
             draggable="false"
           />

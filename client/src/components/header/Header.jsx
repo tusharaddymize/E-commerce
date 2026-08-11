@@ -18,6 +18,7 @@ const Header = () => {
       setSticky(window.scrollY > 10);
     };
 
+    // Initial check
     handleScroll();
 
     window.addEventListener("scroll", handleScroll);
@@ -36,12 +37,17 @@ const Header = () => {
 
   return (
     <>
+      {/* ======================================
+          Fixed Header
+      ====================================== */}
+
       <header
         className={`
           fixed
           top-0
           left-0
           right-0
+
           z-50
 
           transition-all
@@ -58,9 +64,9 @@ const Header = () => {
             "var(--color-primary, #355E3B)",
         }}
       >
-        {/* ====================================== */}
-        {/* Main Navbar */}
-        {/* ====================================== */}
+        {/* ====================================
+            Main Navbar
+        ==================================== */}
 
         <Navbar
           openSidebar={() =>
@@ -68,22 +74,42 @@ const Header = () => {
           }
         />
 
-        {/* ====================================== */}
-        {/* Desktop Navigation */}
-        {/* ====================================== */}
+        {/* ====================================
+            Desktop Navigation
+        ==================================== */}
 
         <Navigation />
       </header>
 
-      {/* ======================================== */}
-      {/* Header Spacer */}
-      {/* ======================================== */}
+      {/* ======================================
+          Header Spacer
 
-      <div className="h-[120px] md:h-[136px]" />
+          Important:
+          Header is fixed, so this spacer
+          prevents homepage content from
+          going behind the navbar.
+      ====================================== */}
 
-      {/* ======================================== */}
-      {/* Mobile Overlay */}
-      {/* ======================================== */}
+      <div
+        className="
+          w-full
+
+          h-[120px]
+
+          sm:h-[125px]
+
+          md:h-[136px]
+
+          lg:h-[190px]
+
+          xl:h-[195px]
+        "
+        aria-hidden="true"
+      />
+
+      {/* ======================================
+          Mobile Overlay
+      ====================================== */}
 
       <Overlay
         open={sidebarOpen}
@@ -92,9 +118,9 @@ const Header = () => {
         }
       />
 
-      {/* ======================================== */}
-      {/* Mobile Sidebar */}
-      {/* ======================================== */}
+      {/* ======================================
+          Mobile Sidebar
+      ====================================== */}
 
       <MobileSidebar
         open={sidebarOpen}
