@@ -31,12 +31,9 @@ const ProductGrid = ({
         return true;
       }
 
-      const normalizedId =
-        String(id);
+      const normalizedId = String(id);
 
-      if (
-        seen.has(normalizedId)
-      ) {
+      if (seen.has(normalizedId)) {
         return false;
       }
 
@@ -81,9 +78,7 @@ const ProductGrid = ({
           }
         );
 
-      observer.current.observe(
-        node
-      );
+      observer.current.observe(node);
     },
     [
       loading,
@@ -92,215 +87,240 @@ const ProductGrid = ({
     ]
   );
 
+  // ==========================================
+  // Render
+  // ==========================================
+
   return (
-    <section className="bg-white pt-20 pb-20">
+    <section
+      className="
+        w-full
+        py-10
+        md:py-14
+
+        bg-white
+        text-gray-900
+      "
+    >
+      {/* ====================================== */}
+      {/* Heading */}
+      {/* ====================================== */}
+
       <div
         className="
-          w-full
-          max-w-[var(--container-width,1450px)]
-          mx-auto
-px-0
-sm:px-1
-lg:px-6
-xl:px-7
+          flex
+          items-center
+          mb-12
+          px-4
         "
       >
-        {/* ====================================== */}
-        {/* Heading */}
-        {/* ====================================== */}
+        <div className="hidden lg:block w-24" />
 
-        <div
+        <h2
           className="
-            flex
-            items-center
-            
-            mb-12
+            flex-1
+
+            text-center
+
+            text-3xl
+            md:text-4xl
+            lg:text-5xl
+
+            font-bold
+
+            text-black
           "
         >
-          <div className="hidden lg:block w-24" />
+          Featured Products
+        </h2>
 
-          <h2
-            className="
-              text-3xl
-              md:text-4xl
-              lg:text-5xl
+        <div className="hidden lg:block w-24" />
+      </div>
 
-              font-bold
-              text-center
+      {/* ====================================== */}
+      {/* Products Grid */}
+      {/* ====================================== */}
 
-              flex-1
-            "
-          >
-            Featured Products
-          </h2>
+      <div
+        className="
+          grid
 
-      
-        </div>
+          grid-cols-2
+          sm:grid-cols-2
+          md:grid-cols-4
+          lg:grid-cols-5
+          xl:grid-cols-5
 
-        {/* ====================================== */}
-        {/* Products */}
-        {/* ====================================== */}
+          gap-0
+          lg:gap-5
+          xl:gap-6
 
-<div
-  className="
-    grid
+          w-full
 
-    grid-cols-2
-    sm:grid-cols-2
-    md:grid-cols-4
-    lg:grid-cols-5
-    xl:grid-cols-5
+          bg-white
+        "
+      >
+        {uniqueProducts.map(
+          (product, index) => {
+            const productId =
+              product?._id ||
+              product?.id ||
+              `product-${index}`;
 
-    gap-0
-    lg:gap-5
-    xl:gap-6
-  "
->
-          {uniqueProducts.map(
-            (product, index) => {
-              const productId =
-                product?._id ||
-                product?.id ||
-                `product-${index}`;
+            const isLastProduct =
+              index ===
+              uniqueProducts.length - 1;
 
-              const isLastProduct =
-                index ===
-                uniqueProducts.length -
-                  1;
+            // ==================================
+            // Last Product
+            // Used for Infinite Scroll
+            // ==================================
 
-              if (isLastProduct) {
-                return (
-                  <div
-                    key={String(
-                      productId
-                    )}
-                    ref={
-                      lastProductRef
-                    }
-                    className="w-full"
-                  >
-                    <ProductCard
-                      product={
-                        product
-                      }
-                    />
-                  </div>
-                );
-              }
-
+            if (isLastProduct) {
               return (
-                <ProductCard
-                  key={String(
-                    productId
-                  )}
-                  product={product}
-                />
+                <div
+                  key={String(productId)}
+                  ref={lastProductRef}
+                  className="
+                    w-full
+                    bg-white
+                  "
+                >
+                  <ProductCard
+                    product={product}
+                  />
+                </div>
               );
             }
-          )}
 
-          {/* ====================================== */}
-          {/* Loading Skeleton */}
-          {/* ====================================== */}
+            // ==================================
+            // Normal Product
+            // ==================================
 
-          {loading && (
-            <>
-              {[...Array(8)].map(
-                (_, index) => (
-                  <SkeletonCard
-                    key={`skeleton-${index}`}
-                  />
-                )
-              )}
+            return (
+              <ProductCard
+                key={String(productId)}
+                product={product}
+              />
+            );
+          }
+        )}
 
+        {/* ====================================== */}
+        {/* Loading Skeleton */}
+        {/* ====================================== */}
+
+        {loading && (
+          <>
+            {[...Array(8)].map(
+              (_, index) => (
+                <SkeletonCard
+                  key={`skeleton-${index}`}
+                />
+              )
+            )}
+
+            <div
+              className="
+                col-span-full
+
+                flex
+                justify-center
+
+                py-8
+
+                bg-white
+              "
+            >
               <div
                 className="
-                  col-span-full
                   flex
-                  justify-center
-                  py-8
+                  items-center
+                  gap-3
+
+                  text-[var(--primary-color,#355E3B)]
+
+                  font-semibold
                 "
               >
                 <div
                   className="
-                    flex
-                    items-center
-                    gap-3
+                    w-5
+                    h-5
 
-                    text-[var(--primary-color)]
+                    rounded-full
 
-                    font-semibold
+                    border-2
+                    border-current
+                    border-t-transparent
+
+                    animate-spin
                   "
-                >
-                  <div
-                    className="
-                      w-5
-                      h-5
+                />
 
-                      rounded-full
-
-                      border-2
-                      border-current
-                      border-t-transparent
-
-                      animate-spin
-                    "
-                  />
-
-                  Loading More
-                  Products...
-                </div>
+                Loading More Products...
               </div>
-            </>
-          )}
-        </div>
-
-        {/* ====================================== */}
-        {/* Empty Products */}
-        {/* ====================================== */}
-
-        {!loading &&
-          uniqueProducts.length ===
-            0 && (
-            <div className="text-center py-14">
-              <h2
-                className="
-                  text-xl
-                  md:text-2xl
-
-                  text-gray-500
-
-                  font-semibold
-                "
-              >
-                No Products Found
-              </h2>
             </div>
-          )}
-
-        {/* ====================================== */}
-        {/* No More Products */}
-        {/* ====================================== */}
-
-        {!loading &&
-          uniqueProducts.length > 0 &&
-          !hasMore && (
-            <div className="text-center py-14">
-              <h2
-                className="
-                  text-xl
-                  md:text-2xl
-
-                  text-gray-500
-
-                  font-semibold
-                "
-              >
-                🎉 No More Products
-              </h2>
-            </div>
-          )}
+          </>
+        )}
       </div>
+
+      {/* ====================================== */}
+      {/* Empty Products */}
+      {/* ====================================== */}
+
+      {!loading &&
+        uniqueProducts.length === 0 && (
+          <div
+            className="
+              text-center
+              py-14
+              bg-white
+            "
+          >
+            <h2
+              className="
+                text-xl
+                md:text-2xl
+
+                text-gray-500
+
+                font-semibold
+              "
+            >
+              No Products Found
+            </h2>
+          </div>
+        )}
+
+      {/* ====================================== */}
+      {/* No More Products */}
+      {/* ====================================== */}
+
+      {!loading &&
+        uniqueProducts.length > 0 &&
+        !hasMore && (
+          <div
+            className="
+              text-center
+              py-14
+              bg-white
+            "
+          >
+            <h2
+              className="
+                text-xl
+                md:text-2xl
+
+                text-gray-500
+
+                font-semibold
+              "
+            >
+              🎉 No More Products
+            </h2>
+          </div>
+        )}
     </section>
   );
 };

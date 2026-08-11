@@ -1,14 +1,14 @@
-
 import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
 } from "react";
 
-import {
-  getWebsiteSettings,
-} from "../services/websiteSettingService";
+import { useQueryClient } from "@tanstack/react-query";
+
+import useWebsiteSettings from "../hooks/useWebsiteSettings";
 
 // ==========================================
 // Theme Context
@@ -26,8 +26,6 @@ const defaultTheme = {
   accentColor: "#f59e0b",
   buttonColor: "#355E3B",
 
-  darkMode: false,
-
   fontFamily: "Inter",
 
   borderRadius: "12px",
@@ -39,11 +37,8 @@ const defaultTheme = {
 // Local Storage Keys
 // ==========================================
 
-const SETTINGS_STORAGE_KEY =
-  "websiteSettings";
-
-const THEME_STORAGE_KEY =
-  "websiteTheme";
+const SETTINGS_STORAGE_KEY = "websiteSettings";
+const THEME_STORAGE_KEY = "websiteTheme";
 
 // ==========================================
 // Get Cached Settings
@@ -61,7 +56,6 @@ const getCachedSettings = () => {
     }
 
     return JSON.parse(cachedSettings);
-
   } catch (error) {
     console.error(
       "Failed to read cached website settings:",
@@ -91,7 +85,6 @@ const getCachedTheme = () => {
       ...defaultTheme,
       ...JSON.parse(cachedTheme),
     };
-
   } catch (error) {
     console.error(
       "Failed to read cached theme:",
@@ -109,35 +102,74 @@ const getCachedTheme = () => {
 export const ThemeProvider = ({
   children,
 }) => {
-
   // ========================================
-  // Cached Theme
-  // ========================================
-
-  const [theme, setTheme] = useState(
-    getCachedTheme
-  );
-
-  // ========================================
-  // Complete Website Settings
+  // React Query Client
   // ========================================
 
-  const [websiteSettings, setWebsiteSettings] =
-    useState(getCachedSettings);
+  const queryClient =
+    useQueryClient();
 
   // ========================================
-  // Loading State
+  // Website Settings
+  //
+  // IMPORTANT:
+  // This is the ONLY source used by
+  // ThemeContext for website settings.
+  //
+  // React Query handles:
+  // - caching
+  // - deduplication
+  // - background fetching
   // ========================================
 
-  const [themeLoading, setThemeLoading] =
-    useState(false);
+  const {
+    data,
+    isLoading: queryLoading,
+    isFetching,
+    refetch,
+  } = useWebsiteSettings();
+
+  // ========================================
+  // Theme State
+  // ========================================
+
+  const [theme, setTheme] =
+    useState(getCachedTheme);
+
+  // ========================================
+  // Website Settings State
+  // ========================================
+
+  const [
+    websiteSettings,
+    setWebsiteSettings,
+  ] = useState(getCachedSettings);
+
+  // ========================================
+  // Normalize API Response
+  // ========================================
+
+  const latestSettings =
+    data?.data || data || null;
+
+  // ========================================
+  // Loading
+  //
+  // If localStorage has data,
+  // don't show full-page loading.
+  // ========================================
+
+  const themeLoading =
+    queryLoading &&
+    !websiteSettings;
 
   // ========================================
   // Apply Theme Globally
   // ========================================
 
-  const applyTheme = (themeData = {}) => {
-
+  const applyTheme = (
+    themeData = {}
+  ) => {
     const root =
       document.documentElement;
 
@@ -174,7 +206,7 @@ export const ThemeProvider = ({
       defaultTheme.fontFamily;
 
     // ======================================
-    // Primary Color
+    // Primary
     // ======================================
 
     root.style.setProperty(
@@ -187,8 +219,18 @@ export const ThemeProvider = ({
       primaryColor
     );
 
+    root.style.setProperty(
+      "--primary",
+      primaryColor
+    );
+
+    root.style.setProperty(
+      "--primary-light",
+      primaryColor
+    );
+
     // ======================================
-    // Secondary Color
+    // Secondary
     // ======================================
 
     root.style.setProperty(
@@ -201,8 +243,13 @@ export const ThemeProvider = ({
       secondaryColor
     );
 
+    root.style.setProperty(
+      "--secondary",
+      secondaryColor
+    );
+
     // ======================================
-    // Accent Color
+    // Accent
     // ======================================
 
     root.style.setProperty(
@@ -216,7 +263,7 @@ export const ThemeProvider = ({
     );
 
     // ======================================
-    // Button Color
+    // Button
     // ======================================
 
     root.style.setProperty(
@@ -243,6 +290,11 @@ export const ThemeProvider = ({
       borderRadius
     );
 
+    root.style.setProperty(
+      "--radius",
+      borderRadius
+    );
+
     // ======================================
     // Container Width
     // ======================================
@@ -260,82 +312,83 @@ export const ThemeProvider = ({
       "--font-family",
       fontFamily
     );
-document.body.style.fontFamily =
-  fontFamily + ", sans-serif";
 
-    // ======================================
-    // Dark Mode
-    // ======================================
-
-    if (themeData?.darkMode) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    document.body.style.fontFamily =
+      `${fontFamily}, sans-serif`;
   };
 
-  // ========================================
-  // Apply Theme Whenever Theme Changes
-  // ========================================
+  // ==========================================
+  // Apply Theme Immediately
+  // ==========================================
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     applyTheme(theme);
   }, [theme]);
 
-  // ========================================
+  // ==========================================
   // Apply Favicon
-  // ========================================
+  // ==========================================
 
-  const applyFavicon = (faviconUrl) => {
+  const applyFavicon = (
+    faviconUrl
+  ) => {
+    if (!faviconUrl) {
+      return;
+    }
 
-    if (!faviconUrl) return;
-
-    let link = document.querySelector(
-      "link[rel~='icon']"
-    );
+    let link =
+      document.querySelector(
+        "link[rel~='icon']"
+      );
 
     if (!link) {
-      link = document.createElement("link");
+      link =
+        document.createElement(
+          "link"
+        );
 
       link.rel = "icon";
 
-      document.head.appendChild(link);
+      document.head.appendChild(
+        link
+      );
     }
 
     link.type = "image/png";
-
     link.href = faviconUrl;
   };
 
-  // ========================================
+  // ==========================================
   // Apply SEO
-  // ========================================
+  // ==========================================
 
-  const applySEO = (seo = {}) => {
-
+  const applySEO = (
+    seo = {}
+  ) => {
     // ======================================
     // Title
     // ======================================
 
     if (seo?.title) {
-      document.title = seo.title;
+      document.title =
+        seo.title;
     }
 
     // ======================================
-    // Meta Description
+    // Description
     // ======================================
 
     if (seo?.description) {
-
       let description =
         document.querySelector(
           'meta[name="description"]'
         );
 
       if (!description) {
-
         description =
-          document.createElement("meta");
+          document.createElement(
+            "meta"
+          );
 
         description.name =
           "description";
@@ -350,188 +403,161 @@ document.body.style.fontFamily =
     }
   };
 
-  // ========================================
-  // Apply Cached Website Settings
-  // Immediately on Page Load
-  // ========================================
+  // ==========================================
+  // Apply Cached Settings Immediately
+  // ==========================================
 
   useEffect(() => {
-
-    if (!websiteSettings) return;
-
-    // ======================================
-    // Cached Theme
-    // ======================================
+    if (!websiteSettings) {
+      return;
+    }
 
     const cachedTheme = {
       ...defaultTheme,
-      ...(websiteSettings?.theme || {}),
+      ...(websiteSettings?.theme ||
+        {}),
     };
 
     setTheme(cachedTheme);
 
-    // ======================================
-    // Cached Favicon
-    // ======================================
-
-    if (websiteSettings?.favicon) {
+    if (
+      websiteSettings?.favicon
+    ) {
       applyFavicon(
         websiteSettings.favicon
       );
     }
 
-    // ======================================
-    // Cached SEO
-    // ======================================
-
-    if (websiteSettings?.seo) {
+    if (
+      websiteSettings?.seo
+    ) {
       applySEO(
         websiteSettings.seo
       );
     }
-
   }, []);
 
-  // ========================================
-  // Fetch Latest Website Settings
-  // ========================================
-
-  const fetchWebsiteSettings =
-    async () => {
-
-      try {
-
-        setThemeLoading(true);
-
-        // ==================================
-        // ONE API CALL
-        // ==================================
-
-        const response =
-          await getWebsiteSettings();
-
-        const settings =
-          response?.data || response;
-
-        if (!settings) return;
-
-        // ==================================
-        // Save Complete Settings
-        // ==================================
-
-        setWebsiteSettings(
-          settings
-        );
-
-        // ==================================
-        // Save Settings to LocalStorage
-        // ==================================
-
-        localStorage.setItem(
-          SETTINGS_STORAGE_KEY,
-          JSON.stringify(settings)
-        );
-
-        // ==================================
-        // Get Latest Theme
-        // ==================================
-
-        const latestTheme = {
-          ...defaultTheme,
-          ...(settings?.theme || {}),
-        };
-
-        // ==================================
-        // Update Theme
-        // ==================================
-
-        setTheme(latestTheme);
-
-        // ==================================
-        // Save Theme Separately
-        // ==================================
-
-        localStorage.setItem(
-          THEME_STORAGE_KEY,
-          JSON.stringify(
-            latestTheme
-          )
-        );
-
-        // ==================================
-        // Apply Theme Immediately
-        // ==================================
-
-        applyTheme(
-          latestTheme
-        );
-
-        // ==================================
-        // Apply Favicon
-        // ==================================
-
-        if (settings?.favicon) {
-
-          applyFavicon(
-            settings.favicon
-          );
-        }
-
-        // ==================================
-        // Apply SEO
-        // ==================================
-
-        if (settings?.seo) {
-
-          applySEO(
-            settings.seo
-          );
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Failed to load website settings:",
-          error
-        );
-
-      } finally {
-
-        setThemeLoading(false);
-      }
-    };
-
-  // ========================================
-  // Load Latest Settings
-  // ========================================
+  // ==========================================
+  // Apply React Query Settings
+  // ==========================================
 
   useEffect(() => {
+    if (!latestSettings) {
+      return;
+    }
 
-    fetchWebsiteSettings();
+    // ======================================
+    // Save Complete Settings
+    // ======================================
 
-  }, []);
+    setWebsiteSettings(
+      latestSettings
+    );
 
-  // ========================================
+    // ======================================
+    // LocalStorage
+    // ======================================
+
+    localStorage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify(
+        latestSettings
+      )
+    );
+
+    // ======================================
+    // Latest Theme
+    // ======================================
+
+    const latestTheme = {
+      ...defaultTheme,
+      ...(latestSettings?.theme ||
+        {}),
+    };
+
+    // ======================================
+    // Update Theme
+    // ======================================
+
+    setTheme(latestTheme);
+
+    // ======================================
+    // Save Theme
+    // ======================================
+
+    localStorage.setItem(
+      THEME_STORAGE_KEY,
+      JSON.stringify(
+        latestTheme
+      )
+    );
+
+    // ======================================
+    // Apply Theme
+    // ======================================
+
+    applyTheme(latestTheme);
+
+    // ======================================
+    // Favicon
+    // ======================================
+
+    if (
+      latestSettings?.favicon
+    ) {
+      applyFavicon(
+        latestSettings.favicon
+      );
+    }
+
+    // ======================================
+    // SEO
+    // ======================================
+
+    if (
+      latestSettings?.seo
+    ) {
+      applySEO(
+        latestSettings.seo
+      );
+    }
+  }, [latestSettings]);
+
+  // ==========================================
+  // Refresh Website Settings
+  // ==========================================
+
+  const refreshTheme = async () => {
+    try {
+      const result =
+        await refetch();
+
+      return result?.data;
+    } catch (error) {
+      console.error(
+        "Failed to refresh website settings:",
+        error
+      );
+
+      return null;
+    }
+  };
+
+  // ==========================================
   // Update Theme Locally
-  // Used After Admin Saves Theme
-  // ========================================
+  // ==========================================
 
   const updateLocalTheme = (
     newTheme = {}
   ) => {
-
     setTheme(
       (previousTheme) => {
-
         const updatedTheme = {
           ...previousTheme,
           ...newTheme,
         };
 
-        // ================================
         // Save Theme
-        // ================================
-
         localStorage.setItem(
           THEME_STORAGE_KEY,
           JSON.stringify(
@@ -539,21 +565,14 @@ document.body.style.fontFamily =
           )
         );
 
-        // ================================
-        // Update Complete Settings
-        // ================================
-
+        // Update Website Settings
         setWebsiteSettings(
           (previousSettings) => {
-
             const updatedSettings = {
-              ...(previousSettings || {}),
+              ...(previousSettings ||
+                {}),
               theme: updatedTheme,
             };
-
-            // ============================
-            // Save Complete Settings
-            // ============================
 
             localStorage.setItem(
               SETTINGS_STORAGE_KEY,
@@ -566,10 +585,7 @@ document.body.style.fontFamily =
           }
         );
 
-        // ================================
-        // Apply Immediately
-        // ================================
-
+        // Apply Theme
         applyTheme(
           updatedTheme
         );
@@ -577,27 +593,53 @@ document.body.style.fontFamily =
         return updatedTheme;
       }
     );
+
+    // ======================================
+    // Update React Query Cache
+    // ======================================
+
+    queryClient.setQueryData(
+      ["website-settings"],
+      (previousData) => {
+        const previousSettings =
+          previousData?.data ||
+          previousData ||
+          {};
+
+        const updatedSettings = {
+          ...previousSettings,
+          theme: {
+            ...(previousSettings?.theme ||
+              {}),
+            ...newTheme,
+          },
+        };
+
+        return {
+          ...updatedSettings,
+        };
+      }
+    );
   };
 
-  // ========================================
+  // ==========================================
   // Update Complete Website Settings
-  // ========================================
+  // ==========================================
 
   const updateLocalSettings = (
     newSettings = {}
   ) => {
-
     setWebsiteSettings(
       (previousSettings) => {
-
         const updatedSettings = {
-          ...(previousSettings || {}),
+          ...(previousSettings ||
+            {}),
           ...newSettings,
         };
 
-        // ================================
+        // ==================================
         // Save Settings
-        // ================================
+        // ==================================
 
         localStorage.setItem(
           SETTINGS_STORAGE_KEY,
@@ -606,15 +648,15 @@ document.body.style.fontFamily =
           )
         );
 
-        // ================================
+        // ==================================
         // Theme
-        // ================================
+        // ==================================
 
         if (newSettings?.theme) {
-
           const updatedTheme = {
             ...defaultTheme,
-            ...newSettings.theme,
+            ...(updatedSettings.theme ||
+              {}),
           };
 
           setTheme(
@@ -633,23 +675,25 @@ document.body.style.fontFamily =
           );
         }
 
-        // ================================
+        // ==================================
         // Favicon
-        // ================================
+        // ==================================
 
-        if (newSettings?.favicon) {
-
+        if (
+          newSettings?.favicon
+        ) {
           applyFavicon(
             newSettings.favicon
           );
         }
 
-        // ================================
+        // ==================================
         // SEO
-        // ================================
+        // ==================================
 
-        if (newSettings?.seo) {
-
+        if (
+          newSettings?.seo
+        ) {
           applySEO(
             newSettings.seo
           );
@@ -658,53 +702,81 @@ document.body.style.fontFamily =
         return updatedSettings;
       }
     );
+
+    // ======================================
+    // Update React Query Cache
+    // ======================================
+
+    queryClient.setQueryData(
+      ["website-settings"],
+      (previousData) => {
+        const previousSettings =
+          previousData?.data ||
+          previousData ||
+          {};
+
+        const updatedSettings = {
+          ...previousSettings,
+          ...newSettings,
+        };
+
+        return {
+          ...updatedSettings,
+        };
+      }
+    );
   };
 
-  // ========================================
+  // ==========================================
   // Provider
-  // ========================================
+  // ==========================================
 
   return (
     <ThemeContext.Provider
       value={{
-        // ================================
+        // ====================================
         // Theme
-        // ================================
+        // ====================================
 
         theme,
 
         setTheme,
 
-        // ================================
-        // Complete Settings
-        // ================================
+        // ====================================
+        // Website Settings
+        // ====================================
 
         websiteSettings,
 
         setWebsiteSettings,
 
-        // ================================
+        // ====================================
         // Loading
-        // ================================
+        // ====================================
 
         themeLoading,
 
-        // ================================
-        // Refresh Latest Settings
-        // ================================
+        websiteSettingsLoading:
+          themeLoading,
 
-        refreshTheme:
-          fetchWebsiteSettings,
+        websiteSettingsFetching:
+          isFetching,
 
-        // ================================
+        // ====================================
+        // Refresh
+        // ====================================
+
+        refreshTheme,
+
+        // ====================================
         // Update Theme
-        // ================================
+        // ====================================
 
         updateLocalTheme,
 
-        // ================================
-        // Update Complete Settings
-        // ================================
+        // ====================================
+        // Update Settings
+        // ====================================
 
         updateLocalSettings,
       }}
@@ -719,14 +791,10 @@ document.body.style.fontFamily =
 // ==========================================
 
 export const useTheme = () => {
-
   const context =
-    useContext(
-      ThemeContext
-    );
+    useContext(ThemeContext);
 
   if (!context) {
-
     throw new Error(
       "useTheme must be used inside ThemeProvider"
     );
@@ -736,8 +804,7 @@ export const useTheme = () => {
 };
 
 // ==========================================
-// Export
+// Default Export
 // ==========================================
 
 export default ThemeContext;
-

@@ -84,7 +84,7 @@ const ForgotPassword = () => {
             Forgot Password?
           </h1>
 
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-600 mt-2">
             Enter your email and we'll send you a
             password reset link.
           </p>
@@ -98,9 +98,9 @@ const ForgotPassword = () => {
           autoComplete="off"
         >
           <div>
-            <label className="font-medium">
-              Email
-            </label>
+<label className="font-medium text-gray-800">
+  Email
+</label>
 
             <div
               className="
@@ -135,12 +135,14 @@ const ForgotPassword = () => {
                 }
                 placeholder="Enter your email"
                 autoComplete="off"
-                className="
-                  w-full
-                  p-3
-                  outline-none
-                  bg-transparent
-                "
+className="
+  w-full
+  p-3
+  outline-none
+  bg-transparent
+  text-gray-800
+  placeholder:text-gray-400
+"
               />
             </div>
           </div>

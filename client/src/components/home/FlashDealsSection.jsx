@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -10,62 +9,94 @@ import FlashDealCard from "./FlashDealCard";
 import ProductTabs from "./ProductTabs";
 import ExploreProductGrid from "../product-card/ExploreProductGrid";
 
+import { useQuery } from "@tanstack/react-query";
+
 import {
   getFlashDeal,
 } from "../../services/flashDealService";
 
+// ==========================================
+// Flash Deal Query Key
+// ==========================================
+
+export const FLASH_DEAL_QUERY_KEY = [
+  "flash-deals",
+];
+
+// ==========================================
+// Flash Deals Section
+// ==========================================
+
 const FlashDealsSection = ({
   products = [],
 }) => {
+  // ========================================
+  // Active Tab
+  // ========================================
+
   const [activeTab, setActiveTab] =
     useState("trending");
 
-  const [flashDeal, setFlashDeal] =
-    useState(null);
+  // ========================================
+  // React Query - Flash Deal
+  // ========================================
 
-  const [loading, setLoading] =
-    useState(true);
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+  } = useQuery({
+    queryKey:
+      FLASH_DEAL_QUERY_KEY,
 
-  // ==========================================
-  // Fetch Flash Deal
-  // ==========================================
+    queryFn: async () => {
+      return await getFlashDeal();
+    },
 
-  useEffect(() => {
-    const fetchFlashDeal = async () => {
-      try {
-        setLoading(true);
+    // ======================================
+    // Cache
+    // ======================================
 
-        const response =
-          await getFlashDeal();
+    staleTime:
+      5 * 60 * 1000,
 
-        if (
-          response?.success &&
-          response?.flashDeal
-        ) {
-          setFlashDeal(
-            response.flashDeal
-          );
-        } else {
-          setFlashDeal(null);
-        }
-      } catch (error) {
-        console.error(
-          "Flash Deal Error:",
-          error
-        );
+    gcTime:
+      30 * 60 * 1000,
 
-        setFlashDeal(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // ======================================
+    // Don't refetch unnecessarily
+    // ======================================
 
-    fetchFlashDeal();
-  }, []);
+    refetchOnWindowFocus:
+      false,
 
-  // ==========================================
+    refetchOnReconnect:
+      false,
+
+    refetchOnMount:
+      false,
+
+    // ======================================
+    // Retry
+    // ======================================
+
+    retry: 1,
+  });
+
+  // ========================================
+  // Extract Flash Deal
+  // ========================================
+
+  const flashDeal =
+    data?.success &&
+    data?.flashDeal
+      ? data.flashDeal
+      : null;
+
+  // ========================================
   // Filter Products
-  // ==========================================
+  // ========================================
 
   const filteredProducts =
     useMemo(() => {
@@ -73,62 +104,67 @@ const FlashDealsSection = ({
         case "trending":
           return products.filter(
             (item) =>
-              item.isTrending
+              item?.isTrending
           );
 
         case "featured":
           return products.filter(
             (item) =>
-              item.isFeatured
+              item?.isFeatured
           );
 
         case "new":
           return products.filter(
             (item) =>
-              item.isNewArrival
+              item?.isNewArrival
           );
 
         case "best":
           return products.filter(
             (item) =>
-              item.isBestSelling
+              item?.isBestSelling
           );
 
         default:
           return [];
       }
-    }, [activeTab, products]);
+    }, [
+      activeTab,
+      products,
+    ]);
 
-  // ==========================================
-  // Background
-  // ==========================================
+  // ========================================
+  // Background Fetching
+  // ========================================
+
+  const backgroundLoading =
+    isFetching &&
+    !isLoading;
+
+  // ========================================
+  // Section Background
+  // ========================================
 
   const sectionBackground = {
     background:
       "linear-gradient(to bottom, color-mix(in srgb, var(--primary-color,#355E3B) 5%, white), #ffffff)",
   };
 
-  // ==========================================
+  // ========================================
   // Loading
-  // ==========================================
+  // ========================================
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section
-        className="
-          py-6
-          sm:py-8
-          lg:py-10
-        "
+        className="w-full"
         style={sectionBackground}
       >
         <div
           className="
+            mx-auto
             w-full
             max-w-[var(--container-width,1450px)]
-
-            mx-auto
-
             px-2
             sm:px-4
             lg:px-6
@@ -137,14 +173,11 @@ const FlashDealsSection = ({
           <div
             className="
               h-[300px]
+              animate-pulse
+              rounded-2xl
+              bg-gray-200
               sm:h-[350px]
               lg:h-[420px]
-
-              animate-pulse
-
-              rounded-2xl
-
-              bg-gray-200
             "
           />
         </div>
@@ -152,57 +185,57 @@ const FlashDealsSection = ({
     );
   }
 
-  // ==========================================
+  // ========================================
+  // Error
+  // ========================================
+
+  if (error) {
+    console.error(
+      "Flash Deal Error:",
+      error
+    );
+  }
+
+  // ========================================
   // Render
-  // ==========================================
+  // ========================================
 
   return (
     <section
-      className="
-        py-6
-        sm:py-8
-        lg:py-10
-      "
+      className="w-full"
       style={sectionBackground}
     >
       <div
         className="
-          w-full
-
-          max-w-[var(--container-width,1450px)]
-
           mx-auto
-
+          w-full
+          max-w-[var(--container-width,1450px)]
           px-2
           sm:px-4
           lg:px-6
         "
       >
-        {/* ==================================== */}
-        {/* Main Container */}
-        {/* ==================================== */}
+        {/* ==================================
+            Main Container
+        ================================== */}
 
         <div
           className="
-            bg-white
-
+            rounded-xl
             border
             border-gray-100
-
-            rounded-xl
-            sm:rounded-2xl
-            lg:rounded-3xl
-
-            shadow-sm
-
+            bg-white
             p-2
+            shadow-sm
+            sm:rounded-2xl
             sm:p-4
+            lg:rounded-3xl
             lg:p-6
           "
         >
-          {/* ================================== */}
-          {/* Heading */}
-          {/* ================================== */}
+          {/* ==================================
+              Heading
+          ================================== */}
 
           <div
             className="
@@ -211,52 +244,73 @@ const FlashDealsSection = ({
               lg:mb-7
             "
           >
-            <h2
+            <div
               className="
-                text-xl
-                sm:text-2xl
-                lg:text-4xl
-
-                font-bold
-                text-gray-900
-
-                tracking-tight
+                flex
+                items-center
+                justify-between
+                gap-3
               "
             >
-              Explore Products
-            </h2>
+              <div>
+                <h2
+                  className="
+                    text-xl
+                    font-bold
+                    tracking-tight
+                    text-gray-900
+                    sm:text-2xl
+                    lg:text-4xl
+                  "
+                >
+                  Explore Products
+                </h2>
 
-            <p
-              className="
-                mt-1
-                sm:mt-2
+                <p
+                  className="
+                    mt-1
+                    text-xs
+                    text-gray-500
+                    sm:mt-2
+                    sm:text-sm
+                    lg:text-base
+                  "
+                >
+                  Discover our latest
+                  collections curated
+                  just for you.
+                </p>
+              </div>
 
-                text-xs
-                sm:text-sm
-                lg:text-base
+              {/* Background refresh indicator */}
 
-                text-gray-500
-              "
-            >
-              Discover our latest collections
-              curated just for you.
-            </p>
+              {backgroundLoading && (
+                <span
+                  className="
+                    hidden
+                    shrink-0
+                    text-xs
+                    text-gray-400
+                    sm:block
+                  "
+                >
+                  Updating...
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* ================================== */}
-          {/* Tabs */}
-          {/* ================================== */}
+          {/* ==================================
+              Tabs
+          ================================== */}
 
           <div
             className="
-              w-full
-
               mb-4
+              w-full
+              overflow-x-auto
               sm:mb-5
               lg:mb-7
-
-              overflow-x-auto
-
               [scrollbar-width:none]
               [-ms-overflow-style:none]
               [&::-webkit-scrollbar]:hidden
@@ -264,35 +318,33 @@ const FlashDealsSection = ({
           >
             <ProductTabs
               activeTab={activeTab}
-              setActiveTab={setActiveTab}
+              setActiveTab={
+                setActiveTab
+              }
             />
           </div>
 
-          {/* ================================== */}
-          {/* Flash Deal + Products */}
-          {/* ================================== */}
+          {/* ==================================
+              Flash Deal + Products
+          ================================== */}
 
           <div
             className={`
               grid
               grid-cols-1
-
+              items-stretch
+              gap-4
+              lg:gap-5
               ${
                 flashDeal
                   ? "xl:grid-cols-[300px_minmax(0,1fr)]"
                   : "xl:grid-cols-1"
               }
-
-              gap-4
-              lg:gap-5
-
-              items-stretch
             `}
           >
-            {/* ================================= */}
-            {/* Flash Deal */}
-            {/* Only Render When Admin Has Deal */}
-            {/* ================================= */}
+            {/* =================================
+                Flash Deal
+            ================================= */}
 
             {flashDeal && (
               <motion.div
@@ -316,14 +368,16 @@ const FlashDealsSection = ({
                 "
               >
                 <FlashDealCard
-                  flashDeal={flashDeal}
+                  flashDeal={
+                    flashDeal
+                  }
                 />
               </motion.div>
             )}
 
-            {/* ================================= */}
-            {/* Products */}
-            {/* ================================= */}
+            {/* =================================
+                Products
+            ================================= */}
 
             <motion.div
               initial={{
@@ -355,30 +409,30 @@ const FlashDealsSection = ({
               ) : (
                 <div
                   className="
-                    min-h-[220px]
-                    sm:min-h-[280px]
-
                     flex
+                    min-h-[220px]
                     items-center
                     justify-center
-
-                    bg-gray-50
-
+                    rounded-xl
                     border
                     border-gray-200
-
-                    rounded-xl
+                    bg-gray-50
+                    sm:min-h-[280px]
                     sm:rounded-2xl
                   "
                 >
-                  <div className="text-center px-5">
+                  <div
+                    className="
+                      px-5
+                      text-center
+                    "
+                  >
                     <p
                       className="
                         text-base
-                        sm:text-lg
-
                         font-semibold
                         text-gray-700
+                        sm:text-lg
                       "
                     >
                       No products found
@@ -387,14 +441,13 @@ const FlashDealsSection = ({
                     <p
                       className="
                         mt-1
-
                         text-xs
-                        sm:text-sm
-
                         text-gray-500
+                        sm:text-sm
                       "
                     >
-                      Products will appear here
+                      Products will
+                      appear here
                       when available.
                     </p>
                   </div>

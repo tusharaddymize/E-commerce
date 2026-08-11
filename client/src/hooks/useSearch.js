@@ -1,42 +1,110 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useQuery,
+} from "@tanstack/react-query";
 
 import {
   getProducts,
 } from "../services/productService";
 
-const useSearch = (keyword) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+// ==========================================
+// Search Hook
+// ==========================================
+
+const useSearch = (
+  keyword = ""
+) => {
+  const [
+    debouncedKeyword,
+    setDebouncedKeyword,
+  ] = useState("");
+
+  // ========================================
+  // Debounce
+  // ========================================
 
   useEffect(() => {
-    if (!keyword.trim()) {
-      setProducts([]);
-      return;
-    }
+    const value =
+      keyword.trim();
 
-    const timer = setTimeout(async () => {
-      try {
-        setLoading(true);
+    const timer =
+      setTimeout(() => {
+        setDebouncedKeyword(
+          value
+        );
+      }, 400);
 
-        const data = await getProducts({
-          search: keyword,
-          limit: 8,
-        });
-
-        setProducts(data.products || []);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
+    return () =>
+      clearTimeout(timer);
   }, [keyword]);
+
+  // ========================================
+  // React Query
+  // ========================================
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+  } = useQuery({
+    queryKey: [
+      "product-search",
+      debouncedKeyword,
+    ],
+
+    queryFn: async () => {
+      return await getProducts({
+        search:
+          debouncedKeyword,
+
+        limit: 8,
+      });
+    },
+
+    enabled:
+      Boolean(debouncedKeyword),
+
+    staleTime:
+      2 * 60 * 1000,
+
+    gcTime:
+      10 * 60 * 1000,
+
+    refetchOnWindowFocus:
+      false,
+
+    refetchOnReconnect:
+      false,
+
+    retry: 1,
+  });
+
+  // ========================================
+  // Products
+  // ========================================
+
+  const products =
+    data?.products ||
+    data?.data?.products ||
+    [];
+
+  // ========================================
+  // Return
+  // ========================================
 
   return {
     products,
-    loading,
+
+    loading:
+      isLoading ||
+      isFetching,
+
+    error,
   };
 };
 

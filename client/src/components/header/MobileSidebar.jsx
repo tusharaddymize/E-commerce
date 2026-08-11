@@ -165,14 +165,14 @@ const navigationData = useMemo(() => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeSidebar}
-            className="
-              fixed
-              inset-0
-              z-40
-              bg-black/50
-              backdrop-blur-sm
-              lg:hidden
-            "
+className="
+  fixed
+  inset-0
+  z-[150]
+  bg-black/50
+  backdrop-blur-sm
+  lg:hidden
+"
           />
         )}
       </AnimatePresence>
@@ -188,25 +188,27 @@ const navigationData = useMemo(() => {
         transition={{
           duration: 0.35,
         }}
-        className="
-          fixed
-          left-0
-          top-0
-          z-50
+className="
+  fixed
+  left-0
+  top-0
+  bottom-0
 
-          h-screen
+  z-[200]
 
-          w-[330px]
-          max-w-[90vw]
+  h-screen
 
-          overflow-y-auto
+  w-[330px]
+  max-w-[90vw]
 
-          bg-[#F8FAF8]
+  overflow-y-auto
 
-          shadow-2xl
+  bg-[#F8FAF8]
 
-          lg:hidden
-        "
+  shadow-2xl
+
+  lg:hidden
+"
       >
         {/* ==================================== */}
         {/* Mobile Profile */}

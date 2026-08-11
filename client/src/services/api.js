@@ -1,73 +1,210 @@
 import axios from "axios";
 
+// ==========================================
+// Axios Instance
+// ==========================================
+
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
-API.interceptors.request.use(
-  (config) => {
-    const userToken = localStorage.getItem("token");
-    const adminToken = localStorage.getItem("adminToken");
+// ==========================================
+// Admin API Routes
+// ==========================================
+//
+// In routes par adminToken use hoga.
+//
+// IMPORTANT:
+// Agar backend coupon route "/coupons" hai,
+// to "/coupons" bhi yahan hona zaroori hai.
+// ==========================================
 
-const adminRoutes = [
+const ADMIN_ROUTES = [
   "/admin",
+
+  "/coupons",
   "/website-settings",
   "/flash-deals",
-  "/coupons",
   "/categories",
   "/filters",
+  "/menu-groups",
+  "/sub-categories",
 ];
 
-const isAdminRequest = adminRoutes.some((route) =>
-  config.url?.startsWith(route)
-);
+// ==========================================
+// Check Admin Request
+// ==========================================
 
-const token = isAdminRequest
-  ? adminToken
-  : userToken;
+const isAdminRequest = (url = "") => {
+  return ADMIN_ROUTES.some((route) => {
+    return (
+      url === route ||
+      url.startsWith(`${route}/`) ||
+      url.includes(`${route}/`)
+    );
+  });
+};
+
+// ==========================================
+// Request Interceptor
+// ==========================================
+
+API.interceptors.request.use(
+  (config) => {
+    // ======================================
+    // Get Tokens
+    // ======================================
+
+    const userToken =
+      localStorage.getItem("token");
+
+    const adminToken =
+      localStorage.getItem("adminToken");
+
+    // ======================================
+    // Current URL
+    // ======================================
+
+    const url = config.url || "";
+
+    // ======================================
+    // Determine Request Type
+    // ======================================
+
+    const adminRequest =
+      isAdminRequest(url);
+
+    // ======================================
+    // Select Token
+    // ======================================
+
+    const token = adminRequest
+      ? adminToken
+      : userToken;
+
+    // ======================================
+    // Debug
+    // ======================================
+    // Development me check kar sakte ho
+    // ki kaunsa token use ho raha hai.
+    // ======================================
+
+    if (import.meta.env.DEV) {
+      console.log(
+        "🔐 API Request:",
+        url,
+        "| Admin:",
+        adminRequest,
+        "| Token:",
+        token ? "YES" : "NO"
+      );
+    }
+
+    // ======================================
+    // Attach Authorization
+    // ======================================
+
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers =
+        config.headers || {};
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => Promise.reject(error)
+
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
+// ==========================================
+// Response Interceptor
+// ==========================================
+
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
+
   (error) => {
-    if (error.response?.status === 401) {
-      const requestUrl = error.config?.url || "";
+    // ======================================
+    // Request Information
+    // ======================================
 
-      if (requestUrl.startsWith("/admin")) {
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("admin");
+    const url =
+      error.config?.url || "";
 
-        if (
-          window.location.pathname !==
+    const status =
+      error.response?.status;
+
+    // ======================================
+    // Determine Admin Request
+    // ======================================
+
+    const adminRequest =
+      isAdminRequest(url);
+
+    // ======================================
+    // Admin Authentication Failed
+    // ======================================
+
+    if (
+      adminRequest &&
+      (status === 401 ||
+        status === 403)
+    ) {
+      console.error(
+        "❌ Admin authentication failed:",
+        url
+      );
+
+      localStorage.removeItem(
+        "admin"
+      );
+
+      localStorage.removeItem(
+        "adminToken"
+      );
+
+      // ====================================
+      // Redirect only from admin pages
+      // ====================================
+
+      if (
+        window.location.pathname.startsWith(
+          "/admin"
+        ) &&
+        !window.location.pathname.includes(
           "/admin/login"
-        ) {
-          window.location.href =
-            "/admin/login";
-        }
-      } else {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-
-        if (
-          window.location.pathname !==
-          "/login"
-        ) {
-          window.location.href =
-            "/login";
-        }
+        )
+      ) {
+        window.location.href =
+          "/admin/login";
       }
+    }
+
+    // ======================================
+    // Normal User Authentication Failed
+    // ======================================
+
+    if (
+      !adminRequest &&
+      status === 401
+    ) {
+      // User authentication errors
+      // are handled by individual pages.
     }
 
     return Promise.reject(error);
   }
 );
+
+// ==========================================
+// Export
+// ==========================================
 
 export default API;

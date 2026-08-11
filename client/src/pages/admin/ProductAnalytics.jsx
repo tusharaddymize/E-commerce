@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import {
   Package,
   Boxes,
@@ -14,6 +16,14 @@ import AdminNavbar from "../../components/admin/AdminNavbar";
 import AnalyticsCard from "../../components/admin/AnalyticsCard";
 
 import { getProductAnalytics } from "../../services/analyticsService";
+
+// ==========================================
+// Query Key
+// ==========================================
+
+export const PRODUCT_ANALYTICS_QUERY_KEY = [
+  "product-analytics",
+];
 
 // ==========================================
 // Inventory Value Formatter
@@ -45,50 +55,81 @@ const formatInventoryValue = (amount = 0) => {
 // ==========================================
 
 const ProductAnalytics = () => {
-  const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  // ========================================
   // Sidebar
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // ========================================
+
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
+
+  // ========================================
+  // React Query
+  // ========================================
+
+  const {
+    data: analytics,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
+    // ======================================
+    // Same key = same cached data
+    // ======================================
+
+    queryKey: PRODUCT_ANALYTICS_QUERY_KEY,
+
+    // ======================================
+    // API
+    // ======================================
+
+    queryFn: getProductAnalytics,
+
+    // ======================================
+    // Keep analytics fresh for 5 minutes
+    // ======================================
+
+    staleTime: 5 * 60 * 1000,
+
+    // ======================================
+    // Keep unused cache for 30 minutes
+    // ======================================
+
+    gcTime: 30 * 60 * 1000,
+
+    // ======================================
+    // Don't refetch unnecessarily
+    // ======================================
+
+    refetchOnWindowFocus: false,
+
+    refetchOnReconnect: false,
+
+    refetchOnMount: false,
+
+    // ======================================
+    // Retry once
+    // ======================================
+
+    retry: 1,
+  });
 
   // ==========================================
-  // Fetch Product Analytics
+  // Debug
   // ==========================================
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getProductAnalytics();
-
-      console.log("Product Analytics:", data);
-
-      setAnalytics(data);
-    } catch (error) {
-      console.error(
-        "Product Analytics Error:",
-        error
-      );
-
-      setError(
-        "Failed to load product analytics."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (import.meta.env.DEV && isFetching) {
+    console.log(
+      "📊 Product Analytics API fetching..."
+    );
+  }
 
   // ==========================================
   // Loading
   // ==========================================
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100">
         <div className="flex">
@@ -104,7 +145,19 @@ const ProductAnalytics = () => {
 
             <div className="flex flex-1 items-center justify-center p-6">
               <div className="rounded-2xl bg-white shadow-sm border border-gray-200 px-10 py-10">
-                <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-green-600 border-t-transparent" />
+                <div
+                  className="
+                    mx-auto
+                    mb-5
+                    h-12
+                    w-12
+                    animate-spin
+                    rounded-full
+                    border-4
+                    border-green-600
+                    border-t-transparent
+                  "
+                />
 
                 <h2 className="text-xl font-semibold text-gray-800 text-center">
                   Loading Analytics...
@@ -126,7 +179,7 @@ const ProductAnalytics = () => {
   // Error
   // ==========================================
 
-  if (error) {
+  if (isError) {
     return (
       <div className="min-h-screen bg-slate-100">
         <div className="flex">
@@ -152,12 +205,25 @@ const ProductAnalytics = () => {
                 </h2>
 
                 <p className="mt-2 text-sm text-gray-500">
-                  {error}
+                  {error?.response?.data?.message ||
+                    error?.message ||
+                    "Failed to load product analytics."}
                 </p>
 
                 <button
-                  onClick={fetchAnalytics}
-                  className="mt-6 rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+                  onClick={() => refetch()}
+                  className="
+                    mt-6
+                    rounded-xl
+                    bg-green-600
+                    px-6
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-white
+                    transition
+                    hover:bg-green-700
+                  "
                 >
                   Try Again
                 </button>
@@ -174,7 +240,8 @@ const ProductAnalytics = () => {
   // ==========================================
 
   const data = {
-    totalProducts: analytics?.totalProducts ?? 0,
+    totalProducts:
+      analytics?.totalProducts ?? 0,
 
     activeProducts:
       analytics?.activeProducts ?? 0,
@@ -203,6 +270,10 @@ const ProductAnalytics = () => {
     recentProducts:
       analytics?.recentProducts ?? [],
   };
+
+  // ==========================================
+  // Render
+  // ==========================================
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -250,6 +321,33 @@ const ProductAnalytics = () => {
                   and stock insights.
                 </p>
               </div>
+
+              {/* Optional Refresh */}
+
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="
+                  rounded-xl
+                  border
+                  border-gray-200
+                  bg-white
+                  px-5
+                  py-3
+                  text-sm
+                  font-semibold
+                  text-gray-700
+                  shadow-sm
+                  transition
+                  hover:bg-gray-50
+                  disabled:opacity-50
+                  disabled:cursor-not-allowed
+                "
+              >
+                {isFetching
+                  ? "Refreshing..."
+                  : "Refresh Analytics"}
+              </button>
             </div>
 
             {/* ======================================
@@ -258,16 +356,12 @@ const ProductAnalytics = () => {
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
 
-              {/* Total Products */}
-
               <AnalyticsCard
                 title="Total Products"
                 value={data.totalProducts}
                 icon={Package}
                 color="green"
               />
-
-              {/* Active Products */}
 
               <AnalyticsCard
                 title="Active Products"
@@ -276,16 +370,12 @@ const ProductAnalytics = () => {
                 color="blue"
               />
 
-              {/* Draft Products */}
-
               <AnalyticsCard
                 title="Draft Products"
                 value={data.draftProducts}
                 icon={XCircle}
                 color="yellow"
               />
-
-              {/* Low Stock */}
 
               <AnalyticsCard
                 title="Low Stock"
@@ -294,16 +384,12 @@ const ProductAnalytics = () => {
                 color="red"
               />
 
-              {/* Out Of Stock */}
-
               <AnalyticsCard
                 title="Out Of Stock"
                 value={data.outOfStockProducts}
                 icon={XCircle}
                 color="rose"
               />
-
-              {/* Featured Products */}
 
               <AnalyticsCard
                 title="Featured Products"
@@ -312,16 +398,12 @@ const ProductAnalytics = () => {
                 color="purple"
               />
 
-              {/* Trending Products */}
-
               <AnalyticsCard
                 title="Trending Products"
                 value={data.trendingProducts}
                 icon={Flame}
                 color="indigo"
               />
-
-              {/* Inventory Value */}
 
               <AnalyticsCard
                 title="Inventory Value"
@@ -345,8 +427,6 @@ const ProductAnalytics = () => {
 
               <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 
-                {/* Header */}
-
                 <div className="border-b border-gray-100 px-4 py-5 sm:px-6">
                   <h2 className="text-xl font-bold text-gray-800">
                     Category Analytics
@@ -357,9 +437,8 @@ const ProductAnalytics = () => {
                   </p>
                 </div>
 
-                {/* Content */}
-
                 <div className="p-4 sm:p-6">
+
                   {data.categoryAnalytics.length ===
                   0 ? (
                     <div className="py-12 text-center text-gray-500">
@@ -367,6 +446,7 @@ const ProductAnalytics = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
+
                       {data.categoryAnalytics.map(
                         (item, index) => (
                           <div
@@ -408,8 +488,10 @@ const ProductAnalytics = () => {
                           </div>
                         )
                       )}
+
                     </div>
                   )}
+
                 </div>
               </div>
 
@@ -418,8 +500,6 @@ const ProductAnalytics = () => {
               ==================================== */}
 
               <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-
-                {/* Header */}
 
                 <div className="border-b border-gray-100 px-4 py-5 sm:px-6">
                   <h2 className="text-xl font-bold text-gray-800">
@@ -431,15 +511,16 @@ const ProductAnalytics = () => {
                   </p>
                 </div>
 
-                {/* Content */}
-
                 <div className="p-4 sm:p-6">
-                  {data.recentProducts.length === 0 ? (
+
+                  {data.recentProducts.length ===
+                  0 ? (
                     <div className="py-12 text-center text-gray-500">
                       No Products Found
                     </div>
                   ) : (
                     <div className="space-y-4">
+
                       {data.recentProducts.map(
                         (product) => (
                           <div
@@ -459,21 +540,37 @@ const ProductAnalytics = () => {
                               sm:items-center
                             "
                           >
+
                             {/* Product Image */}
 
                             {product.thumbnail ? (
                               <img
-                                src={
-                                  product.thumbnail
-                                }
+                                src={product.thumbnail}
                                 alt={
                                   product.title ||
                                   "Product"
                                 }
-                                className="h-20 w-20 flex-shrink-0 rounded-xl object-cover"
+                                className="
+                                  h-20
+                                  w-20
+                                  flex-shrink-0
+                                  rounded-xl
+                                  object-cover
+                                "
                               />
                             ) : (
-                              <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                              <div
+                                className="
+                                  flex
+                                  h-20
+                                  w-20
+                                  flex-shrink-0
+                                  items-center
+                                  justify-center
+                                  rounded-xl
+                                  bg-gray-100
+                                "
+                              >
                                 <Package
                                   size={28}
                                   className="text-gray-400"
@@ -484,6 +581,7 @@ const ProductAnalytics = () => {
                             {/* Product Details */}
 
                             <div className="min-w-0 flex-1">
+
                               <h3 className="truncate font-semibold text-gray-800">
                                 {product.title ||
                                   "Unnamed Product"}
@@ -493,6 +591,7 @@ const ProductAnalytics = () => {
                                 {product.category ||
                                   "Uncategorized"}
                               </p>
+
                             </div>
 
                             {/* Price */}
@@ -505,13 +604,17 @@ const ProductAnalytics = () => {
                                 "en-IN"
                               )}
                             </div>
+
                           </div>
                         )
                       )}
+
                     </div>
                   )}
+
                 </div>
               </div>
+
             </div>
           </main>
         </div>

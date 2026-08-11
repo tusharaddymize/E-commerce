@@ -1,75 +1,60 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import defaultLogo from "../../assets/images/logo.png";
-import { getWebsiteSettings } from "../../services/websiteSettingService";
+import { useTheme } from "../../context/ThemeContext";
 
 const Logo = () => {
-  const [logo, setLogo] = useState(defaultLogo);
-  const [loading, setLoading] = useState(true);
+  const {
+    websiteSettings,
+    websiteSettingsLoading,
+  } = useTheme();
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const response = await getWebsiteSettings();
+  // ==========================================
+  // Dynamic Logo
+  // ==========================================
 
-        /*
-          WebsiteSettings admin page me:
-          const res = await getWebsiteSettings();
-          const data = res.data;
-
-          Isliye actual settings response.data me hai.
-        */
-
-        const settings = response?.data;
-
-        if (settings?.logo) {
-          setLogo(settings.logo);
-        }
-      } catch (error) {
-        console.error(
-          "Failed to load website logo:",
-          error
-        );
-
-        // API fail hone par local logo rahega
-        setLogo(defaultLogo);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLogo();
-  }, []);
+  const logo =
+    websiteSettings?.logo || defaultLogo;
 
   return (
-<Link
-  to="/"
-  className="flex items-center flex-shrink-0 -ml-2 md:ml-0"
->
-<img
-  src={logo}
-  alt="Website Logo"
-  className={`
-    w-[120px]
-    sm:w-[145px]
-    md:w-[175px]
-    lg:w-[210px]
-    xl:w-[230px]
+    <Link
+      to="/"
+      className="
+        flex
+        items-center
+        shrink-0
 
-    h-auto
-    object-contain
+        w-[180px]
+        h-[70px]
 
-    transition-opacity
-    duration-300
+        overflow-visible
+      "
+    >
+      <img
+        src={logo}
+        alt="Naturio"
+        className="
+          w-full
+          h-full
 
-    ${loading ? "opacity-70" : "opacity-100"}
-  `}
-  onError={(e) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = defaultLogo;
-  }}
-/>
+          object-contain
+          object-center
+
+          scale-[2.2]
+
+          transition-opacity
+          duration-200
+        "
+        style={{
+          opacity: websiteSettingsLoading
+            ? 0.85
+            : 1,
+        }}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = defaultLogo;
+        }}
+      />
     </Link>
   );
 };

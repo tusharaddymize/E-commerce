@@ -1,22 +1,47 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import {
+  Navigate,
+  Outlet,
+  useLocation,
+} from "react-router-dom";
+
 import { useAdmin } from "../../context/AdminContext";
 
 const AdminProtectedRoute = () => {
-  const { admin } = useAdmin();
-  const location = useLocation();
+  const {
+    admin,
+    adminToken,
+  } = useAdmin();
 
-  // Admin login nahi hai
-  if (!admin) {
+  const location =
+    useLocation();
+
+  // ==========================================
+  // Admin Authentication Check
+  // ==========================================
+
+  const isAdminAuthenticated =
+    Boolean(admin && adminToken);
+
+  // ==========================================
+  // Admin Not Logged In
+  // ==========================================
+
+  if (!isAdminAuthenticated) {
     return (
       <Navigate
         to="/admin/login"
         replace
-        state={{ from: location }}
+        state={{
+          from: location,
+        }}
       />
     );
   }
 
-  // Admin login hai
+  // ==========================================
+  // Admin Logged In
+  // ==========================================
+
   return <Outlet />;
 };
 

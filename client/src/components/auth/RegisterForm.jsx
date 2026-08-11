@@ -181,9 +181,9 @@ const RegisterForm = () => {
         {/* ==================================== */}
 
         <div>
-          <label className="font-medium">
-            Full Name
-          </label>
+<label className="font-medium text-gray-800">
+  Full Name
+</label>
 
           <div
             className="
@@ -207,12 +207,14 @@ const RegisterForm = () => {
             <input
               type="text"
               placeholder="Enter full name"
-              className="
-                w-full
-                p-3
-                outline-none
-                bg-transparent
-              "
+className="
+  w-full
+  p-3
+  outline-none
+  bg-transparent
+  text-gray-800
+  placeholder:text-gray-400
+"
               {...register("name")}
             />
           </div>
@@ -229,9 +231,9 @@ const RegisterForm = () => {
         {/* ==================================== */}
 
         <div>
-          <label className="font-medium">
-            Email
-          </label>
+<label className="font-medium text-gray-800">
+  Email
+</label>
 
           <div
             className="
@@ -255,12 +257,14 @@ const RegisterForm = () => {
             <input
               type="email"
               placeholder="Enter email"
-              className="
-                w-full
-                p-3
-                outline-none
-                bg-transparent
-              "
+className="
+  w-full
+  p-3
+  outline-none
+  bg-transparent
+  text-gray-800
+  placeholder:text-gray-400
+"
               {...register("email")}
             />
           </div>
@@ -277,9 +281,9 @@ const RegisterForm = () => {
         {/* ==================================== */}
 
         <div>
-          <label className="font-medium">
-            Password
-          </label>
+<label className="font-medium text-gray-800">
+  Password
+</label>
 
           <div
             className="
@@ -312,6 +316,8 @@ const RegisterForm = () => {
                 p-3
                 outline-none
                 bg-transparent
+                text-gray-800
+placeholder:text-gray-400
               "
               {...register("password")}
             />
@@ -350,9 +356,9 @@ const RegisterForm = () => {
         {/* ==================================== */}
 
         <div>
-          <label className="font-medium">
-            Confirm Password
-          </label>
+<label className="font-medium text-gray-800">
+  Confirm Password
+</label>
 
           <div
             className="
@@ -363,6 +369,8 @@ const RegisterForm = () => {
               mt-2
               px-3
               transition
+              text-gray-800
+placeholder:text-gray-400
             "
             style={{
               borderRadius:
@@ -480,7 +488,7 @@ const RegisterForm = () => {
       {/* Login Link */}
       {/* ====================================== */}
 
-      <p className="text-center mt-6">
+      <p className="text-center mt-6 text-gray-700">
         Already have an account?
 
         <Link

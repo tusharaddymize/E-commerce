@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -18,7 +17,7 @@ import {
   FiMail,
 } from "react-icons/fi";
 
-import { getWebsiteSettings } from "../../services/websiteSettingService";
+import useWebsiteSettings from "../../hooks/useWebsiteSettings";
 
 // ==========================================
 // Social Link Component
@@ -73,42 +72,80 @@ const SocialLink = ({
 // ==========================================
 
 const Footer = () => {
-  const [contact, setContact] =
-    useState({});
+  // ========================================
+  // Website Settings
+  // React Query Cached Data
+  // ========================================
 
-  const [social, setSocial] =
-    useState({});
+  const {
+    data,
+    isLoading,
+    isError,
+  } = useWebsiteSettings();
 
-  // ==========================================
-  // Fetch Website Settings
-  // ==========================================
+  // ========================================
+  // Normalize API Response
+  // ========================================
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response =
-          await getWebsiteSettings();
+  const websiteSettings =
+    data?.data || data || {};
 
-        const settings =
-          response?.data || response;
+  // ========================================
+  // Contact Settings
+  // ========================================
 
-        setContact(
-          settings?.contact || {}
-        );
+  const contact =
+    websiteSettings?.contact || {};
 
-        setSocial(
-          settings?.social || {}
-        );
-      } catch (error) {
-        console.error(
-          "Footer Website Settings Error:",
-          error
-        );
-      }
-    };
+  // ========================================
+  // Social Settings
+  // ========================================
 
-    fetchSettings();
-  }, []);
+  const social =
+    websiteSettings?.social || {};
+
+  // ========================================
+  // Loading
+  // ========================================
+
+  if (isLoading) {
+    return (
+      <footer
+        className="
+          theme-secondary-bg
+          text-white
+          w-full
+        "
+      >
+        <div
+          className="
+            theme-container
+            w-full
+            mx-auto
+
+            px-4
+            sm:px-6
+            lg:px-8
+
+            py-10
+            sm:py-12
+            lg:py-14
+          "
+        >
+          <div className="animate-pulse">
+            <div className="h-7 w-40 bg-white/10 rounded mb-4" />
+
+            <div className="h-4 w-72 bg-white/10 rounded mb-2" />
+            <div className="h-4 w-64 bg-white/10 rounded" />
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  // ========================================
+  // Footer
+  // ========================================
 
   return (
     <footer
@@ -123,9 +160,9 @@ const Footer = () => {
         duration-300
       "
     >
-      {/* ====================================== */}
-      {/* Main Footer */}
-      {/* ====================================== */}
+      {/* ======================================
+          Main Footer
+      ====================================== */}
 
       <div
         className="
@@ -159,9 +196,9 @@ const Footer = () => {
             lg:gap-y-8
           "
         >
-          {/* ================================== */}
-          {/* Company */}
-          {/* ================================== */}
+          {/* ==================================
+              Company
+          ================================== */}
 
           <div
             className="
@@ -179,8 +216,7 @@ const Footer = () => {
                 tracking-wide
               "
             >
-              {contact.companyName ||
-                "NATURIO"}
+              {contact.companyName || "NATURIO"}
             </h2>
 
             <p
@@ -276,9 +312,9 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* ================================== */}
-          {/* Quick Links */}
-          {/* ================================== */}
+          {/* ==================================
+              Quick Links
+          ================================== */}
 
           <div className="min-w-0">
             <h3
@@ -302,10 +338,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Home
                 </Link>
@@ -314,10 +347,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Shop
                 </Link>
@@ -326,10 +356,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Categories
                 </Link>
@@ -338,10 +365,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Deals
                 </Link>
@@ -350,10 +374,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Contact
                 </Link>
@@ -362,10 +383,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/about"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   About Us
                 </Link>
@@ -373,9 +391,9 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* ================================== */}
-          {/* Customer */}
-          {/* ================================== */}
+          {/* ==================================
+              Customer
+          ================================== */}
 
           <div className="min-w-0">
             <h3
@@ -399,10 +417,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/profile"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   My Account
                 </Link>
@@ -411,10 +426,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/orders"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Orders
                 </Link>
@@ -423,10 +435,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/policy/privacy"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Privacy Policy
                 </Link>
@@ -435,10 +444,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/policy/terms"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Terms & Conditions
                 </Link>
@@ -447,10 +453,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/policy/shipping"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Shipping Policy
                 </Link>
@@ -459,10 +462,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/policy/refund"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Refund Policy
                 </Link>
@@ -471,10 +471,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/policy/cancellation"
-                  className="
-                    hover:text-white
-                    transition-colors
-                  "
+                  className="hover:text-white transition-colors"
                 >
                   Cancellation Policy
                 </Link>
@@ -482,9 +479,9 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* ================================== */}
-          {/* Contact */}
-          {/* ================================== */}
+          {/* ==================================
+              Contact
+          ================================== */}
 
           <div className="min-w-0">
             <h3
@@ -610,9 +607,9 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* ====================================== */}
-      {/* Bottom Footer */}
-      {/* ====================================== */}
+      {/* ======================================
+          Bottom Footer
+      ====================================== */}
 
       <div
         className="
@@ -653,8 +650,7 @@ const Footer = () => {
             "
           >
             © {new Date().getFullYear()}{" "}
-            {contact.companyName ||
-              "NATURIO"}
+            {contact.companyName || "NATURIO"}
             . All Rights Reserved.
           </p>
 
@@ -675,40 +671,28 @@ const Footer = () => {
           >
             <Link
               to="/policy/privacy"
-              className="
-                hover:text-white
-                transition-colors
-              "
+              className="hover:text-white transition-colors"
             >
               Privacy
             </Link>
 
             <Link
               to="/policy/terms"
-              className="
-                hover:text-white
-                transition-colors
-              "
+              className="hover:text-white transition-colors"
             >
               Terms
             </Link>
 
             <Link
               to="/policy/shipping"
-              className="
-                hover:text-white
-                transition-colors
-              "
+              className="hover:text-white transition-colors"
             >
               Shipping
             </Link>
 
             <Link
               to="/policy/refund"
-              className="
-                hover:text-white
-                transition-colors
-              "
+              className="hover:text-white transition-colors"
             >
               Refund
             </Link>

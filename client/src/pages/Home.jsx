@@ -1,17 +1,22 @@
-import { useEffect, useState } from "react";
-
 import Header from "../components/header/Header";
 import HeroSlider from "../components/hero/HeroSlider";
-// import Categories from "../components/categories/Categories";
 import ProductGrid from "../components/product-card/ProductGrid";
 import FlashDealsSection from "../components/home/FlashDealsSection";
 import Footer from "../components/footer/Footer";
 import ScrollToTopButton from "../components/common/ScrollToTopButton";
 
 import useProducts from "../hooks/useProducts";
-import { getWebsiteSettings } from "../services/websiteSettingService";
+import useWebsiteSettings from "../hooks/useWebsiteSettings";
+
+// ==========================================
+// Home Page
+// ==========================================
 
 const Home = () => {
+  // ==========================================
+  // Products
+  // ==========================================
+
   const {
     products,
     loading,
@@ -21,62 +26,39 @@ const Home = () => {
 
   // ==========================================
   // Website Settings
+  // React Query
   // ==========================================
 
-  const [
-    websiteSettings,
-    setWebsiteSettings,
-  ] = useState(null);
-
-  const [
-    settingsLoading,
-    setSettingsLoading,
-  ] = useState(true);
+  const {
+    data,
+    isLoading: websiteSettingsLoading,
+    isError: websiteSettingsError,
+  } = useWebsiteSettings();
 
   // ==========================================
-  // Fetch Website Settings
+  // Website Settings Data
+  //
+  // Service agar direct data return kare:
+  // data = settings
+  //
+  // Agar response.data return kare:
+  // data = { data: settings }
+  //
+  // Dono cases handle kar rahe hain.
   // ==========================================
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        setSettingsLoading(true);
-
-        const response =
-          await getWebsiteSettings();
-
-        // Supports:
-        // { success: true, data: {...} }
-        // OR direct settings object
-
-        const data =
-          response?.data || response;
-
-        setWebsiteSettings(data);
-      } catch (error) {
-        console.error(
-          "Failed to load website settings:",
-          error
-        );
-      } finally {
-        setSettingsLoading(false);
-      }
-    };
-
-    fetchSettings();
-  }, []);
+  const websiteSettings =
+    data?.data || data || {};
 
   // ==========================================
   // Homepage Sections
   // ==========================================
 
   const sections =
-    websiteSettings?.homepageSections ||
-    {};
+    websiteSettings?.homepageSections || {};
 
   const showHero =
     sections.hero !== false;
-
 
   const showFlashDeals =
     sections.flashDeals !== false;
@@ -85,50 +67,68 @@ const Home = () => {
     sections.featuredProducts !== false;
 
   // ==========================================
-  // Settings Loading
+  // Website Settings Loading
   // ==========================================
 
-  if (settingsLoading) {
+  if (websiteSettingsLoading) {
     return (
       <>
+        {/* ======================================
+            Header / Navbar
+        ====================================== */}
+
         <Header />
 
-        <div
+        {/* ======================================
+            Loading
+        ====================================== */}
+
+        <main
           className="
             min-h-[60vh]
-
             flex
             items-center
             justify-center
+            bg-white
           "
         >
           <div className="text-center">
 
-            {/* Loading Spinner */}
+            {/* Spinner */}
 
             <div
               className="
                 w-10
                 h-10
-
                 mx-auto
 
                 border-4
-                border-[var(--primary-color)]
+                border-[var(--primary-color,#355E3B)]
                 border-t-transparent
 
                 rounded-full
-
                 animate-spin
               "
             />
 
-            <p className="mt-4 text-gray-500">
+            {/* Loading Text */}
+
+            <p
+              className="
+                mt-4
+                text-gray-600
+                font-medium
+              "
+            >
               Loading...
             </p>
 
           </div>
-        </div>
+        </main>
+
+        {/* ======================================
+            Footer
+        ====================================== */}
 
         <Footer />
       </>
@@ -136,53 +136,145 @@ const Home = () => {
   }
 
   // ==========================================
-  // Home Page
+  // Website Settings Error
+  // ==========================================
+
+  if (websiteSettingsError) {
+    return (
+      <>
+        {/* Header */}
+
+        <Header />
+
+        {/* Error */}
+
+        <main
+          className="
+            min-h-[60vh]
+            flex
+            items-center
+            justify-center
+            bg-white
+            px-4
+          "
+        >
+          <div className="text-center">
+
+            <h2
+              className="
+                text-2xl
+                font-bold
+                text-gray-800
+              "
+            >
+              Something went wrong
+            </h2>
+
+            <p
+              className="
+                mt-2
+                text-gray-500
+              "
+            >
+              Unable to load website settings.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="
+                mt-5
+                rounded-lg
+                px-6
+                py-3
+                text-white
+                font-semibold
+                transition
+                hover:opacity-90
+              "
+              style={{
+                backgroundColor:
+                  "var(--primary-color,#355E3B)",
+              }}
+            >
+              Try Again
+            </button>
+
+          </div>
+        </main>
+
+        {/* Footer */}
+
+        <Footer />
+      </>
+    );
+  }
+
+  // ==========================================
+  // Main Home Page
   // ==========================================
 
   return (
     <>
+      {/* ======================================
+          Header / Navbar
+      ====================================== */}
+
       <Header />
 
-      {/* ====================================== */}
-      {/* Hero Section */}
-      {/* ====================================== */}
+      {/* ======================================
+          Main Content
+      ====================================== */}
 
-      {showHero && (
-        <HeroSlider />
-      )}
+      <main
+        className="
+          w-full
+          bg-white
+        "
+      >
 
-      {/* ====================================== */}
-      {/* Flash Deals / Explore Products */}
-      {/* ====================================== */}
+        {/* ======================================
+            Hero Section
+        ====================================== */}
 
-      {showFlashDeals && (
-        <FlashDealsSection
-          products={products}
-        />
-      )}
+        {showHero && (
+          <HeroSlider />
+        )}
 
-      {/* ====================================== */}
-      {/* Featured Products */}
-      {/* ====================================== */}
+        {/* ======================================
+            Flash Deals / Explore Products
+        ====================================== */}
 
-      {showFeaturedProducts && (
-        <ProductGrid
-          products={products}
-          loading={loading}
-          hasMore={hasMore}
-          loadMore={loadMore}
-        />
-      )}
+        {showFlashDeals && (
+          <FlashDealsSection
+            products={products}
+          />
+        )}
 
-      {/* ====================================== */}
-      {/* Footer */}
-      {/* ====================================== */}
+        {/* ======================================
+            Featured Products
+        ====================================== */}
+
+        {showFeaturedProducts && (
+          <ProductGrid
+            products={products}
+            loading={loading}
+            hasMore={hasMore}
+            loadMore={loadMore}
+          />
+        )}
+
+      </main>
+
+      {/* ======================================
+          Footer
+      ====================================== */}
 
       <Footer />
 
-      {/* ====================================== */}
-      {/* Scroll To Top */}
-      {/* ====================================== */}
+      {/* ======================================
+          Scroll To Top
+      ====================================== */}
 
       <ScrollToTopButton />
     </>

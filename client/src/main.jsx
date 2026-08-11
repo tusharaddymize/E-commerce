@@ -3,6 +3,11 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
 import "./styles/index.css";
 
 import App from "./App";
@@ -23,6 +28,46 @@ import { CategoryProvider } from "./context/CategoryContext";
 import "react-toastify/dist/ReactToastify.css";
 
 // ==========================================
+// React Query Client
+// ==========================================
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // ========================================
+      // Cache data for 5 minutes
+      // ========================================
+
+      staleTime: 5 * 60 * 1000,
+
+      // ========================================
+      // Keep unused cache for 30 minutes
+      // ========================================
+
+      gcTime: 30 * 60 * 1000,
+
+      // ========================================
+      // Don't refetch when browser tab changes
+      // ========================================
+
+      refetchOnWindowFocus: false,
+
+      // ========================================
+      // Don't refetch automatically on reconnect
+      // ========================================
+
+      refetchOnReconnect: false,
+
+      // ========================================
+      // Retry failed request only once
+      // ========================================
+
+      retry: 1,
+    },
+  },
+});
+
+// ==========================================
 // Root
 // ==========================================
 
@@ -36,115 +81,115 @@ const root = createRoot(
 
 root.render(
   <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
 
-    <BrowserRouter>
+        {/* ======================================
+            Authentication
+        ====================================== */}
 
-      {/* ====================================== */}
-      {/* Authentication */}
-      {/* ====================================== */}
+        <AuthProvider>
 
-      <AuthProvider>
+          {/* ====================================
+              Cart
+          ==================================== */}
 
-        {/* ==================================== */}
-        {/* Cart */}
-        {/* ==================================== */}
+          <CartProvider>
 
-        <CartProvider>
+            {/* ==================================
+                Wishlist
+            ================================== */}
 
-          {/* ================================== */}
-          {/* Wishlist */}
-          {/* ================================== */}
+            <WishlistProvider>
 
-          <WishlistProvider>
+              {/* =================================
+                  Orders
+              ================================= */}
 
-            {/* ================================= */}
-            {/* Orders */}
-            {/* ================================= */}
+              <OrderProvider>
 
-            <OrderProvider>
+                {/* =================================
+                    Products
+                ================================= */}
 
-              {/* ================================= */}
-              {/* Products */}
-              {/* ================================= */}
+                <ProductProvider>
 
-              <ProductProvider>
+                  {/* =================================
+                      Admin
+                  ================================= */}
 
-                {/* ================================= */}
-                {/* Admin */}
-                {/* ================================= */}
+                  <AdminProvider>
 
-                <AdminProvider>
+                    {/* =================================
+                        Global Theme
+                    ================================= */}
 
-                  {/* ================================= */}
-                  {/* Global Theme */}
-                  {/* ================================= */}
+                    <ThemeProvider>
 
-                  <ThemeProvider>
+                      {/* =================================
+                          Categories
+                      ================================= */}
 
-                    {/* ================================= */}
-                    {/* Categories */}
-                    {/* ================================= */}
+                      <CategoryProvider>
 
-                    <CategoryProvider>
+                        {/* =================================
+                            Main Application
+                        ================================= */}
 
-                      {/* ================================= */}
-                      {/* Main Application */}
-                      {/* ================================= */}
+                        <App />
 
-                      <App />
+                      </CategoryProvider>
 
-                    </CategoryProvider>
+                    </ThemeProvider>
 
-                    {/* ================================= */}
-                    {/* Toast Notifications */}
-                    {/* ================================= */}
+                  </AdminProvider>
 
-                    <Toaster
-                      position="top-right"
-                      reverseOrder={false}
-                      gutter={10}
-                      containerStyle={{
-                        top: 20,
-                        right: 20,
-                      }}
-                      toastOptions={{
-                        duration: 3000,
+                </ProductProvider>
 
-                        style: {
-                          borderRadius: "12px",
-                          background: "#fff",
-                          color: "#111827",
-                          fontSize: "15px",
-                          fontWeight: 500,
-                          padding: "14px 16px",
-                          maxWidth: "420px",
-                        },
+              </OrderProvider>
 
-                        success: {
-                          duration: 2500,
-                        },
+            </WishlistProvider>
 
-                        error: {
-                          duration: 4000,
-                        },
-                      }}
-                    />
+          </CartProvider>
 
-                  </ThemeProvider>
+        </AuthProvider>
 
-                </AdminProvider>
+        {/* ======================================
+            Toast Notifications
+        ====================================== */}
 
-              </ProductProvider>
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          gutter={10}
+          containerStyle={{
+            top: 20,
+            right: 20,
+          }}
+          toastOptions={{
+            duration: 3000,
 
-            </OrderProvider>
+            style: {
+              borderRadius: "12px",
+              background: "#fff",
+              color: "#111827",
+              fontSize: "15px",
+              fontWeight: 500,
+              padding: "14px 16px",
+              maxWidth: "420px",
+            },
 
-          </WishlistProvider>
+            success: {
+              duration: 2500,
+            },
 
-        </CartProvider>
+            error: {
+              duration: 4000,
+            },
+          }}
+        />
 
-      </AuthProvider>
-
-    </BrowserRouter>
-
+      </BrowserRouter>
+    </QueryClientProvider>
   </React.StrictMode>
 );

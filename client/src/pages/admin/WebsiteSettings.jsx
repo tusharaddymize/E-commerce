@@ -1,26 +1,14 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import {
-  useNavigate,
-} from "react-router-dom";
-
-import {
-  ArrowLeft,
-} from "lucide-react";
-
-import {
-  toast,
-} from "react-hot-toast";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 // ==========================================
 // Website Settings Services
 // ==========================================
 
 import {
-  getWebsiteSettings,
   updateLogo,
   updateHeroBanners,
   updateHomepageSettings,
@@ -32,37 +20,51 @@ import {
 } from "../../services/websiteSettingService";
 
 // ==========================================
+// React Query Website Settings
+// ==========================================
+
+import useWebsiteSettings from "../../hooks/useWebsiteSettings";
+
+// ==========================================
 // Components
 // ==========================================
 
 import SettingsAccordion from "../../components/admin/settings/SettingsAccordion";
 
 // ==========================================
-// Theme Context
+// Website Settings
 // ==========================================
-
-// import {
-//   useTheme,
-// } from "../../context/ThemeContext";
 
 const WebsiteSettings = () => {
   const navigate = useNavigate();
 
   // ==========================================
-  // Global Theme
+  // React Query - Website Settings
   // ==========================================
 
-  // const {
-  //   updateLocalTheme,
-  //   refreshTheme,
-  // } = useTheme();
+  const {
+    data,
+    isLoading,
+    isError,
+  } = useWebsiteSettings();
 
   // ==========================================
-  // Loading
+  // Normalize API Response
+  //
+  // Supports:
+  // { success: true, data: {...} }
+  //
+  // OR
+  //
+  // direct settings object
   // ==========================================
 
-  const [loading, setLoading] =
-    useState(true);
+  const websiteSettings =
+    data?.data || data || null;
+
+  // ==========================================
+  // Saving State
+  // ==========================================
 
   const [saving, setSaving] =
     useState(false);
@@ -150,157 +152,137 @@ const WebsiteSettings = () => {
   ] = useState({});
 
   // ==========================================
-  // Fetch Website Settings
-  // ==========================================
-
-  const fetchWebsiteSettings =
-    async () => {
-      try {
-        setLoading(true);
-
-        const res =
-          await getWebsiteSettings();
-
-        // Supports:
-        //
-        // {
-        //   success: true,
-        //   data: {...}
-        // }
-        //
-        // OR direct settings object
-
-        const data =
-          res?.data || res;
-
-        if (!data) {
-          throw new Error(
-            "Website settings not found."
-          );
-        }
-
-        // ======================================
-        // Main Settings
-        // ======================================
-
-        setSettings(data);
-
-        // ======================================
-        // Logo + Favicon
-        // ======================================
-
-        setLogo(null);
-
-        setFavicon(null);
-
-        setLogoPreview(
-          data?.logo || ""
-        );
-
-        setFaviconPreview(
-          data?.favicon || ""
-        );
-
-        // ======================================
-        // Hero Banners
-        // ======================================
-
-        setHeroBanners(
-          (
-            data?.heroBanners || []
-          ).map((banner) => ({
-            ...banner,
-
-            preview:
-              banner?.image || "",
-          }))
-        );
-
-        // ======================================
-        // Homepage
-        // ======================================
-
-        setHomepage({
-          homepageBanners:
-            data?.homepageBanners ||
-            [],
-
-          homepageSections:
-            data?.homepageSections ||
-            {},
-        });
-
-        // ======================================
-        // Contact
-        // ======================================
-
-        setContact(
-          data?.contact || {}
-        );
-
-        // ======================================
-        // Social
-        // ======================================
-
-        setSocial(
-          data?.social || {}
-        );
-
-        // ======================================
-        // About
-        // ======================================
-
-        setAbout(
-          data?.about || {}
-        );
-
-        // ======================================
-        // Policies
-        // ======================================
-
-        setPolicies(
-          data?.policies || {}
-        );
-
-        // ======================================
-        // SEO
-        // ======================================
-
-        setSeo(
-          data?.seo || {}
-        );
-
-        // ======================================
-        // Theme
-        // ======================================
-
-        setTheme(
-          data?.theme || {}
-        );
-      } catch (error) {
-        console.error(
-          "Fetch Website Settings Error:",
-          error
-        );
-
-        toast.error(
-          error?.response?.data
-            ?.message ||
-            error?.message ||
-            "Failed to load website settings."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-  // ==========================================
-  // Initial Fetch
+  // Sync React Query Data
+  // With Local Form States
   // ==========================================
 
   useEffect(() => {
-    fetchWebsiteSettings();
-  }, []);
+    if (!websiteSettings) {
+      return;
+    }
+
+    // ========================================
+    // Main Settings
+    // ========================================
+
+    setSettings(
+      websiteSettings
+    );
+
+    // ========================================
+    // Logo + Favicon
+    // ========================================
+
+    setLogo(null);
+
+    setFavicon(null);
+
+    setLogoPreview(
+      websiteSettings?.logo || ""
+    );
+
+    setFaviconPreview(
+      websiteSettings?.favicon || ""
+    );
+
+    // ========================================
+    // Hero Banners
+    // ========================================
+
+    setHeroBanners(
+      (
+        websiteSettings?.heroBanners ||
+        []
+      ).map((banner) => ({
+        ...banner,
+
+        preview:
+          banner?.image || "",
+      }))
+    );
+
+    // ========================================
+    // Homepage
+    // ========================================
+
+    setHomepage({
+      homepageBanners:
+        websiteSettings?.homepageBanners ||
+        [],
+
+      homepageSections:
+        websiteSettings?.homepageSections ||
+        {},
+    });
+
+    // ========================================
+    // Contact
+    // ========================================
+
+    setContact(
+      websiteSettings?.contact ||
+        {}
+    );
+
+    // ========================================
+    // Social
+    // ========================================
+
+    setSocial(
+      websiteSettings?.social ||
+        {}
+    );
+
+    // ========================================
+    // About
+    // ========================================
+
+    setAbout(
+      websiteSettings?.about ||
+        {}
+    );
+
+    // ========================================
+    // Policies
+    // ========================================
+
+    setPolicies(
+      websiteSettings?.policies ||
+        {}
+    );
+
+    // ========================================
+    // SEO
+    // ========================================
+
+    setSeo(
+      websiteSettings?.seo ||
+        {}
+    );
+
+    // ========================================
+    // Theme
+    // ========================================
+
+    setTheme(
+      websiteSettings?.theme ||
+        {}
+    );
+  }, [websiteSettings]);
+
+  // ==========================================
+  // API Error
+  // ==========================================
+
+  useEffect(() => {
+    if (!isError) {
+      return;
+    }
+
+    toast.error(
+      "Failed to load website settings."
+    );
+  }, [isError]);
 
   // ==========================================
   // Save Logo
@@ -315,8 +297,6 @@ const WebsiteSettings = () => {
           logo,
           favicon,
         });
-
-        await fetchWebsiteSettings();
 
         toast.success(
           "Logo updated successfully."
@@ -349,8 +329,6 @@ const WebsiteSettings = () => {
         await updateHeroBanners(
           heroBanners
         );
-
-        await fetchWebsiteSettings();
 
         toast.success(
           "Hero banners updated successfully."
@@ -535,58 +513,58 @@ const WebsiteSettings = () => {
   // Save Theme
   // ==========================================
 
-const handleSaveTheme = async () => {
-  try {
-    setSaving(true);
+  const handleSaveTheme =
+    async () => {
+      try {
+        setSaving(true);
 
-    // ======================================
-    // Save Theme To Backend / MongoDB
-    // ======================================
+        // ======================================
+        // Save Theme To Backend / MongoDB
+        // ======================================
 
-    const response =
-      await updateThemeSettings(theme);
+        const response =
+          await updateThemeSettings(
+            theme
+          );
 
-    const savedTheme =
-      response?.data || theme;
+        const savedTheme =
+          response?.data ||
+          theme;
 
-    // ======================================
-    // Update Local Form State
-    // ======================================
+        // ======================================
+        // Update Local Form State
+        // ======================================
 
-    setTheme((previous) => ({
-      ...previous,
-      ...savedTheme,
-    }));
+        setTheme((previous) => ({
+          ...previous,
+          ...savedTheme,
+        }));
 
-    // ======================================
-    // Theme saved successfully
-    // ======================================
+        toast.success(
+          "Theme updated successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Theme Update Error:",
+          error
+        );
 
-    toast.success(
-      "Theme updated successfully."
-    );
-
-  } catch (error) {
-    console.error(
-      "Theme Update Error:",
-      error
-    );
-
-    toast.error(
-      error?.response?.data?.message ||
-        error?.message ||
-        "Failed to update theme."
-    );
-  } finally {
-    setSaving(false);
-  }
-};
+        toast.error(
+          error?.response?.data
+            ?.message ||
+            error?.message ||
+            "Failed to update theme."
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
 
   // ==========================================
   // Loading UI
   // ==========================================
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div
         className="
@@ -594,6 +572,7 @@ const handleSaveTheme = async () => {
           min-h-[70vh]
           items-center
           justify-center
+          bg-gray-50
         "
       >
         <div className="text-center">
@@ -622,6 +601,77 @@ const handleSaveTheme = async () => {
           >
             Loading Website Settings...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // Error UI
+  // ==========================================
+
+  if (isError) {
+    return (
+      <div
+        className="
+          flex
+          min-h-[70vh]
+          items-center
+          justify-center
+          bg-gray-50
+          p-6
+        "
+      >
+        <div
+          className="
+            w-full
+            max-w-md
+            rounded-2xl
+            bg-white
+            p-8
+            text-center
+            shadow-lg
+          "
+        >
+          <h2
+            className="
+              text-xl
+              font-bold
+              text-gray-800
+            "
+          >
+            Unable to Load Website Settings
+          </h2>
+
+          <p
+            className="
+              mt-3
+              text-gray-500
+            "
+          >
+            Please refresh the page and
+            try again.
+          </p>
+
+          <button
+            type="button"
+            onClick={() =>
+              window.location.reload()
+            }
+            className="
+              mt-6
+              rounded-xl
+              bg-[var(--color-primary,#355E3B)]
+              px-5
+              py-3
+              font-semibold
+              text-white
+              transition
+              hover:opacity-90
+            "
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -720,6 +770,7 @@ const handleSaveTheme = async () => {
       ====================================== */}
 
       <SettingsAccordion
+
         // ====================================
         // Logo
         // ====================================

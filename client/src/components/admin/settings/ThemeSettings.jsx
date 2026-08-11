@@ -294,39 +294,7 @@ const ThemeSettings = ({
           </p>
         </div>
 
-        {/* ==================================== */}
-        {/* Dark Mode */}
-        {/* ==================================== */}
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Dark Mode
-          </label>
-
-          <label className="flex items-center justify-between px-4 py-3 border border-gray-300 rounded-xl cursor-pointer">
-            <div>
-              <p className="text-gray-700 font-medium">
-                Enable Dark Mode
-              </p>
-
-              <p className="text-xs text-gray-500 mt-1">
-                Use dark theme on the storefront.
-              </p>
-            </div>
-
-            <input
-              type="checkbox"
-              checked={Boolean(theme.darkMode)}
-              onChange={(e) =>
-                handleChange(
-                  "darkMode",
-                  e.target.checked
-                )
-              }
-              className="w-5 h-5 accent-green-600"
-            />
-          </label>
-        </div>
+ 
 
         {/* ==================================== */}
         {/* Font Family */}

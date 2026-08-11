@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Link,
   useParams,
@@ -24,10 +24,14 @@ import CategoryToolbar from "../components/categories/CategoryToolbar";
 import CategoryGrid from "../components/categories/CategoryGrid";
 
 // ==========================================
-// Services
+// Theme Context
 // ==========================================
 
-import { getWebsiteSettings } from "../services/websiteSettingService";
+import { useTheme } from "../context/ThemeContext";
+
+// ==========================================
+// Category Page
+// ==========================================
 
 const CategoryPage = () => {
   // ==========================================
@@ -41,67 +45,45 @@ const CategoryPage = () => {
   } = useParams();
 
   // ==========================================
-  // States
+  // Filters
   // ==========================================
 
-  const [filters, setFilters] =
-    useState({});
-
-  const [theme, setTheme] =
-    useState({});
+  const [filters, setFilters] = useState({});
 
   // ==========================================
-  // Load Website Theme
+  // Theme
+  //
+  // ThemeContext already gets website settings
+  // through React Query.
+  //
+  // IMPORTANT:
+  // No getWebsiteSettings() here.
+  // No separate API request here.
   // ==========================================
 
-  useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const res =
-          await getWebsiteSettings();
-
-        setTheme(
-          res?.data?.theme ||
-            res?.theme ||
-            {}
-        );
-      } catch (error) {
-        console.error(
-          "Failed to load website theme:",
-          error
-        );
-      }
-    };
-
-    loadTheme();
-  }, []);
+  const { theme = {} } = useTheme();
 
   // ==========================================
-  // Page
+  // Render
   // ==========================================
 
   return (
-    <div
-      className="
-        min-h-screen
-        flex
-        flex-col
-      "
-    >
-      {/* ====================================== */}
-      {/* Header + Navbar */}
-      {/* ====================================== */}
+    <>
+      {/* ======================================
+          Header + Navbar
+      ====================================== */}
 
       <Header />
 
-      {/* ====================================== */}
-      {/* Main Category Content */}
-      {/* ====================================== */}
+      {/* ======================================
+          Main Category Content
+      ====================================== */}
 
       <main
         className="
           bg-gray-100
           flex-1
+          min-h-screen
         "
       >
         <div
@@ -118,9 +100,9 @@ const CategoryPage = () => {
             lg:py-8
           "
         >
-          {/* ================================== */}
-          {/* Back To Home */}
-          {/* ================================== */}
+          {/* ==================================
+              Back To Home
+          ================================== */}
 
           <div className="mb-4">
             <Link
@@ -150,9 +132,9 @@ const CategoryPage = () => {
             </Link>
           </div>
 
-          {/* ================================== */}
-          {/* Category Banner */}
-          {/* ================================== */}
+          {/* ==================================
+              Category Banner
+          ================================== */}
 
           <CategoryBanner
             title={
@@ -163,9 +145,9 @@ const CategoryPage = () => {
             theme={theme}
           />
 
-          {/* ================================== */}
-          {/* Filters + Products */}
-          {/* ================================== */}
+          {/* ==================================
+              Filters + Products
+          ================================== */}
 
           <div
             className="
@@ -178,9 +160,9 @@ const CategoryPage = () => {
               lg:gap-8
             "
           >
-            {/* ================================ */}
-            {/* Filter Sidebar */}
-            {/* ================================ */}
+            {/* ================================
+                Filter Sidebar
+            ================================= */}
 
             <CategorySidebar
               categorySlug={
@@ -196,9 +178,9 @@ const CategoryPage = () => {
               setFilters={setFilters}
             />
 
-            {/* ================================ */}
-            {/* Products Section */}
-            {/* ================================ */}
+            {/* ================================
+                Products Section
+            ================================= */}
 
             <section className="min-w-0">
               {/* Product Toolbar */}
@@ -227,18 +209,18 @@ const CategoryPage = () => {
         </div>
       </main>
 
-      {/* ====================================== */}
-      {/* Footer */}
-      {/* ====================================== */}
+      {/* ======================================
+          Footer
+      ====================================== */}
 
       <Footer />
 
-      {/* ====================================== */}
-      {/* Scroll To Top */}
-      {/* ====================================== */}
+      {/* ======================================
+          Scroll To Top
+      ====================================== */}
 
       <ScrollToTopButton />
-    </div>
+    </>
   );
 };
 

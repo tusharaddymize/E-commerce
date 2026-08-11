@@ -91,20 +91,16 @@ const AdminSidebar = ({
       {/* ====================================== */}
 
       {isOpen && (
-        <div
-          onClick={() =>
-            setIsOpen(false)
-          }
-          className="
-            fixed
-            inset-0
-            z-40
-
-            bg-black/40
-
-            lg:hidden
-          "
-        />
+<div
+  onClick={() => setIsOpen(false)}
+  className="
+    fixed
+    inset-0
+    z-[9998]
+    bg-black/40
+    lg:hidden
+  "
+/>
       )}
 
       {/* ====================================== */}
@@ -118,8 +114,7 @@ const AdminSidebar = ({
           left-0
           bottom-0
 
-          z-50
-
+         z-[9999] 
           w-72
           h-screen
 

@@ -1,157 +1,271 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useMemo,
+} from "react";
 
 import ProductCard from "../product-card/ProductCard";
 
-import { getProducts } from "../../services/productService";
+import {
+  useProductsQuery,
+} from "../../hooks/useProductQueries";
+
+// ==========================================
+// Category Grid
+// ==========================================
 
 const CategoryGrid = ({
   categorySlug,
   menuGroupSlug,
   subCategorySlug,
-  filters,
+  filters = {},
 }) => {
-  // ==========================================
-  // State
-  // ==========================================
+  // ========================================
+  // API Parameters
+  // ========================================
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const params = useMemo(
+    () => ({
+      category: categorySlug,
+      menuGroup: menuGroupSlug,
+      subCategory: subCategorySlug,
 
-  // ==========================================
-  // Load Products
-  // ==========================================
+      ...filters,
+    }),
+    [
+      categorySlug,
+      menuGroupSlug,
+      subCategorySlug,
+      filters,
+    ]
+  );
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
+  // ========================================
+  // React Query
+  // ========================================
 
-        const params = {
-          category: categorySlug,
-          menuGroup: menuGroupSlug,
-          subCategory: subCategorySlug,
-          ...filters,
-        };
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+  } = useProductsQuery(params);
 
-        // Remove empty values
-        Object.keys(params).forEach((key) => {
-          if (
-            params[key] === "" ||
-            params[key] === undefined ||
-            params[key] === null
-          ) {
-            delete params[key];
-          }
-        });
+  // ========================================
+  // Products
+  // ========================================
 
-const res = await getProducts(params);
+  const products =
+    data?.products ||
+    data?.data?.products ||
+    [];
 
-setProducts(
-    res?.products ||
-    res?.data?.products ||
-    []
-);
-      } catch (error) {
-        console.error("Failed to load products:", error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
-  }, [
-    categorySlug,
-    menuGroupSlug,
-    subCategorySlug,
-    filters,
-  ]);
-
-  // ==========================================
+  // ========================================
   // Sorting
-  // ==========================================
+  // ========================================
 
-  const sortedProducts = useMemo(() => {
-    const data = [...products];
+  const sortedProducts =
+    useMemo(() => {
+      const result = [
+        ...products,
+      ];
 
-    switch (filters?.sort || "latest") {
-      case "priceLow":
-        data.sort((a, b) => a.price - b.price);
-        break;
+      switch (
+        filters?.sort ||
+        "latest"
+      ) {
+        case "priceLow":
+          result.sort(
+            (a, b) =>
+              Number(a.price || 0) -
+              Number(b.price || 0)
+          );
+          break;
 
-      case "priceHigh":
-        data.sort((a, b) => b.price - a.price);
-        break;
+        case "priceHigh":
+          result.sort(
+            (a, b) =>
+              Number(b.price || 0) -
+              Number(a.price || 0)
+          );
+          break;
 
-      case "rating":
-        data.sort(
-          (a, b) => (b.rating || 0) - (a.rating || 0)
-        );
-        break;
+        case "rating":
+          result.sort(
+            (a, b) =>
+              Number(b.rating || 0) -
+              Number(a.rating || 0)
+          );
+          break;
 
-      case "latest":
-      default:
-        data.sort(
-          (a, b) =>
-            new Date(b.createdAt) -
-            new Date(a.createdAt)
-        );
-    }
+        case "latest":
+        default:
+          result.sort(
+            (a, b) =>
+              new Date(
+                b.createdAt
+              ) -
+              new Date(
+                a.createdAt
+              )
+          );
+      }
 
-    return data;
-  }, [products, filters]);
+      return result;
+    }, [
+      products,
+      filters?.sort,
+    ]);
 
-  // ==========================================
+  // ========================================
   // Loading
-  // ==========================================
+  // ========================================
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="rounded-2xl bg-white p-20 text-center">
-        <p className="text-lg font-semibold text-gray-600">
-          Loading Products...
+      <div
+        className="
+          flex
+          min-h-[300px]
+          items-center
+          justify-center
+        "
+      >
+        <div className="text-center">
+          <div
+            className="
+              mx-auto
+              h-10
+              w-10
+              animate-spin
+              rounded-full
+              border-4
+              border-[var(--primary-color,#355E3B)]
+              border-t-transparent
+            "
+          />
+
+          <p
+            className="
+              mt-4
+              font-medium
+              text-gray-500
+            "
+          >
+            Loading Products...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================
+  // Error
+  // ========================================
+
+  if (error) {
+    return (
+      <div
+        className="
+          rounded-2xl
+          bg-white
+          p-10
+          text-center
+          shadow-sm
+        "
+      >
+        <h2
+          className="
+            text-xl
+            font-bold
+            text-gray-800
+          "
+        >
+          Failed to load products
+        </h2>
+
+        <p
+          className="
+            mt-2
+            text-gray-500
+          "
+        >
+          Please try again later.
         </p>
       </div>
     );
   }
 
-  // ==========================================
-  // Empty State
-  // ==========================================
+  // ========================================
+  // Empty
+  // ========================================
 
-  if (sortedProducts.length === 0) {
+  if (
+    sortedProducts.length === 0
+  ) {
     return (
-      <div className="rounded-2xl bg-white p-20 text-center shadow">
-        <h2 className="text-2xl font-bold">
+      <div
+        className="
+          rounded-2xl
+          bg-white
+          p-10
+          text-center
+          shadow-sm
+        "
+      >
+        <h2
+          className="
+            text-xl
+            font-bold
+            text-gray-800
+          "
+        >
           No Products Found
         </h2>
 
-        <p className="mt-3 text-gray-500">
-          Try another category or filter.
+        <p
+          className="
+            mt-3
+            text-gray-500
+          "
+        >
+          Try another category or
+          filter.
         </p>
       </div>
     );
   }
-    // ==========================================
-  // Products Grid
-  // ==========================================
+
+  // ========================================
+  // Products
+  // ========================================
 
   return (
     <div
       className="
         grid
         grid-cols-2
-        gap-6
+        gap-4
+        sm:grid-cols-2
         md:grid-cols-3
-        xl:grid-cols-4
+        lg:grid-cols-4
+        xl:grid-cols-5
       "
     >
-      {sortedProducts.map((product) => (
-        <ProductCard
-          key={product._id}
-          product={product}
-        />
-      ))}
+      {sortedProducts.map(
+        (product) => (
+          <ProductCard
+            key={product._id}
+            product={product}
+          />
+        )
+      )}
+
+      {/* Background fetching indicator */}
+
+      {isFetching && (
+        <div className="col-span-full py-3 text-center text-sm text-gray-400">
+          Updating products...
+        </div>
+      )}
     </div>
   );
 };

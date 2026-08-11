@@ -5,64 +5,105 @@ import UserActions from "./UserActions";
 
 const Navbar = ({ openSidebar }) => {
   return (
-    <nav
-      className="
-        w-full
-        bg-white
-        border-b
-        border-gray-200
-        transition-colors
-        duration-300
-      "
-    >
+    <nav className="bg-white">
+      {/* ====================================== */}
+      {/* Main Navbar */}
+      {/* ====================================== */}
+
       <div
         className="
+          relative
           w-full
-          max-w-[var(--container-width,1450px)]
-          mx-auto
-          px-3
-          sm:px-5
-          lg:px-8
+
+          h-20
+          md:h-24
+
+          flex
+          items-center
+
+          px-4
+          sm:px-6
+          lg:px-10
+          xl:px-16
         "
       >
         {/* ====================================== */}
-        {/* Main Navbar */}
+        {/* LEFT - Hamburger + Logo */}
+        {/* ====================================== */}
+
+<div
+  className="
+    flex
+    items-center
+
+    gap-1
+    sm:gap-1
+    md:gap-2
+
+    flex-shrink-0
+  "
+>
+          {/* Mobile Hamburger */}
+
+<div className="lg:hidden -mr-1">
+  <Hamburger onClick={openSidebar} />
+</div>
+
+          {/* Logo */}
+
+          <Logo />
+        </div>
+
+        {/* ====================================== */}
+        {/* CENTER - Search */}
         {/* ====================================== */}
 
         <div
           className="
-            h-16
-            md:h-20
-            flex
-            items-center
-            justify-between
-            gap-3
+            hidden
+            md:block
+
+            absolute
+            left-1/2
+            -translate-x-1/2
+
+            w-[45%]
+            lg:w-[50%]
+            xl:w-[52%]
+
+            max-w-[900px]
           "
         >
-          {/* Left */}
-
-<div className="flex items-center gap-0 md:gap-2 flex-shrink-0">
-  <Hamburger onClick={openSidebar} />
-  <Logo />
-</div>
-          {/* Desktop Search */}
-
-          <div className="hidden md:flex flex-1 max-w-4xl">
-            <SearchBar />
-          </div>
-
-          {/* Right Actions */}
-
-          <UserActions />
-        </div>
-
-        {/* ====================================== */}
-        {/* Mobile Search */}
-        {/* ====================================== */}
-
-        <div className="md:hidden pb-3">
           <SearchBar />
         </div>
+
+        {/* ====================================== */}
+        {/* RIGHT - Login Wishlist Cart */}
+        {/* ====================================== */}
+
+        <div
+          className="
+            ml-auto
+            flex-shrink-0
+          "
+        >
+          <UserActions />
+        </div>
+      </div>
+
+      {/* ====================================== */}
+      {/* Mobile Search */}
+      {/* ====================================== */}
+
+      <div
+        className="
+          md:hidden
+
+          px-4
+          pb-3
+        "
+      >
+        <SearchBar />
       </div>
     </nav>
   );

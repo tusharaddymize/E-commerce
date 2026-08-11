@@ -77,18 +77,6 @@ export const getOrderAnalytics = async () => {
   return data;
 };
 
-// =======================================
-// Product Analytics
-// (Future Phase)
-// =======================================
-
-export const getProductAnalytics = async () => {
-  const { data } = await API.get(
-    "/admin/analytics"
-  );
-
-  return data;
-};
 
 // =======================================
 // User Analytics

@@ -48,7 +48,7 @@ const QuantitySelector = ({
           flex
           items-center
           justify-center
-
+text-gray-700
           transition-all
           duration-300
 
@@ -58,7 +58,7 @@ const QuantitySelector = ({
           disabled:opacity-40
           disabled:cursor-not-allowed
           disabled:hover:border-gray-300
-          disabled:hover:text-current
+       disabled:hover:text-gray-700
         "
       >
         <FaMinus />
@@ -102,7 +102,7 @@ const QuantitySelector = ({
           flex
           items-center
           justify-center
-
+text-gray-700
           transition-all
           duration-300
 

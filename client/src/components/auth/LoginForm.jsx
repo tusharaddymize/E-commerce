@@ -130,9 +130,9 @@ const LoginForm = () => {
         {/* Email */}
 
         <div>
-          <label className="font-medium">
-            Email
-          </label>
+<label className="font-medium text-gray-700">
+  Email
+</label>
 
           <div
             className="
@@ -168,6 +168,9 @@ const LoginForm = () => {
     p-3
     outline-none
     bg-transparent
+
+    text-gray-800
+    placeholder:text-gray-400
   "
   {...register("email")}
 />
@@ -183,10 +186,9 @@ const LoginForm = () => {
         {/* Password */}
 
         <div>
-          <label className="font-medium">
-            Password
-          </label>
-
+<label className="font-medium text-gray-700">
+  Password
+</label>
           <div
             className="
               border
@@ -220,10 +222,12 @@ const LoginForm = () => {
     p-3
     outline-none
     bg-transparent
+
+    text-gray-800
+    placeholder:text-gray-400
   "
   {...register("password")}
 />
-
             <button
               type="button"
               onClick={() =>
@@ -287,7 +291,7 @@ const LoginForm = () => {
             text-sm
           "
         >
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-2 cursor-pointer text-gray-700">
             <input
               type="checkbox"
               className="
@@ -351,7 +355,7 @@ const LoginForm = () => {
       {/* Register */}
       {/* ====================================== */}
 
-      <p className="text-center mt-6">
+     <p className="text-center mt-6 text-gray-600">
         Don't have an account?
 
         <Link

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import HeroNavigation from "./HeroNavigation";
 import HeroDots from "./HeroDots";
 
-import { getWebsiteSettings } from "../../services/websiteSettingService";
+import useWebsiteSettings from "../../hooks/useWebsiteSettings";
 
 import hero1 from "../../assets/images/hero1.png";
 import hero2 from "../../assets/images/hero2.png";
@@ -44,63 +44,60 @@ const fallbackSlides = [
   },
 ];
 
+// ==========================================
+// Hero Slider
+// ==========================================
+
 const HeroSlider = () => {
   const navigate = useNavigate();
 
-  const [backendSlides, setBackendSlides] = useState([]);
-  const [current, setCurrent] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // ========================================
+  // Website Settings
+  // React Query Cache
+  // ========================================
 
-  // ==========================================
-  // Fetch Hero Banners
-  // ==========================================
+  const {
+    data,
+    isLoading,
+    isError,
+  } = useWebsiteSettings();
 
-  useEffect(() => {
-    const fetchHeroBanners = async () => {
-      try {
-        setLoading(true);
+  // ========================================
+  // Normalize API Response
+  // ========================================
 
-        const response = await getWebsiteSettings();
+  const websiteSettings =
+    data?.data || data || {};
 
-        const settings = response?.data || response;
+  // ========================================
+  // Backend Hero Banners
+  // ========================================
 
-        const banners = Array.isArray(settings?.heroBanners)
-          ? settings.heroBanners
-          : [];
+  const backendSlides = useMemo(() => {
+    const banners = Array.isArray(
+      websiteSettings?.heroBanners
+    )
+      ? websiteSettings.heroBanners
+      : [];
 
-        // Only active banners having an image
-        const activeBanners = banners
-          .filter(
-            (banner) =>
-              banner?.image &&
-              banner?.active !== false
-          )
-          .sort(
-            (a, b) =>
-              Number(a?.order || 0) -
-              Number(b?.order || 0)
-          );
+    return banners
+      .filter(
+        (banner) =>
+          banner?.image &&
+          banner?.active !== false
+      )
+      .sort(
+        (a, b) =>
+          Number(a?.order || 0) -
+          Number(b?.order || 0)
+      );
+  }, [websiteSettings]);
 
-        setBackendSlides(activeBanners);
-      } catch (error) {
-        console.error(
-          "Failed to load hero banners:",
-          error
-        );
-
-        setBackendSlides([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHeroBanners();
-  }, []);
-
-  // ==========================================
+  // ========================================
   // Final Slides
-  // Backend first, local fallback otherwise
-  // ==========================================
+  // Backend first
+  // Local fallback otherwise
+  // ========================================
 
   const slides = useMemo(() => {
     if (backendSlides.length > 0) {
@@ -110,22 +107,37 @@ const HeroSlider = () => {
     return fallbackSlides;
   }, [backendSlides]);
 
-  // ==========================================
+  // ========================================
+  // Current Slide
+  // ========================================
+
+  const [current, setCurrent] =
+    useState(0);
+
+  // ========================================
   // Keep Current Index Valid
-  // ==========================================
+  // ========================================
 
   useEffect(() => {
-    if (current >= slides.length) {
+    if (
+      current >= slides.length &&
+      slides.length > 0
+    ) {
       setCurrent(0);
     }
-  }, [slides.length, current]);
+  }, [
+    current,
+    slides.length,
+  ]);
 
-  // ==========================================
+  // ========================================
   // Auto Slider - 4 Seconds
-  // ==========================================
+  // ========================================
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setCurrent((prev) =>
@@ -135,15 +147,19 @@ const HeroSlider = () => {
       );
     }, 4000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [slides.length]);
 
-  // ==========================================
+  // ========================================
   // Next Slide
-  // ==========================================
+  // ========================================
 
   const nextSlide = () => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1) {
+      return;
+    }
 
     setCurrent((prev) =>
       prev >= slides.length - 1
@@ -152,12 +168,14 @@ const HeroSlider = () => {
     );
   };
 
-  // ==========================================
+  // ========================================
   // Previous Slide
-  // ==========================================
+  // ========================================
 
   const prevSlide = () => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1) {
+      return;
+    }
 
     setCurrent((prev) =>
       prev === 0
@@ -166,9 +184,9 @@ const HeroSlider = () => {
     );
   };
 
-  // ==========================================
+  // ========================================
   // Banner Click
-  // ==========================================
+  // ========================================
 
   const handleBannerClick = (slide) => {
     const link =
@@ -176,7 +194,10 @@ const HeroSlider = () => {
       slide?.link ||
       "";
 
-    if (!link) return;
+    // No link
+    if (!link) {
+      return;
+    }
 
     // External URL
     if (
@@ -187,7 +208,7 @@ const HeroSlider = () => {
       return;
     }
 
-    // Internal React route
+    // Internal React Route
     navigate(
       link.startsWith("/")
         ? link
@@ -195,104 +216,165 @@ const HeroSlider = () => {
     );
   };
 
-  // ==========================================
+  // ========================================
   // Loading
-  // ==========================================
+  // ========================================
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <section className="w-full py-4">
-        <div className="w-full aspect-[16/6] bg-gray-100 animate-pulse" />
+      <section className="w-full">
+        <div
+          className="
+            relative
+            mx-auto
+            w-[94%]
+            overflow-hidden
+            rounded-xl
+            bg-gray-100
+            sm:w-[94%]
+            md:w-[92%]
+            lg:w-[90%]
+            xl:w-[88%]
+            max-w-[1450px]
+          "
+        >
+          <div
+            className="
+              h-[180px]
+              w-full
+              animate-pulse
+              bg-gray-200
+              sm:h-[260px]
+              md:h-[340px]
+              lg:h-[400px]
+              xl:h-[440px]
+            "
+          />
+        </div>
       </section>
     );
   }
 
-  // ==========================================
-  // No Banner
-  // ==========================================
+  // ========================================
+  // Error
+  //
+  // Fallback banners will still show
+  // ========================================
+
+  if (isError) {
+    console.warn(
+      "Website settings could not be loaded. Using local hero banners."
+    );
+  }
+
+  // ========================================
+  // No Slides
+  // ========================================
 
   if (!slides.length) {
     return null;
   }
 
-  const activeSlide = slides[current];
+  // ========================================
+  // Active Slide
+  // ========================================
+
+  const activeSlide =
+    slides[current] || slides[0];
+
+  // ========================================
+  // Has Link
+  // ========================================
+
+  const hasLink = Boolean(
+    activeSlide?.buttonLink ||
+      activeSlide?.link
+  );
+
+  // ========================================
+  // Render
+  // ========================================
 
   return (
-    <section className="w-full py-4">
-    <div
-  className="
-    relative
-    w-[94%]
-    sm:w-[94%]
-    md:w-[92%]
-    lg:w-[90%]
-    xl:w-[88%]
-    max-w-[1450px]
-    mx-auto
-    overflow-hidden
-    rounded-xl
-  "
->
-        {/* ================================
+    <section className="w-full">
+      <div
+        className="
+          relative
+          mx-auto
+          w-[94%]
+          overflow-hidden
+          rounded-xl
+          sm:w-[94%]
+          md:w-[92%]
+          lg:w-[90%]
+          xl:w-[88%]
+          max-w-[1450px]
+        "
+      >
+        {/* ==================================
             Clickable Banner
-        ================================= */}
+        ================================== */}
 
         <div
           onClick={() =>
-            handleBannerClick(activeSlide)
+            handleBannerClick(
+              activeSlide
+            )
           }
           className={
-            activeSlide?.buttonLink ||
-            activeSlide?.link
+            hasLink
               ? "cursor-pointer"
               : "cursor-default"
           }
           role={
-            activeSlide?.buttonLink ||
-            activeSlide?.link
+            hasLink
               ? "link"
               : undefined
           }
           tabIndex={
-            activeSlide?.buttonLink ||
-            activeSlide?.link
+            hasLink
               ? 0
               : undefined
           }
           onKeyDown={(e) => {
             if (
               e.key === "Enter" &&
-              (activeSlide?.buttonLink ||
-                activeSlide?.link)
+              hasLink
             ) {
-              handleBannerClick(activeSlide);
+              handleBannerClick(
+                activeSlide
+              );
             }
           }}
         >
-<img
-  src={activeSlide.image}
-  alt={`Hero Banner ${current + 1}`}
-  className="
-    block
-    w-full
+          {/* ==================================
+              Banner Image
+          ================================== */}
 
-    h-[180px]
-    sm:h-[260px]
-    md:h-[340px]
-    lg:h-[400px]
-    xl:h-[440px]
-
-    object-cover
-    object-center
-    select-none
-  "
-  draggable="false"
-/>
+          <img
+            src={activeSlide.image}
+            alt={`Hero Banner ${
+              current + 1
+            }`}
+            className="
+              block
+              h-[180px]
+              w-full
+              select-none
+              object-cover
+              object-center
+              sm:h-[260px]
+              md:h-[340px]
+              lg:h-[400px]
+              xl:h-[440px]
+            "
+            draggable="false"
+          />
         </div>
 
-        {/* ================================
+        {/* ==================================
             Navigation Arrows
-        ================================= */}
+        ================================== */}
 
         {slides.length > 1 && (
           <HeroNavigation
@@ -301,9 +383,9 @@ const HeroSlider = () => {
           />
         )}
 
-        {/* ================================
+        {/* ==================================
             Slider Dots
-        ================================= */}
+        ================================== */}
 
         {slides.length > 1 && (
           <HeroDots
@@ -312,7 +394,6 @@ const HeroSlider = () => {
             setCurrent={setCurrent}
           />
         )}
-
       </div>
     </section>
   );
