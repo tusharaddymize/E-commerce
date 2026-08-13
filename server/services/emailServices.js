@@ -1,650 +1,468 @@
 import transporter from "../config/mail.js";
 
-import orderConfirmationEmail from "../templates/orderConfirmationEmail.js";
-import orderShippedEmail from "../templates/orderShippedEmail.js";
-import orderDeliveredEmail from "../templates/orderDeliveredEmail.js";
-import orderCancelledEmail from "../templates/orderCancelledEmail.js";
+// ==========================================
+// Common Email Sender
+// ==========================================
 
-// ======================================================
-// Welcome Email
-// ======================================================
-
-export const sendWelcomeEmail = async (
-  name,
-  email
-) => {
+const sendEmail = async ({ to, subject, html }) => {
   try {
+    console.log("📧 Sending email to:", to);
+
     const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "🎉 Welcome to E-Commerce",
-
-      html: `
-        <div
-          style="
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background: #f5f5f5;
-          "
-        >
-          <div
-            style="
-              max-width: 600px;
-              margin: auto;
-              background: #ffffff;
-              padding: 30px;
-              border-radius: 10px;
-            "
-          >
-
-            <h2 style="color:#16a34a;">
-              Welcome ${name} 🎉
-            </h2>
-
-            <p>
-              Thank you for creating your account with us.
-            </p>
-
-            <p>
-              We're excited to have you as part of
-              our E-Commerce family.
-            </p>
-
-            <hr />
-
-            <p>
-              Happy Shopping ❤️
-            </p>
-
-            <p>
-              <strong>Team E-Commerce</strong>
-            </p>
-
-          </div>
-        </div>
-      `,
+      from: `"E-Commerce Store" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
     });
 
-    console.log("✅ Welcome Email Sent");
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+    console.log("✅ Email sent successfully:", info.messageId);
 
     return info;
   } catch (error) {
-    console.error(
-      "❌ Welcome Email Error:",
-      error
-    );
-
+    console.error("❌ Email sending failed:", error);
     throw error;
   }
 };
 
-// ======================================================
+// ==========================================
 // Registration OTP Email
-// ======================================================
+// ==========================================
 
-export const sendRegistrationOtpEmail = async (
-  email,
-  otp
-) => {
-  try {
-    console.log(
-      "📧 Sending Registration OTP to:",
-      email
-    );
+export const sendRegistrationOtpEmail = async (email, otp) => {
+  return await sendEmail({
+    to: email,
+    subject: "Verify Your Email - Registration OTP",
 
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: email,
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      ">
 
-      subject:
-        "🔐 Verify Your E-Commerce Account",
+        <h2 style="color: #355E3B;">
+          Verify Your Email
+        </h2>
 
-      html: `
-        <div
-          style="
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background: #f5f5f5;
-          "
-        >
+        <p>
+          Thank you for registering with our store.
+        </p>
 
-          <div
-            style="
-              max-width: 600px;
-              margin: auto;
-              background: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-            "
-          >
+        <p>
+          Your email verification OTP is:
+        </p>
 
-            <h2 style="color:#355E3B;">
-              Verify Your Email 🔐
-            </h2>
-
-            <p>
-              Thank you for creating an account
-              with E-Commerce.
-            </p>
-
-            <p>
-              Your verification OTP is:
-            </p>
-
-            <div
-              style="
-                text-align:center;
-                margin:25px 0;
-              "
-            >
-
-              <span
-                style="
-                  display:inline-block;
-                  background:#f0fdf4;
-                  color:#355E3B;
-                  font-size:32px;
-                  font-weight:bold;
-                  font-weight:700;
-                  letter-spacing:8px;
-                  padding:15px 25px;
-                  border-radius:8px;
-                "
-              >
-                ${otp}
-              </span>
-
-            </div>
-
-            <p>
-              This OTP is valid for
-              <strong>10 minutes</strong>.
-            </p>
-
-            <p>
-              Please do not share this OTP
-              with anyone.
-            </p>
-
-            <p>
-              If you did not create this account,
-              you can safely ignore this email.
-            </p>
-
-            <hr />
-
-            <p>
-              <strong>Team E-Commerce</strong>
-            </p>
-
-          </div>
-
+        <div style="
+          font-size: 32px;
+          font-weight: bold;
+          letter-spacing: 8px;
+          text-align: center;
+          padding: 20px;
+          background: #f3f4f6;
+          margin: 20px 0;
+        ">
+          ${otp}
         </div>
-      `,
-    });
 
-    console.log(
-      "✅ Registration OTP Email Sent"
-    );
+        <p>
+          This OTP will expire in
+          <strong>10 minutes</strong>.
+        </p>
 
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+        <p>
+          If you did not create this account,
+          please ignore this email.
+        </p>
 
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Registration OTP Email Error:",
-      error
-    );
+        <hr />
 
-    throw error;
-  }
+        <p style="color: #777;">
+          E-Commerce Store
+        </p>
+
+      </div>
+    `,
+  });
 };
 
-// ======================================================
+// ==========================================
 // Login OTP Email
-// ======================================================
+// ==========================================
 
-export const sendLoginOtpEmail = async (
-  email,
-  otp
-) => {
-  try {
-    console.log(
-      "📧 Sending Login OTP to:",
-      email
-    );
+export const sendLoginOtpEmail = async (email, otp) => {
+  return await sendEmail({
+    to: email,
+    subject: "Login Verification OTP",
 
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: email,
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+      ">
 
-      subject:
-        "🔐 Your E-Commerce Login OTP",
+        <h2>Login Verification</h2>
 
-      html: `
-        <div
-          style="
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background: #f5f5f5;
-          "
-        >
+        <p>
+          Your login verification OTP is:
+        </p>
 
-          <div
-            style="
-              max-width: 600px;
-              margin: auto;
-              background: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-            "
-          >
-
-            <h2 style="color:#355E3B;">
-              Login Verification 🔐
-            </h2>
-
-            <p>
-              We received a login request for
-              your E-Commerce account.
-            </p>
-
-            <p>
-              Your One-Time Password (OTP) is:
-            </p>
-
-            <div
-              style="
-                text-align:center;
-                margin:25px 0;
-              "
-            >
-
-              <span
-                style="
-                  display:inline-block;
-                  background:#f0fdf4;
-                  color:#355E3B;
-                  font-size:32px;
-                  font-weight:bold;
-                  letter-spacing:8px;
-                  padding:15px 25px;
-                  border-radius:8px;
-                "
-              >
-                ${otp}
-              </span>
-
-            </div>
-
-            <p>
-              This OTP is valid for
-              <strong>10 minutes</strong>.
-            </p>
-
-            <p>
-              Please do not share this OTP
-              with anyone.
-            </p>
-
-            <p>
-              If you did not try to login,
-              please secure your account.
-            </p>
-
-            <hr />
-
-            <p>
-              <strong>Team E-Commerce</strong>
-            </p>
-
-          </div>
-
+        <div style="
+          font-size: 32px;
+          font-weight: bold;
+          letter-spacing: 8px;
+          text-align: center;
+          padding: 20px;
+          background: #f3f4f6;
+        ">
+          ${otp}
         </div>
-      `,
-    });
 
-    console.log(
-      "✅ Login OTP Email Sent"
-    );
+        <p>
+          This OTP will expire in
+          <strong>10 minutes</strong>.
+        </p>
 
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+        <p>
+          If you did not attempt to login,
+          please secure your account.
+        </p>
 
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Login OTP Email Error:",
-      error
-    );
-
-    throw error;
-  }
+      </div>
+    `,
+  });
 };
 
-// ======================================================
+// ==========================================
 // Forgot Password OTP Email
-// ======================================================
+// ==========================================
 
-export const sendForgotPasswordOtpEmail = async (
-  email,
-  otp
-) => {
-  try {
-    console.log(
-      "📧 Sending Forgot Password OTP to:",
-      email
-    );
+export const sendForgotPasswordOtpEmail = async (email, otp) => {
+  return await sendEmail({
+    to: email,
+    subject: "Password Reset OTP",
 
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: email,
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+      ">
 
-      subject:
-        "🔐 E-Commerce Password Reset OTP",
+        <h2>Password Reset</h2>
 
-      html: `
-        <div
-          style="
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background: #f5f5f5;
-          "
-        >
+        <p>
+          You requested to reset your password.
+        </p>
 
-          <div
-            style="
-              max-width: 600px;
-              margin: auto;
-              background: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-            "
-          >
+        <p>
+          Your password reset OTP is:
+        </p>
 
-            <h2 style="color:#355E3B;">
-              Password Reset 🔐
-            </h2>
-
-            <p>
-              We received a request to reset the
-              password for your E-Commerce account.
-            </p>
-
-            <p>
-              Your password reset OTP is:
-            </p>
-
-            <div
-              style="
-                text-align:center;
-                margin:25px 0;
-              "
-            >
-
-              <span
-                style="
-                  display:inline-block;
-                  background:#f0fdf4;
-                  color:#355E3B;
-                  font-size:32px;
-                  font-weight:bold;
-                  letter-spacing:8px;
-                  padding:15px 25px;
-                  border-radius:8px;
-                "
-              >
-                ${otp}
-              </span>
-
-            </div>
-
-            <p>
-              This OTP is valid for
-              <strong>10 minutes</strong>.
-            </p>
-
-            <p>
-              Please do not share this OTP
-              with anyone.
-            </p>
-
-            <p>
-              If you did not request a password
-              reset, you can safely ignore this email.
-            </p>
-
-            <hr />
-
-            <p>
-              <strong>Team E-Commerce</strong>
-            </p>
-
-          </div>
-
+        <div style="
+          font-size: 32px;
+          font-weight: bold;
+          letter-spacing: 8px;
+          text-align: center;
+          padding: 20px;
+          background: #f3f4f6;
+        ">
+          ${otp}
         </div>
-      `,
-    });
 
-    console.log(
-      "✅ Forgot Password OTP Email Sent"
-    );
+        <p>
+          This OTP will expire in
+          <strong>10 minutes</strong>.
+        </p>
 
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+        <p>
+          If you did not request a password reset,
+          please ignore this email.
+        </p>
 
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Forgot Password OTP Email Error:",
-      error
-    );
-
-    throw error;
-  }
+      </div>
+    `,
+  });
 };
 
-// ======================================================
-// Order Confirmation Email
-// ======================================================
+// ==========================================
+// Welcome Email
+// ==========================================
 
-export const sendOrderConfirmationEmail = async (
-  user,
-  order
-) => {
-  try {
-    console.log(
-      "📧 Sending Order Confirmation Email to:",
-      user.email
-    );
+export const sendWelcomeEmail = async (email, name) => {
+  return await sendEmail({
+    to: email,
+    subject: "Welcome to Our Store 🎉",
 
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: user.email,
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+      ">
 
-      subject:
-        "🛒 Your Order Has Been Confirmed",
+        <h2>
+          Welcome ${name}! 🎉
+        </h2>
 
-      html: orderConfirmationEmail(
-        order,
-        user
-      ),
-    });
+        <p>
+          Your account has been successfully verified.
+        </p>
 
-    console.log(
-      "✅ Order Confirmation Email Sent"
-    );
+        <p>
+          Thank you for joining our store.
+        </p>
 
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+        <p>
+          We are happy to have you with us.
+        </p>
 
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Order Confirmation Email Error:",
-      error
-    );
-
-    throw error;
-  }
+      </div>
+    `,
+  });
 };
 
-// ======================================================
-// Order Shipped Email
-// ======================================================
-
-export const sendShippedEmail = async (
-  user,
-  order
-) => {
-  try {
-    console.log(
-      "📦 Sending Shipped Email to:",
-      user.email
-    );
-
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: user.email,
-
-      subject:
-        "📦 Your Order Has Been Shipped",
-
-      html: orderShippedEmail(
-        order,
-        user
-      ),
-    });
-
-    console.log(
-      "✅ Shipped Email Sent"
-    );
-
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
-
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Order Shipped Email Error:",
-      error
-    );
-
-    throw error;
-  }
-};
-
-// ======================================================
+// ==========================================
 // Order Delivered Email
-// ======================================================
+// ==========================================
 
 export const sendDeliveredEmail = async (
-  user,
-  order
+  email,
+  name,
+  orderId
 ) => {
-  try {
-    console.log(
-      "🎉 Sending Delivered Email to:",
-      user.email
-    );
+  return await sendEmail({
+    to: email,
+    subject: "Your Order Has Been Delivered 🎉",
 
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: user.email,
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      ">
 
-      subject:
-        "🎉 Your Order Has Been Delivered",
+        <h2 style="color: #355E3B;">
+          Order Delivered 🎉
+        </h2>
 
-      html: orderDeliveredEmail(
-        order,
-        user
-      ),
-    });
+        <p>
+          Hello <strong>${name}</strong>,
+        </p>
 
-    console.log(
-      "✅ Delivered Email Sent"
-    );
+        <p>
+          Your order has been successfully delivered.
+        </p>
 
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+        <p>
+          <strong>Order ID:</strong> ${orderId}
+        </p>
 
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Order Delivered Email Error:",
-      error
-    );
+        <p>
+          Thank you for shopping with us.
+        </p>
 
-    throw error;
-  }
+        <hr />
+
+        <p style="color: #777;">
+          E-Commerce Store
+        </p>
+
+      </div>
+    `,
+  });
 };
 
-// ======================================================
+// ==========================================
 // Order Cancelled Email
-// ======================================================
+// ==========================================
 
 export const sendCancelledEmail = async (
-  user,
-  order
+  email,
+  name,
+  orderId
 ) => {
-  try {
-    console.log(
-      "❌ Sending Cancelled Email to:",
-      user.email
-    );
+  return await sendEmail({
+    to: email,
+    subject: "Order Cancelled - E-Commerce Store",
 
-    const info = await transporter.sendMail({
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
-      to: user.email,
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      ">
 
-      subject:
-        "❌ Your Order Has Been Cancelled",
+        <h2 style="color: #d32f2f;">
+          Order Cancelled
+        </h2>
 
-      html: orderCancelledEmail(
-        order,
-        user
-      ),
-    });
+        <p>
+          Hello <strong>${name}</strong>,
+        </p>
 
-    console.log(
-      "✅ Cancelled Email Sent"
-    );
+        <p>
+          Your order has been successfully cancelled.
+        </p>
 
-    console.log(
-      "📩 Message ID:",
-      info.messageId
-    );
+        <p>
+          <strong>Order ID:</strong> ${orderId}
+        </p>
 
-    return info;
-  } catch (error) {
-    console.error(
-      "❌ Order Cancelled Email Error:",
-      error
-    );
+        <p>
+          If you did not request this cancellation,
+          please contact our support team.
+        </p>
 
-    throw error;
-  }
+        <hr />
+
+        <p style="color: #777;">
+          E-Commerce Store
+        </p>
+
+      </div>
+    `,
+  });
 };
 
 
+// ==========================================
+// Order Confirmation Email
+// ==========================================
+
+export const sendOrderConfirmationEmail = async (
+  email,
+  name,
+  orderId
+) => {
+  return await sendEmail({
+    to: email,
+
+    subject: "Order Confirmation - E-Commerce Store 🎉",
+
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      ">
+
+        <h2 style="color: #355E3B;">
+          Order Confirmed 🎉
+        </h2>
+
+        <p>
+          Hello <strong>${name}</strong>,
+        </p>
+
+        <p>
+          Thank you for your order!
+        </p>
+
+        <p>
+          Your order has been successfully placed.
+        </p>
+
+        <div style="
+          background: #f3f4f6;
+          padding: 15px;
+          margin: 20px 0;
+          border-radius: 8px;
+        ">
+          <strong>Order ID:</strong> ${orderId}
+        </div>
+
+        <p>
+          We will keep you updated about your order status.
+        </p>
+
+        <hr />
+
+        <p style="color: #777;">
+          E-Commerce Store
+        </p>
+
+      </div>
+    `,
+  });
+};
 
 
+// ==========================================
+// Order Shipped Email
+// ==========================================
 
+export const sendShippedEmail = async (
+  email,
+  name,
+  orderId
+) => {
+  return await sendEmail({
+    to: email,
 
+    subject: "Your Order Has Been Shipped 📦",
+
+    html: `
+      <div style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      ">
+
+        <h2 style="color: #355E3B;">
+          Your Order Has Been Shipped 📦
+        </h2>
+
+        <p>
+          Hello <strong>${name}</strong>,
+        </p>
+
+        <p>
+          Great news! Your order has been shipped.
+        </p>
+
+        <div style="
+          background: #f3f4f6;
+          padding: 15px;
+          margin: 20px 0;
+          border-radius: 8px;
+        ">
+          <strong>Order ID:</strong> ${orderId}
+        </div>
+
+        <p>
+          Your order is now on its way to you.
+        </p>
+
+        <p>
+          Thank you for shopping with us.
+        </p>
+
+        <hr />
+
+        <p style="color: #777;">
+          E-Commerce Store
+        </p>
+
+      </div>
+    `,
+  });
+};

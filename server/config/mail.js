@@ -1,10 +1,6 @@
 import "dotenv/config";
 import nodemailer from "nodemailer";
 
-// ==========================================
-// Environment Debug
-// ==========================================
-
 console.log("==========================================");
 console.log("📧 EMAIL CONFIG");
 console.log("EMAIL_USER:", process.env.EMAIL_USER);
@@ -14,10 +10,6 @@ console.log(
 );
 console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("==========================================");
-
-// ==========================================
-// Gmail SMTP Transporter
-// ==========================================
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -37,10 +29,6 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 20000,
 });
 
-// ==========================================
-// Verify Gmail SMTP
-// ==========================================
-
 transporter.verify((error) => {
   if (error) {
     console.error("❌ Gmail SMTP Error:", error);
@@ -48,9 +36,5 @@ transporter.verify((error) => {
     console.log("✅ Gmail SMTP Connected Successfully");
   }
 });
-
-// ==========================================
-// Export
-// ==========================================
 
 export default transporter;
