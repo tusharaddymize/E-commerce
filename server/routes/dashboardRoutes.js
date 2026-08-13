@@ -9,10 +9,7 @@ import {
   getOrderAnalytics,
 } from "../controllers/dashboardController.js";
 
-import {
-  protect,
-  admin,
-} from "../middleware/authMiddleware.js";
+import adminProtect from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
@@ -23,8 +20,7 @@ const router = express.Router();
 
 router.get(
   "/",
-  protect,
-  admin,
+  adminProtect,
   getDashboardOverview
 );
 
@@ -32,14 +28,11 @@ router.get(
 // Revenue Analytics
 // GET /api/admin/dashboard/revenue
 // ==========================================
-
 router.get(
   "/revenue",
-  protect,
-  admin,
+  adminProtect,
   getRevenueAnalytics
 );
-
 // ==========================================
 // Sales Analytics
 // GET /api/admin/dashboard/sales
@@ -47,11 +40,9 @@ router.get(
 
 router.get(
   "/sales",
-  protect,
-  admin,
+  adminProtect,
   getSalesAnalytics
 );
-
 // ==========================================
 // Inventory Analytics
 // GET /api/admin/dashboard/inventory
@@ -59,8 +50,7 @@ router.get(
 
 router.get(
   "/inventory",
-  protect,
-  admin,
+  adminProtect,
   getInventoryAnalytics
 );
 
@@ -71,8 +61,7 @@ router.get(
 
 router.get(
   "/customers",
-  protect,
-  admin,
+  adminProtect,
   getCustomerAnalytics
 );
 
@@ -83,8 +72,7 @@ router.get(
 
 router.get(
   "/orders",
-  protect,
-  admin,
+  adminProtect,
   getOrderAnalytics
 );
 
