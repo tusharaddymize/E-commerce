@@ -59,13 +59,26 @@ import uploadToCloudinary from "../utils/uploadToCloudinary.js";
     });
   }
 };
-
 // ===============================
-// Update Profile
+// Update Profile + Address
 // ===============================
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone } = req.body;
+    const {
+      name,
+      phone,
+
+      // Address fields
+      addressId,
+      addressFullName,
+      addressPhone,
+      address,
+      city,
+      state,
+      pincode,
+      country,
+      isDefault,
+    } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -76,27 +89,185 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    user.name = name || user.name;
-    user.phone = phone || user.phone;
+    // ==========================================
+    // Update Basic Profile Information
+    // ==========================================
+
+    if (name?.trim()) {
+      user.name = name.trim();
+    }
+
+    if (phone !== undefined) {
+      user.phone = phone.trim();
+    }
+
+    // ==========================================
+    // Check whether address data was submitted
+    // ==========================================
+
+    const hasAddressData =
+      addressFullName ||
+      addressPhone ||
+      address ||
+      city ||
+      state ||
+      pincode;
+
+    if (hasAddressData) {
+      // ========================================
+      // Validate Address
+      // ========================================
+
+      if (
+        !addressFullName ||
+        !addressPhone ||
+        !address ||
+        !city ||
+        !state ||
+        !pincode
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Please fill all required address fields",
+        });
+      }
+
+      // ========================================
+      // If Default Address
+      // Make all existing addresses non-default
+      // ========================================
+
+      if (isDefault === true) {
+        user.addresses.forEach((item) => {
+          item.isDefault = false;
+        });
+      }
+
+      // ========================================
+      // Update Existing Address
+      // ========================================
+
+      if (addressId) {
+        const existingAddress =
+          user.addresses.id(addressId);
+
+        if (!existingAddress) {
+          return res.status(404).json({
+            success: false,
+            message: "Address not found",
+          });
+        }
+
+        existingAddress.fullName =
+          addressFullName.trim();
+
+        existingAddress.phone =
+          addressPhone.trim();
+
+        existingAddress.address =
+          address.trim();
+
+        existingAddress.city =
+          city.trim();
+
+        existingAddress.state =
+          state.trim();
+
+        existingAddress.pincode =
+          pincode.trim();
+
+        existingAddress.country =
+          country?.trim() || "India";
+
+        existingAddress.isDefault =
+          isDefault === true;
+      }
+
+      // ========================================
+      // Add New Address
+      // ========================================
+
+      else {
+        user.addresses.push({
+          fullName:
+            addressFullName.trim(),
+
+          phone:
+            addressPhone.trim(),
+
+          address:
+            address.trim(),
+
+          city:
+            city.trim(),
+
+          state:
+            state.trim(),
+
+          pincode:
+            pincode.trim(),
+
+          country:
+            country?.trim() || "India",
+
+          isDefault:
+            isDefault === true,
+        });
+      }
+
+      // ========================================
+      // If this is first address
+      // automatically make it default
+      // ========================================
+
+      if (user.addresses.length === 1) {
+        user.addresses[0].isDefault = true;
+      }
+    }
+
+    // ==========================================
+    // Save User
+    // ==========================================
 
     await user.save();
 
+    // ==========================================
+    // Remove Password
+    // ==========================================
+
+    const userResponse =
+      user.toObject();
+
+    delete userResponse.password;
+
+    // ==========================================
+    // Response
+    // ==========================================
+
     res.status(200).json({
       success: true,
-      message: "Profile updated successfully",
-      user,
+      message:
+        hasAddressData
+          ? "Profile and address updated successfully"
+          : "Profile updated successfully",
+
+      user: userResponse,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Update Profile Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: "Profile update failed",
+      message:
+        error.message ||
+        "Profile update failed",
     });
   }
 };
-
-
 // ===============================
 // Change Password
 // ===============================
@@ -186,8 +357,8 @@ stats: {
 
   totalSpent,
 
-  savedAddresses:
-    user.addresses.length,
+savedAddresses:
+  user.addresses?.length || 0,
 
   memberSince:
     user.createdAt,
