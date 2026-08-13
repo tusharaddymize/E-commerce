@@ -30,6 +30,13 @@ const ADMIN_ROUTES = [
   "/filters",
   "/menu-groups",
   "/sub-categories",
+
+  // Admin Dashboard Analytics
+  "/dashboard",
+  "/revenue",
+  "/sales",
+  "/inventory",
+  "/customers",
 ];
 
 // ==========================================

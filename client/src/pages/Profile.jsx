@@ -7,13 +7,12 @@ import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileStats from "../components/profile/ProfileStats";
 import ProfileInfo from "../components/profile/ProfileInfo";
 import ChangePassword from "../components/profile/ChangePassword";
-import ProfileSidebar from "../components/profile/ProfileSidebar";
+// import ProfileSidebar from "../components/profile/ProfileSidebar";
 import ProfileRecentOrders from "../components/profile/ProfileRecentOrders";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
+const { user, loading, logout } = useAuth();
   // ==========================================
   // Loading
   // ==========================================
@@ -81,26 +80,53 @@ const Profile = () => {
         {/* Back to Dashboard */}
         {/* ==================================== */}
 
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="
-            inline-flex
-            items-center
-            gap-2
-            mb-4
-            text-sm
-            sm:text-base
-            font-medium
-            text-gray-600
-            hover:text-[#f4512a]
-            transition-colors
-          "
-        >
-          <FiArrowLeft size={19} />
+ <div className="flex items-center justify-between mb-5">
+  {/* Back */}
+  <button
+    type="button"
+    onClick={() => navigate("/")}
+    className="
+      inline-flex
+      items-center
+      gap-2
+      text-sm
+      sm:text-base
+      font-medium
+      text-gray-600
+      hover:text-[#f4512a]
+      transition-colors
+    "
+  >
+    <FiArrowLeft size={19} />
+    Back to Dashboard
+  </button>
 
-          Back to Dashboard
-        </button>
+  {/* Logout */}
+  <button
+    type="button"
+    onClick={() => {
+      logout();
+      navigate("/");
+    }}
+    className="
+      inline-flex
+      items-center
+      justify-center
+      px-4
+      py-2
+      rounded-lg
+      bg-[#f4512a]
+      text-white
+      text-sm
+      sm:text-base
+      font-semibold
+      hover:opacity-90
+      transition
+    "
+  >
+    Logout
+  </button>
+</div>
 
         {/* ==================================== */}
         {/* Mobile Page Heading */}
@@ -131,24 +157,8 @@ const Profile = () => {
         {/* ==================================== */}
         {/* Main Layout */}
         {/* ==================================== */}
-
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-[220px_minmax(0,1fr)]
-            lg:grid-cols-[250px_minmax(0,1fr)]
-            gap-5
-            lg:gap-7
-            items-start
-          "
-        >
-          {/* ================================== */}
-          {/* Sidebar */}
-          {/* ================================== */}
-
-          <ProfileSidebar user={user} />
-
+<div className="w-full">
+       
           {/* ================================== */}
           {/* Main Content */}
           {/* ================================== */}

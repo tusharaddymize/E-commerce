@@ -62,32 +62,70 @@ export const AdminProvider = ({ children }) => {
   // Admin Login
   // ==========================================
 
-  const login = (data) => {
-    if (!data) {
-      return;
-    }
+const login = (data) => {
+  if (!data) {
+    return;
+  }
 
-    // Save admin information
+  // ==========================================
+  // Get Admin Data
+  // ==========================================
+
+  const adminData =
+    data.admin ||
+    data.user ||
+    data;
+
+  // ==========================================
+  // Get Token
+  // ==========================================
+
+  const token =
+    data.token ||
+    data.adminToken ||
+    data.accessToken ||
+    data.data?.token ||
+    data.data?.adminToken ||
+    data.data?.accessToken ||
+    null;
+
+  // ==========================================
+  // Debug
+  // ==========================================
+
+  console.log("ADMIN LOGIN RESPONSE:", data);
+  console.log("ADMIN TOKEN:", token);
+  console.log("ADMIN DATA:", adminData);
+
+  // ==========================================
+  // Save Admin
+  // ==========================================
+
+  if (adminData) {
     localStorage.setItem(
       "admin",
-      JSON.stringify(data)
+      JSON.stringify(adminData)
     );
+  }
 
-    // Save admin token
-    if (data.token) {
-      localStorage.setItem(
-        "adminToken",
-        data.token
-      );
-    }
+  // ==========================================
+  // Save Admin Token
+  // ==========================================
 
-    // Update React state
-    setAdmin(data);
-
-    setAdminToken(
-      data.token || null
+  if (token) {
+    localStorage.setItem(
+      "adminToken",
+      token
     );
-  };
+  }
+
+  // ==========================================
+  // Update React State
+  // ==========================================
+
+  setAdmin(adminData);
+  setAdminToken(token);
+};
 
   // ==========================================
   // Admin Logout

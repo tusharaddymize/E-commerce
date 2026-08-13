@@ -70,23 +70,32 @@ const AdminLogin = () => {
       );
 
       // Save admin authentication
-      login(data);
+login(data);
 
-      toast.success(
-        "Admin Login Successful"
-      );
+const token =
+  data.token ||
+  data.adminToken ||
+  data.accessToken ||
+  data.data?.token ||
+  data.data?.adminToken ||
+  data.data?.accessToken;
 
-      // ========================================
-      // Redirect
-      // ========================================
+if (!token) {
+  toast.error("Admin token not received from server");
+  return;
+}
 
-      const redirect =
-        location.state?.from?.pathname ||
-        "/admin/dashboard";
+toast.success(
+  "Admin Login Successful"
+);
 
-      navigate(redirect, {
-        replace: true,
-      });
+const redirect =
+  location.state?.from?.pathname ||
+  "/admin/dashboard";
+
+navigate(redirect, {
+  replace: true,
+});
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
