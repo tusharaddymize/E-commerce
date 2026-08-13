@@ -2,20 +2,21 @@ import "dotenv/config";
 import nodemailer from "nodemailer";
 
 // ==========================================
-// Debug Environment Variables
+// Environment Debug
 // ==========================================
 
+console.log("==========================================");
+console.log("📧 EMAIL CONFIG");
 console.log("EMAIL_USER:", process.env.EMAIL_USER);
-
 console.log(
   "EMAIL_PASS:",
-  process.env.EMAIL_PASS
-    ? "Loaded ✅"
-    : "Missing ❌"
+  process.env.EMAIL_PASS ? "Loaded ✅" : "Missing ❌"
 );
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("==========================================");
 
 // ==========================================
-// Gmail Transporter
+// Gmail SMTP Transporter
 // ==========================================
 
 const transporter = nodemailer.createTransport({
@@ -27,38 +28,38 @@ const transporter = nodemailer.createTransport({
 
   auth: {
     user: process.env.EMAIL_USER,
-
     pass: process.env.EMAIL_PASS,
   },
 
-  // ======================================
-  // Timeouts
-  // ======================================
-
-  connectionTimeout: 10000,
-
-  greetingTimeout: 10000,
-
-  socketTimeout: 10000,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
 });
 
 // ==========================================
-// Verify SMTP
-// Only in Development
+// Verify SMTP Connection
 // ==========================================
 
-if (process.env.NODE_ENV !== "production") {
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error(
-        "❌ Mail Error:",
-        error.message
-      );
-    } else {
-      console.log("✅ Gmail Connected");
-    }
-  });
-}
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("==========================================");
+    console.error("❌ SMTP / GMAIL CONNECTION FAILED");
+    console.error("==========================================");
+
+    console.error("Name:", error.name);
+    console.error("Code:", error.code);
+    console.error("Command:", error.command);
+    console.error("Response:", error.response);
+    console.error("Response Code:", error.responseCode);
+    console.error("Message:", error.message);
+
+    console.error("==========================================");
+  } else {
+    console.log("==========================================");
+    console.log("✅ Gmail SMTP Connected Successfully");
+    console.log("==========================================");
+  }
+});
 
 // ==========================================
 // Export
