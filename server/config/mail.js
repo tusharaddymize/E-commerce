@@ -21,43 +21,31 @@ console.log("==========================================");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-
   port: 465,
-
   secure: true,
+
+  // Force IPv4
+  family: 4,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
+  connectionTimeout: 20000,
+  greetingTimeout: 20000,
+  socketTimeout: 20000,
 });
 
 // ==========================================
-// Verify SMTP Connection
+// Verify Gmail SMTP
 // ==========================================
 
-transporter.verify((error, success) => {
+transporter.verify((error) => {
   if (error) {
-    console.error("==========================================");
-    console.error("❌ SMTP / GMAIL CONNECTION FAILED");
-    console.error("==========================================");
-
-    console.error("Name:", error.name);
-    console.error("Code:", error.code);
-    console.error("Command:", error.command);
-    console.error("Response:", error.response);
-    console.error("Response Code:", error.responseCode);
-    console.error("Message:", error.message);
-
-    console.error("==========================================");
+    console.error("❌ Gmail SMTP Error:", error);
   } else {
-    console.log("==========================================");
     console.log("✅ Gmail SMTP Connected Successfully");
-    console.log("==========================================");
   }
 });
 
