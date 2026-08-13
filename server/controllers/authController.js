@@ -6,7 +6,7 @@ import {
   sendRegistrationOtpEmail,
   sendLoginOtpEmail,
   sendForgotPasswordOtpEmail,
-} from "../services/emailServices.js";
+}from "../services/mailService.js";
 
 // ======================================================
 // Helper: Generate 6 Digit OTP
