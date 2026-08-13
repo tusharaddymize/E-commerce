@@ -23,8 +23,7 @@ const ProductGrid = ({
     const seen = new Set();
 
     return products.filter((product) => {
-      const id =
-        product?._id || product?.id;
+      const id = product?._id || product?.id;
 
       // Product has no ID
       if (!id) {
@@ -59,32 +58,26 @@ const ProductGrid = ({
         return;
       }
 
-      observer.current =
-        new IntersectionObserver(
-          (entries) => {
-            const firstEntry =
-              entries[0];
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          const firstEntry = entries[0];
 
-            if (
-              firstEntry?.isIntersecting &&
-              hasMore &&
-              !loading
-            ) {
-              loadMore?.();
-            }
-          },
-          {
-            threshold: 0.5,
+          if (
+            firstEntry?.isIntersecting &&
+            hasMore &&
+            !loading
+          ) {
+            loadMore?.();
           }
-        );
+        },
+        {
+          threshold: 0.5,
+        }
+      );
 
       observer.current.observe(node);
     },
-    [
-      loading,
-      hasMore,
-      loadMore,
-    ]
+    [loading, hasMore, loadMore]
   );
 
   // ==========================================
@@ -97,7 +90,6 @@ const ProductGrid = ({
         w-full
         py-10
         md:py-14
-
         bg-white
         text-gray-900
       "
@@ -108,68 +100,73 @@ const ProductGrid = ({
 
       <div
         className="
-          flex
-          items-center
-          mb-12
+          w-full
+          max-w-[1560px]
+          mx-auto
           px-4
+          md:px-6
+          mb-10
+          md:mb-12
         "
       >
-        <div className="hidden lg:block w-24" />
-
         <h2
           className="
-            flex-1
-
             text-center
-
             text-3xl
             md:text-4xl
             lg:text-5xl
-
             font-bold
-
             text-black
           "
         >
           Featured Products
         </h2>
-
-        <div className="hidden lg:block w-24" />
       </div>
 
       {/* ====================================== */}
-      {/* Products Grid */}
+      {/* Products Container */}
       {/* ====================================== */}
 
-      <div
-        className="
-          grid
+<div
+  className="
+    w-[94%]
+    sm:w-[94%]
+    md:w-[92%]
+    lg:w-[90%]
+    xl:w-[88%]
 
-          grid-cols-2
-          sm:grid-cols-2
-          md:grid-cols-4
-          lg:grid-cols-5
-          xl:grid-cols-5
+    max-w-[1450px]
 
-          gap-0
-          lg:gap-5
-          xl:gap-6
+    mx-auto
+  "
+>
+        {/* ====================================== */}
+        {/* Products Grid */}
+        {/* ====================================== */}
+<div
+  className="
+    grid
 
-          w-full
+    grid-cols-1
+    sm:grid-cols-2
+    md:grid-cols-3
+    lg:grid-cols-4
 
-          bg-white
-        "
-      >
-        {uniqueProducts.map(
-          (product, index) => {
+    gap-5
+    md:gap-6
+    lg:gap-7
+
+    w-full
+  "
+>
+          {uniqueProducts.map((product, index) => {
             const productId =
               product?._id ||
               product?.id ||
               `product-${index}`;
 
             const isLastProduct =
-              index ===
-              uniqueProducts.length - 1;
+              index === uniqueProducts.length - 1;
 
             // ==================================
             // Last Product
@@ -181,14 +178,9 @@ const ProductGrid = ({
                 <div
                   key={String(productId)}
                   ref={lastProductRef}
-                  className="
-                    w-full
-                    bg-white
-                  "
+                  className="w-full min-w-0"
                 >
-                  <ProductCard
-                    product={product}
-                  />
+                  <ProductCard product={product} />
                 </div>
               );
             }
@@ -198,100 +190,89 @@ const ProductGrid = ({
             // ==================================
 
             return (
-              <ProductCard
+              <div
                 key={String(productId)}
-                product={product}
-              />
+                className="w-full min-w-0"
+              >
+                <ProductCard product={product} />
+              </div>
             );
-          }
-        )}
+          })}
 
-        {/* ====================================== */}
-        {/* Loading Skeleton */}
-        {/* ====================================== */}
+          {/* ====================================== */}
+          {/* Loading Skeleton */}
+          {/* ====================================== */}
 
-        {loading && (
-          <>
-            {[...Array(8)].map(
-              (_, index) => (
+          {loading && (
+            <>
+              {[...Array(8)].map((_, index) => (
                 <SkeletonCard
                   key={`skeleton-${index}`}
                 />
-              )
-            )}
+              ))}
 
-            <div
-              className="
-                col-span-full
-
-                flex
-                justify-center
-
-                py-8
-
-                bg-white
-              "
-            >
               <div
                 className="
+                  col-span-full
                   flex
-                  items-center
-                  gap-3
-
-                  text-[var(--primary-color,#355E3B)]
-
-                  font-semibold
+                  justify-center
+                  py-8
+                  bg-white
                 "
               >
                 <div
                   className="
-                    w-5
-                    h-5
-
-                    rounded-full
-
-                    border-2
-                    border-current
-                    border-t-transparent
-
-                    animate-spin
+                    flex
+                    items-center
+                    gap-3
+                    text-[var(--primary-color,#355E3B)]
+                    font-semibold
                   "
-                />
+                >
+                  <div
+                    className="
+                      w-5
+                      h-5
+                      rounded-full
+                      border-2
+                      border-current
+                      border-t-transparent
+                      animate-spin
+                    "
+                  />
 
-                Loading More Products...
+                  Loading More Products...
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* ====================================== */}
       {/* Empty Products */}
       {/* ====================================== */}
 
-      {!loading &&
-        uniqueProducts.length === 0 && (
-          <div
+      {!loading && uniqueProducts.length === 0 && (
+        <div
+          className="
+            text-center
+            py-14
+            bg-white
+          "
+        >
+          <h2
             className="
-              text-center
-              py-14
-              bg-white
+              text-xl
+              md:text-2xl
+              text-gray-500
+              font-semibold
             "
           >
-            <h2
-              className="
-                text-xl
-                md:text-2xl
-
-                text-gray-500
-
-                font-semibold
-              "
-            >
-              No Products Found
-            </h2>
-          </div>
-        )}
+            No Products Found
+          </h2>
+        </div>
+      )}
 
       {/* ====================================== */}
       {/* No More Products */}
@@ -311,9 +292,7 @@ const ProductGrid = ({
               className="
                 text-xl
                 md:text-2xl
-
                 text-gray-500
-
                 font-semibold
               "
             >

@@ -160,16 +160,19 @@ const FlashDealsSection = ({
         className="w-full"
         style={sectionBackground}
       >
-        <div
-          className="
-            mx-auto
-            w-full
-            max-w-[var(--container-width,1450px)]
-            px-2
-            sm:px-4
-            lg:px-6
-          "
-        >
+<div
+  className="
+    mx-auto
+
+    w-[94%]
+    sm:w-[94%]
+    md:w-[92%]
+    lg:w-[90%]
+    xl:w-[88%]
+
+    max-w-[1450px]
+  "
+>
           <div
             className="
               h-[300px]
@@ -205,16 +208,19 @@ const FlashDealsSection = ({
       className="w-full"
       style={sectionBackground}
     >
-      <div
-        className="
-          mx-auto
-          w-full
-          max-w-[var(--container-width,1450px)]
-          px-2
-          sm:px-4
-          lg:px-6
-        "
-      >
+<div
+  className="
+    mx-auto
+
+    w-[94%]
+    sm:w-[94%]
+    md:w-[92%]
+    lg:w-[90%]
+    xl:w-[88%]
+
+    max-w-[1450px]
+  "
+>
         {/* ==================================
             Main Container
         ================================== */}
