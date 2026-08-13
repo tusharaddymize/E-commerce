@@ -15,8 +15,6 @@ const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
-
-  // Force IPv4
   family: 4,
 
   auth: {
@@ -27,14 +25,6 @@ const transporter = nodemailer.createTransport({
   connectionTimeout: 20000,
   greetingTimeout: 20000,
   socketTimeout: 20000,
-});
-
-transporter.verify((error) => {
-  if (error) {
-    console.error("❌ Gmail SMTP Error:", error);
-  } else {
-    console.log("✅ Gmail SMTP Connected Successfully");
-  }
 });
 
 export default transporter;
