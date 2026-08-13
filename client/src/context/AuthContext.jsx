@@ -28,11 +28,33 @@ const AuthContext = createContext();
 // ======================================================
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(
-    getStoredUser()
-  );
+  const [user, setUserState] = useState(getStoredUser());
 
   const [loading, setLoading] = useState(true);
+
+  // ======================================================
+  // Central User Setter
+  // ======================================================
+  // Whenever user changes:
+  // 1. React state updates
+  // 2. localStorage updates
+  //
+  // This keeps Profile + Edit Profile + Refresh
+  // synchronized.
+  // ======================================================
+
+  const setUser = (updatedUser) => {
+    setUserState(updatedUser);
+
+    if (updatedUser) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
+    } else {
+      localStorage.removeItem("user");
+    }
+  };
 
   // ======================================================
   // Auto Login on Refresh
@@ -50,8 +72,7 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        const data =
-          await getCurrentUser();
+        const data = await getCurrentUser();
 
         if (data?.user) {
           setUser(data.user);
@@ -80,12 +101,9 @@ export const AuthProvider = ({ children }) => {
   // ======================================================
 
   const login = async (formData) => {
-    const data =
-      await loginUser(formData);
+    const data = await loginUser(formData);
 
-    // IMPORTANT:
     // Token is NOT saved here.
-    //
     // Backend first sends Login OTP.
     //
     // Token will be saved after:
@@ -98,15 +116,11 @@ export const AuthProvider = ({ children }) => {
   // Verify Login OTP
   // ======================================================
 
-  const verifyOtp = async (
-    email,
-    otp
-  ) => {
-    const data =
-      await verifyLoginOtp(
-        email,
-        otp
-      );
+  const verifyOtp = async (email, otp) => {
+    const data = await verifyLoginOtp(
+      email,
+      otp
+    );
 
     // OTP verified successfully
     // authService saves token + user
@@ -122,15 +136,10 @@ export const AuthProvider = ({ children }) => {
   // Register
   // ======================================================
 
-  const register = async (
-    formData
-  ) => {
-    const data =
-      await registerUser(formData);
+  const register = async (formData) => {
+    const data = await registerUser(formData);
 
-    // IMPORTANT:
     // Registration does NOT authenticate user.
-    //
     // User must first verify OTP.
 
     return data;
@@ -167,8 +176,7 @@ export const AuthProvider = ({ children }) => {
   const forgotPasswordRequest = async (
     email
   ) => {
-    const data =
-      await forgotPassword(email);
+    const data = await forgotPassword(email);
 
     return data;
   };
@@ -199,12 +207,11 @@ export const AuthProvider = ({ children }) => {
     otp,
     newPassword,
   }) => {
-    const data =
-      await resetPassword({
-        email,
-        otp,
-        newPassword,
-      });
+    const data = await resetPassword({
+      email,
+      otp,
+      newPassword,
+    });
 
     return data;
   };
@@ -215,6 +222,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     logoutUser();
+
     setUser(null);
   };
 
