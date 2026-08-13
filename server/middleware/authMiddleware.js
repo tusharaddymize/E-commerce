@@ -1,31 +1,54 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+// ======================================================
+// Protect Middleware
+// ======================================================
+
 export const protect = async (req, res, next) => {
   try {
     let token;
 
+    // ==================================================
     // Check Authorization Header
+    // ==================================================
+
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {
-      token = req.headers.authorization.split(" ")[1];
+      token =
+        req.headers.authorization.split(" ")[1];
     }
- 
+
+    // ==================================================
     // No Token
+    // ==================================================
+
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized. No token provided.",
+        message:
+          "Not authorized. No token provided.",
       });
     }
 
-    // Verify Token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // ==================================================
+    // Verify JWT
+    // ==================================================
 
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    // ==================================================
     // Find User
-    const user = await User.findById(decoded.id).select("-password");
+    // ==================================================
+
+    const user = await User.findById(
+      decoded.id
+    ).select("-password");
 
     if (!user) {
       return res.status(401).json({
@@ -34,28 +57,76 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Attach User to Request
+    // ==================================================
+    // Check Account Blocked
+    // ==================================================
+
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Your account has been blocked.",
+      });
+    }
+
+    // ==================================================
+    // Check Email Verification
+    // ==================================================
+
+    if (user.isVerified !== true) {
+      return res.status(403).json({
+        success: false,
+        verified: false,
+        message:
+          "Please verify your email before accessing this resource.",
+      });
+    }
+
+    // ==================================================
+    // Attach User To Request
+    // ==================================================
+
     req.user = user;
 
     next();
   } catch (error) {
-    console.error("Auth Middleware Error:", error);
+    console.error(
+      "Auth Middleware Error:",
+      error
+    );
 
+    // ==================================================
     // Expired Token
-    if (error.name === "TokenExpiredError") {
+    // ==================================================
+
+    if (
+      error.name ===
+      "TokenExpiredError"
+    ) {
       return res.status(401).json({
         success: false,
-        message: "Token expired. Please login again.",
+        message:
+          "Token expired. Please login again.",
       });
     }
 
+    // ==================================================
     // Invalid Token
-    if (error.name === "JsonWebTokenError") {
+    // ==================================================
+
+    if (
+      error.name ===
+      "JsonWebTokenError"
+    ) {
       return res.status(401).json({
         success: false,
         message: "Invalid token.",
       });
     }
+
+    // ==================================================
+    // General Unauthorized
+    // ==================================================
 
     return res.status(401).json({
       success: false,
@@ -64,13 +135,22 @@ export const protect = async (req, res, next) => {
   }
 };
 
+// ======================================================
+// Admin Middleware
+// ======================================================
 
-// ==============================================
-// Admin Middleware (Optional)
-// ==============================================
-
-export const admin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
+export const admin = (
+  req,
+  res,
+  next
+) => {
+  if (
+    req.user &&
+    (
+      req.user.role === "admin" ||
+      req.user.isAdmin === true
+    )
+  ) {
     return next();
   }
 
