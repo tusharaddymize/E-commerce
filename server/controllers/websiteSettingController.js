@@ -148,16 +148,30 @@ export const updateHeroBanners = async (
   res
 ) => {
   try {
+    // ==========================================
+    // Get Website Settings
+    // ==========================================
+
     const settings =
       await getSettingsDocument();
 
-    let heroBanners = req.body.heroBanners;
+    // ==========================================
+    // Get Hero Banners
+    // ==========================================
 
-    // FormData sends JSON as string
-    if (typeof heroBanners === "string") {
+    let heroBanners =
+      req.body.heroBanners;
+
+    if (
+      typeof heroBanners === "string"
+    ) {
       heroBanners =
         JSON.parse(heroBanners);
     }
+
+    // ==========================================
+    // Validate Hero Banners
+    // ==========================================
 
     if (!Array.isArray(heroBanners)) {
       return res.status(400).json({
@@ -167,28 +181,95 @@ export const updateHeroBanners = async (
       });
     }
 
+    // ==========================================
+    // Uploaded Files
+    // ==========================================
+
     const uploadedFiles =
       req.files || [];
 
-    let uploadIndex = 0;
+    // ==========================================
+    // Image Index Mapping
+    // ==========================================
+    //
+    // Example:
+    //
+    // Banner 1 → existing
+    // Banner 2 → existing
+    // Banner 3 → NEW IMAGE
+    // Banner 4 → existing
+    //
+    // imageIndexes = [2]
+    //
+    // This tells backend that uploadedFiles[0]
+    // belongs to banner index 2.
+    // ==========================================
+
+    let imageIndexes =
+      req.body.imageIndexes || "[]";
+
+    if (
+      typeof imageIndexes === "string"
+    ) {
+      imageIndexes =
+        JSON.parse(imageIndexes);
+    }
+
+    if (!Array.isArray(imageIndexes)) {
+      imageIndexes = [];
+    }
+
+    // ==========================================
+    // Final Banner Array
+    // ==========================================
 
     const formattedBanners = [];
+
+    // ==========================================
+    // Process Every Banner
+    // ==========================================
 
     for (
       let i = 0;
       i < heroBanners.length;
       i++
     ) {
-      const banner = heroBanners[i];
+      const banner =
+        heroBanners[i];
+
+      // ========================================
+      // Keep Existing Image
+      // ========================================
 
       let imageUrl =
-        banner.image || "";
+        banner?.image || "";
 
-      // =========================
-      // Upload New Banner Image
-      // =========================
+      // ========================================
+      // Find Uploaded File For This Banner
+      // ========================================
 
-      if (uploadedFiles[uploadIndex]) {
+      const uploadedFileIndex =
+        imageIndexes.indexOf(i);
+
+      // ========================================
+      // New Image Exists
+      // ========================================
+
+      if (
+        uploadedFileIndex !== -1 &&
+        uploadedFiles[
+          uploadedFileIndex
+        ]
+      ) {
+        const file =
+          uploadedFiles[
+            uploadedFileIndex
+          ];
+
+        // ======================================
+        // Upload To Cloudinary
+        // ======================================
+
         const uploadResult =
           await new Promise(
             (resolve, reject) => {
@@ -198,9 +279,14 @@ export const updateHeroBanners = async (
                     folder:
                       "website/hero-banners",
                   },
-                  (error, result) => {
+                  (
+                    error,
+                    result
+                  ) => {
                     if (error) {
-                      return reject(error);
+                      return reject(
+                        error
+                      );
                     }
 
                     resolve(result);
@@ -209,62 +295,77 @@ export const updateHeroBanners = async (
 
               streamifier
                 .createReadStream(
-                  uploadedFiles[
-                    uploadIndex
-                  ].buffer
+                  file.buffer
                 )
                 .pipe(stream);
             }
           );
 
+        // ======================================
+        // Replace Existing Image
+        // ======================================
+
         imageUrl =
           uploadResult.secure_url;
-
-        uploadIndex++;
       }
+
+      // ========================================
+      // Save Banner
+      // ========================================
 
       formattedBanners.push({
         title:
-          banner.title || "",
+          banner?.title || "",
 
         subtitle:
-          banner.subtitle || "",
+          banner?.subtitle || "",
 
         description:
-          banner.description || "",
+          banner?.description || "",
 
         image: imageUrl,
 
         buttonText:
-          banner.buttonText ||
+          banner?.buttonText ||
           "Shop Now",
 
         buttonLink:
-          banner.buttonLink ||
+          banner?.buttonLink ||
           "/products",
 
         active:
-          banner.active === undefined
+          banner?.active === undefined
             ? true
             : banner.active,
 
         order:
-          banner.order === undefined
+          banner?.order === undefined
             ? i
             : banner.order,
       });
     }
+
+    // ==========================================
+    // Save All Hero Banners
+    // ==========================================
 
     settings.heroBanners =
       formattedBanners;
 
     await settings.save();
 
-    res.status(200).json({
+    // ==========================================
+    // Success Response
+    // ==========================================
+
+    return res.status(200).json({
       success: true,
+
       message:
         "Hero banners updated successfully.",
-      data: settings.heroBanners,
+
+      data:
+        settings.heroBanners,
     });
   } catch (error) {
     console.error(
@@ -272,11 +373,14 @@ export const updateHeroBanners = async (
       error
     );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
+
       message:
         "Failed to update hero banners.",
-      error: error.message,
+
+      error:
+        error.message,
     });
   }
 };
