@@ -11,7 +11,7 @@ import { toast } from "react-hot-toast";
 import {
   updateLogo,
   updateHeroBanners,
-  updateHomepageSettings,
+  // updateHomepageSettings,
   updateContactSettings,
   updateSocialSettings,
   updateAboutSettings,
@@ -105,17 +105,7 @@ const WebsiteSettings = () => {
     setHeroBanners,
   ] = useState([]);
 
-  // ==========================================
-  // Homepage
-  // ==========================================
 
-  const [
-    homepage,
-    setHomepage,
-  ] = useState({
-    homepageBanners: [],
-    homepageSections: {},
-  });
 
   // ==========================================
   // Other Settings
@@ -201,20 +191,7 @@ const WebsiteSettings = () => {
       }))
     );
 
-    // ========================================
-    // Homepage
-    // ========================================
-
-    setHomepage({
-      homepageBanners:
-        websiteSettings?.homepageBanners ||
-        [],
-
-      homepageSections:
-        websiteSettings?.homepageSections ||
-        {},
-    });
-
+  
     // ========================================
     // Contact
     // ========================================
@@ -349,37 +326,7 @@ const WebsiteSettings = () => {
       }
     };
 
-  // ==========================================
-  // Save Homepage
-  // ==========================================
 
-  const handleSaveHomepage =
-    async () => {
-      try {
-        setSaving(true);
-
-        await updateHomepageSettings(
-          homepage
-        );
-
-        toast.success(
-          "Homepage updated successfully."
-        );
-      } catch (error) {
-        console.error(
-          "Homepage Update Error:",
-          error
-        );
-
-        toast.error(
-          error?.response?.data
-            ?.message ||
-            "Failed to update homepage."
-        );
-      } finally {
-        setSaving(false);
-      }
-    };
 
   // ==========================================
   // Save Contact
@@ -813,20 +760,7 @@ const WebsiteSettings = () => {
           saving,
         }}
 
-        // ====================================
-        // Homepage
-        // ====================================
-
-        homepageProps={{
-          homepage,
-
-          setHomepage,
-
-          onSave:
-            handleSaveHomepage,
-
-          saving,
-        }}
+   
 
         // ====================================
         // Contact

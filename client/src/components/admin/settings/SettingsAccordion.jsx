@@ -1,27 +1,23 @@
 import { useState } from "react";
 
 import { FaImage } from "react-icons/fa";
-import { FiHome, FiPhone, FiShare2 } from "react-icons/fi";
+import { FiPhone, FiShare2 } from "react-icons/fi";
 import { MdInfoOutline, MdPolicy } from "react-icons/md";
-import { HiOutlineSearch } from "react-icons/hi";
 import { IoColorPaletteOutline } from "react-icons/io5";
 
 import SettingSection from "./SettingSection";
 
 import LogoSettings from "./LogoSettings";
 import HeroBannerSettings from "./HeroBannerSettings";
-import HomepageSettings from "./HomepageSettings";
 import ContactSettings from "./ContactSettings";
 import SocialSettings from "./SocialSettings";
 import AboutSettings from "./AboutSettings";
 import PolicySettings from "./PolicySettings";
-
 import ThemeSettings from "./ThemeSettings";
 
 const SettingsAccordion = ({
   logoProps,
   heroProps,
-  homepageProps,
   contactProps,
   socialProps,
   aboutProps,
@@ -31,12 +27,23 @@ const SettingsAccordion = ({
 }) => {
   const [openSection, setOpenSection] = useState("logo");
 
+  // ==========================================
+  // Toggle Section
+  // ==========================================
+
   const toggleSection = (section) => {
-    setOpenSection((prev) => (prev === section ? "" : section));
+    setOpenSection((prev) =>
+      prev === section ? "" : section
+    );
   };
 
   return (
     <div className="space-y-5">
+
+      {/* ==========================================
+          LOGO & FAVICON
+      ========================================== */}
+
       <SettingSection
         title="Logo & Favicon"
         icon={<FaImage />}
@@ -45,6 +52,11 @@ const SettingsAccordion = ({
       >
         <LogoSettings {...logoProps} />
       </SettingSection>
+
+
+      {/* ==========================================
+          HERO BANNERS
+      ========================================== */}
 
       <SettingSection
         title="Hero Banners"
@@ -55,14 +67,10 @@ const SettingsAccordion = ({
         <HeroBannerSettings {...heroProps} />
       </SettingSection>
 
-      <SettingSection
-        title="Homepage Settings"
-        icon={<FiHome />}
-        isOpen={openSection === "homepage"}
-        onToggle={() => toggleSection("homepage")}
-      >
-        <HomepageSettings {...homepageProps} />
-      </SettingSection>
+
+      {/* ==========================================
+          CONTACT INFORMATION
+      ========================================== */}
 
       <SettingSection
         title="Contact Information"
@@ -73,6 +81,11 @@ const SettingsAccordion = ({
         <ContactSettings {...contactProps} />
       </SettingSection>
 
+
+      {/* ==========================================
+          SOCIAL MEDIA LINKS
+      ========================================== */}
+
       <SettingSection
         title="Social Media Links"
         icon={<FiShare2 />}
@@ -81,6 +94,11 @@ const SettingsAccordion = ({
       >
         <SocialSettings {...socialProps} />
       </SettingSection>
+
+
+      {/* ==========================================
+          ABOUT US
+      ========================================== */}
 
       <SettingSection
         title="About Us"
@@ -91,6 +109,11 @@ const SettingsAccordion = ({
         <AboutSettings {...aboutProps} />
       </SettingSection>
 
+
+      {/* ==========================================
+          POLICY PAGES
+      ========================================== */}
+
       <SettingSection
         title="Policy Pages"
         icon={<MdPolicy />}
@@ -100,7 +123,10 @@ const SettingsAccordion = ({
         <PolicySettings {...policyProps} />
       </SettingSection>
 
-  
+
+      {/* ==========================================
+          THEME SETTINGS
+      ========================================== */}
 
       <SettingSection
         title="Theme Settings"
@@ -110,6 +136,7 @@ const SettingsAccordion = ({
       >
         <ThemeSettings {...themeProps} />
       </SettingSection>
+
     </div>
   );
 };

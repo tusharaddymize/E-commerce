@@ -83,10 +83,10 @@ const fetchNotifications = async () => {
     >
       {/* Bell */}
 <button
-  onClick={async () => {
-    await fetchNotifications();
-    setOpen(!open);
-  }}
+onClick={async () => {
+  await fetchNotifications();
+  setOpen((prev) => !prev);
+}}
   className="relative p-2 rounded-full hover:bg-gray-100 transition"
 >
         <FaBell size={22} />

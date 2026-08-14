@@ -3,7 +3,7 @@ import {
   Menu,
   Bell,
 } from "lucide-react";
-
+import NotificationBell from "./NotificationBell";
 const AdminNavbar = ({ setSidebarOpen }) => {
   return (
     <header
@@ -187,59 +187,7 @@ const AdminNavbar = ({ setSidebarOpen }) => {
 
           {/* Notification Bell */}
 
-          <button
-            type="button"
-            className="
-              relative
-              flex
-              items-center
-              justify-center
-              w-10
-              h-10
-              rounded-xl
-              text-slate-700
-              bg-white
-              hover:bg-gray-100
-              active:bg-gray-200
-              transition
-              cursor-pointer
-            "
-            aria-label="Notifications"
-          >
-
-            <Bell
-              size={22}
-              strokeWidth={2}
-              className="text-slate-700"
-            />
-
-            {/* Notification Count */}
-
-            <span
-              className="
-                absolute
-                -top-0.5
-                -right-0.5
-                flex
-                items-center
-                justify-center
-                min-w-[20px]
-                h-5
-                px-1
-                rounded-full
-                bg-red-600
-                text-white
-                text-[11px]
-                font-bold
-                leading-none
-                border-2
-                border-white
-              "
-            >
-              1
-            </span>
-
-          </button>
+<NotificationBell />
 
         </div>
 

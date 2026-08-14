@@ -59,9 +59,14 @@ export const updateHeroBanners = async (
 ) => {
   const formData = new FormData();
 
+  // ==========================================
+  // Prepare Banner Data
+  // ==========================================
+
   const bannerData = heroBanners.map(
     (banner) => ({
-      title: banner?.title || "",
+      title:
+        banner?.title || "",
 
       subtitle:
         banner?.subtitle || "",
@@ -80,30 +85,62 @@ export const updateHeroBanners = async (
           ? true
           : banner.active,
 
-      order: banner?.order ?? 0,
+      order:
+        banner?.order ?? 0,
 
-      // Keep existing Cloudinary image URL
+      // Keep existing Cloudinary URL
       image:
-        typeof banner?.image ===
-        "string"
+        typeof banner?.image === "string"
           ? banner.image
           : "",
     })
   );
+
+  // ==========================================
+  // Send Banner Data
+  // ==========================================
 
   formData.append(
     "heroBanners",
     JSON.stringify(bannerData)
   );
 
-  heroBanners.forEach((banner) => {
-    if (banner?.image instanceof File) {
-      formData.append(
-        "images",
-        banner.image
-      );
+  // ==========================================
+  // Upload New Images
+  // ==========================================
+
+  const imageIndexes = [];
+
+  heroBanners.forEach(
+    (banner, index) => {
+      if (
+        banner?.image instanceof File
+      ) {
+        // Add image file
+        formData.append(
+          "images",
+          banner.image
+        );
+
+        // Store which banner this image
+        // belongs to
+        imageIndexes.push(index);
+      }
     }
-  });
+  );
+
+  // ==========================================
+  // Send Image Index Mapping
+  // ==========================================
+
+  formData.append(
+    "imageIndexes",
+    JSON.stringify(imageIndexes)
+  );
+
+  // ==========================================
+  // API Request
+  // ==========================================
 
   const { data } = await API.put(
     "/website-settings/hero-banners",
@@ -118,7 +155,6 @@ export const updateHeroBanners = async (
 
   return data;
 };
-
 // ==========================================
 // Update Homepage Settings
 // Admin
