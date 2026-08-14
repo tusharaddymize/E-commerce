@@ -9,9 +9,9 @@ import AdminNavbar from "../../components/admin/AdminNavbar";
 import { getAllUsers } from "../../services/userService";
 
 const UserManagement = () => {
-  // ===============================
+  // ======================================================
   // States
-  // ===============================
+  // ======================================================
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,9 +26,9 @@ const UserManagement = () => {
 
   const limit = 10;
 
-  // ===============================
+  // ======================================================
   // Load Users
-  // ===============================
+  // ======================================================
 
   const loadUsers = async () => {
     try {
@@ -43,99 +43,78 @@ const UserManagement = () => {
       setUsers(data.users || []);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to load users:", error);
+
       toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
   };
 
+  // ======================================================
+  // Load Users When Page / Search Changes
+  // ======================================================
+
   useEffect(() => {
     loadUsers();
   }, [page, search]);
 
-  // ===============================
+  // ======================================================
   // Search
-  // ===============================
+  // ======================================================
 
   const handleSearch = (e) => {
-    setSearch(e.target.value);
-    setPage(1);
+    const value = e.target.value;
+
+    setSearch(value);
+
+    // Reset pagination when search changes
+    if (page !== 1) {
+      setPage(1);
+    }
   };
 
-  // ===============================
-  // Loading Screen
-  // ===============================
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-100">
-        <div className="flex">
-
-          <AdminSidebar
-            isOpen={sidebarOpen}
-            setIsOpen={setSidebarOpen}
-          />
-
-          <div className="flex-1 min-w-0 flex flex-col">
-
-            <AdminNavbar
-              setSidebarOpen={setSidebarOpen}
-            />
-
-            <div className="flex flex-1 items-center justify-center p-6">
-
-              <div className="rounded-2xl border border-gray-200 bg-white px-10 py-10 shadow-sm">
-
-                <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
-
-                <h2 className="text-center text-xl font-bold text-gray-800">
-                  Loading Users...
-                </h2>
-
-                <p className="mt-2 text-center text-gray-500">
-                  Please wait while user information is loading.
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-    );
-  }
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <div className="min-h-screen bg-slate-100">
 
       <div className="flex">
 
-        {/* Sidebar */}
+        {/* ==================================================
+            Sidebar
+        ================================================== */}
 
         <AdminSidebar
           isOpen={sidebarOpen}
           setIsOpen={setSidebarOpen}
         />
 
-        {/* Main Content */}
+        {/* ==================================================
+            Main Content
+        ================================================== */}
 
         <div className="flex-1 min-w-0 flex flex-col">
 
-          {/* Navbar */}
+          {/* ==================================================
+              Navbar
+          ================================================== */}
 
           <AdminNavbar
             setSidebarOpen={setSidebarOpen}
           />
 
-          {/* Page */}
+          {/* ==================================================
+              Page
+          ================================================== */}
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                        {/* ===============================
+
+            {/* ==================================================
                 Header
-            =============================== */}
+            ================================================== */}
 
             <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
@@ -152,7 +131,9 @@ const UserManagement = () => {
 
               </div>
 
-              {/* Summary Card */}
+              {/* ==================================================
+                  Summary Card
+              ================================================== */}
 
               <div className="rounded-2xl border border-green-100 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 shadow-sm">
 
@@ -168,9 +149,9 @@ const UserManagement = () => {
 
             </div>
 
-            {/* ===============================
+            {/* ==================================================
                 Search Section
-            =============================== */}
+            ================================================== */}
 
             <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
 
@@ -182,7 +163,14 @@ const UserManagement = () => {
 
                   <Search
                     size={20}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                      pointer-events-none
+                    "
                   />
 
                   <input
@@ -190,6 +178,7 @@ const UserManagement = () => {
                     placeholder="Search by name or email..."
                     value={search}
                     onChange={handleSearch}
+                    autoComplete="off"
                     className="
                       w-full
                       rounded-xl
@@ -214,334 +203,507 @@ const UserManagement = () => {
 
             </div>
 
-            {/* ===============================
-                Loading
-            =============================== */}
+            {/* ==================================================
+                Content Area
+            ================================================== */}
 
-            {loading ? (
+            <div className="relative">
 
-              <div className="rounded-2xl border border-gray-200 bg-white py-20 text-center shadow-sm">
+              {/* ==================================================
+                  Loading Overlay
+                  IMPORTANT:
+                  Input/page will NOT unmount while loading.
+              ================================================== */}
 
-                <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
+              {loading && (
+                <div className="
+                  absolute
+                  inset-0
+                  z-10
+                  flex
+                  items-start
+                  justify-center
+                  rounded-2xl
+                  bg-white/60
+                  backdrop-blur-[1px]
+                  pt-10
+                  pointer-events-none
+                ">
+                  <div className="
+                    flex
+                    items-center
+                    gap-3
+                    rounded-xl
+                    bg-white
+                    px-5
+                    py-3
+                    shadow-md
+                    border
+                    border-gray-200
+                  ">
 
-                <p className="text-gray-500">
-                  Loading Users...
-                </p>
+                    <div className="
+                      h-5
+                      w-5
+                      animate-spin
+                      rounded-full
+                      border-2
+                      border-green-600
+                      border-t-transparent
+                    " />
 
-              </div>
+                    <span className="text-sm font-medium text-gray-600">
+                      Loading users...
+                    </span>
 
-            ) : (
-                            <>
-                {/* ===============================
-                    Desktop Table
-                =============================== */}
+                  </div>
+                </div>
+              )}
 
-                <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+              {/* ==================================================
+                  Desktop Table
+              ================================================== */}
 
-                  <div className="overflow-x-auto">
+              <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 
-                    <table className="min-w-full">
+                <div className="overflow-x-auto">
 
-                      <thead className="bg-green-700 text-white">
+                  <table className="min-w-full">
+
+                    <thead className="bg-green-700 text-white">
+
+                      <tr>
+
+                        <th className="px-5 py-4 text-left font-semibold">
+                          Avatar
+                        </th>
+
+                        <th className="px-5 py-4 text-left font-semibold">
+                          Name
+                        </th>
+
+                        <th className="px-5 py-4 text-left font-semibold">
+                          Email
+                        </th>
+
+                        <th className="px-5 py-4 text-left font-semibold">
+                          Role
+                        </th>
+
+                        <th className="px-5 py-4 text-left font-semibold">
+                          Status
+                        </th>
+
+                        <th className="px-5 py-4 text-center font-semibold">
+                          Action
+                        </th>
+
+                      </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                      {users.length === 0 && !loading ? (
 
                         <tr>
 
-                          <th className="px-5 py-4 text-left font-semibold">
-                            Avatar
-                          </th>
-
-                          <th className="px-5 py-4 text-left font-semibold">
-                            Name
-                          </th>
-
-                          <th className="px-5 py-4 text-left font-semibold">
-                            Email
-                          </th>
-
-                          <th className="px-5 py-4 text-left font-semibold">
-                            Role
-                          </th>
-
-                          <th className="px-5 py-4 text-left font-semibold">
-                            Status
-                          </th>
-
-                          <th className="px-5 py-4 text-center font-semibold">
-                            Action
-                          </th>
+                          <td
+                            colSpan={6}
+                            className="py-16 text-center text-gray-500"
+                          >
+                            No Users Found
+                          </td>
 
                         </tr>
 
-                      </thead>
+                      ) : (
 
-                      <tbody>
+                        users.map((user) => (
 
-                        {users.length === 0 ? (
+                          <tr
+                            key={user._id}
+                            className="border-b transition hover:bg-green-50"
+                          >
 
-                          <tr>
+                            {/* Avatar */}
 
-                            <td
-                              colSpan={6}
-                              className="py-16 text-center text-gray-500"
-                            >
-                              No Users Found
+                            <td className="px-5 py-4">
+
+                              <img
+                                src={
+                                  user.avatar ||
+                                  "https://via.placeholder.com/50"
+                                }
+                                alt={user.name || "User"}
+                                className="
+                                  h-12
+                                  w-12
+                                  rounded-full
+                                  border
+                                  object-cover
+                                "
+                              />
+
+                            </td>
+
+                            {/* Name */}
+
+                            <td className="px-5 py-4">
+
+                              <h3 className="font-semibold text-gray-800">
+                                {user.name}
+                              </h3>
+
+                            </td>
+
+                            {/* Email */}
+
+                            <td className="px-5 py-4 text-gray-600">
+                              {user.email}
+                            </td>
+
+                            {/* Role */}
+
+                            <td className="px-5 py-4">
+
+                              <span className="
+                                rounded-full
+                                bg-blue-100
+                                px-3
+                                py-1
+                                text-sm
+                                font-medium
+                                capitalize
+                                text-blue-700
+                              ">
+                                {user.role}
+                              </span>
+
+                            </td>
+
+                            {/* Status */}
+
+                            <td className="px-5 py-4">
+
+                              <span
+                                className={`
+                                  rounded-full
+                                  px-3
+                                  py-1
+                                  text-sm
+                                  font-medium
+                                  ${
+                                    user.isBlocked
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-green-100 text-green-700"
+                                  }
+                                `}
+                              >
+                                {user.isBlocked
+                                  ? "Blocked"
+                                  : "Active"}
+                              </span>
+
+                            </td>
+
+                            {/* Action */}
+
+                            <td className="px-5 py-4">
+
+                              <div className="flex justify-center">
+
+                                <Link
+                                  to={`/admin/users/${user._id}`}
+                                  className="
+                                    rounded-lg
+                                    bg-blue-50
+                                    p-2
+                                    text-blue-600
+                                    transition
+                                    hover:bg-blue-100
+                                  "
+                                >
+                                  <Eye size={18} />
+                                </Link>
+
+                              </div>
+
                             </td>
 
                           </tr>
 
-                        ) : (
+                        ))
 
-                          users.map((user) => (
+                      )}
 
-                            <tr
-                              key={user._id}
-                              className="border-b transition hover:bg-green-50"
-                            >
+                    </tbody>
 
-                              <td className="px-5 py-4">
-
-                                <img
-                                  src={
-                                    user.avatar ||
-                                    "https://via.placeholder.com/50"
-                                  }
-                                  alt={user.name}
-                                  className="h-12 w-12 rounded-full border object-cover"
-                                />
-
-                              </td>
-
-                              <td className="px-5 py-4">
-
-                                <h3 className="font-semibold text-gray-800">
-                                  {user.name}
-                                </h3>
-
-                              </td>
-
-                              <td className="px-5 py-4 text-gray-600">
-                                {user.email}
-                              </td>
-
-                              <td className="px-5 py-4">
-
-                                <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium capitalize text-blue-700">
-                                  {user.role}
-                                </span>
-
-                              </td>
-
-                              <td className="px-5 py-4">
-
-                                <span
-                                  className={`rounded-full px-3 py-1 text-sm font-medium ${
-                                    user.isBlocked
-                                      ? "bg-red-100 text-red-700"
-                                      : "bg-green-100 text-green-700"
-                                  }`}
-                                >
-                                  {user.isBlocked
-                                    ? "Blocked"
-                                    : "Active"}
-                                </span>
-
-                              </td>
-
-                              <td className="px-5 py-4">
-
-                                <div className="flex justify-center">
-
-                                  <Link
-                                    to={`/admin/users/${user._id}`}
-                                    className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
-                                  >
-                                    <Eye size={18} />
-                                  </Link>
-
-                                </div>
-
-                              </td>
-
-                            </tr>
-
-                          ))
-
-                        )}
-
-                      </tbody>
-
-                    </table>
-
-                  </div>
+                  </table>
 
                 </div>
 
-                {/* ===============================
-                    Mobile Cards
-                =============================== */}
+              </div>
 
-                <div className="space-y-5 lg:hidden">
+              {/* ==================================================
+                  Mobile Cards
+              ================================================== */}
 
-                  {users.length === 0 ? (
+              <div className="space-y-5 lg:hidden">
 
-                    <div className="rounded-2xl bg-white py-16 text-center shadow">
-                      No Users Found
-                    </div>
+                {users.length === 0 && !loading ? (
 
-                  ) : (
+                  <div className="
+                    rounded-2xl
+                    bg-white
+                    py-16
+                    text-center
+                    shadow
+                  ">
+                    No Users Found
+                  </div>
 
-                    users.map((user) => (
+                ) : (
 
-                      <div
-                        key={user._id}
-                        className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-                      >
+                  users.map((user) => (
 
-                        <div className="flex items-center gap-4">
+                    <div
+                      key={user._id}
+                      className="
+                        rounded-2xl
+                        border
+                        border-gray-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                      "
+                    >
 
-                          <img
-                            src={
-                              user.avatar ||
-                              "https://via.placeholder.com/60"
-                            }
-                            alt={user.name}
-                            className="h-16 w-16 rounded-full border object-cover"
-                          />
+                      {/* User Info */}
 
-                          <div className="flex-1">
+                      <div className="flex items-center gap-4">
 
-                            <h3 className="font-semibold text-gray-800">
-                              {user.name}
-                            </h3>
+                        <img
+                          src={
+                            user.avatar ||
+                            "https://via.placeholder.com/60"
+                          }
+                          alt={user.name || "User"}
+                          className="
+                            h-16
+                            w-16
+                            rounded-full
+                            border
+                            object-cover
+                          "
+                        />
 
-                            <p className="mt-1 break-all text-sm text-gray-500">
-                              {user.email}
-                            </p>
+                        <div className="flex-1 min-w-0">
 
-                          </div>
+                          <h3 className="font-semibold text-gray-800">
+                            {user.name}
+                          </h3>
 
-                        </div>
-
-                        <div className="mt-5 grid grid-cols-2 gap-4">
-
-                          <div>
-
-                            <p className="text-sm text-gray-500">
-                              Role
-                            </p>
-
-                            <span className="mt-1 inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium capitalize text-blue-700">
-                              {user.role}
-                            </span>
-
-                          </div>
-
-                          <div>
-
-                            <p className="text-sm text-gray-500">
-                              Status
-                            </p>
-
-                            <span
-                              className={`mt-1 inline-block rounded-full px-3 py-1 text-sm font-medium ${
-                                user.isBlocked
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-green-100 text-green-700"
-                              }`}
-                            >
-                              {user.isBlocked
-                                ? "Blocked"
-                                : "Active"}
-                            </span>
-
-                          </div>
+                          <p className="
+                            mt-1
+                            break-all
+                            text-sm
+                            text-gray-500
+                          ">
+                            {user.email}
+                          </p>
 
                         </div>
-
-                        <Link
-                          to={`/admin/users/${user._id}`}
-                          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700"
-                        >
-                          <Eye size={18} />
-                          View Profile
-                        </Link>
 
                       </div>
 
-                    ))
+                      {/* Role / Status */}
 
-                  )}
+                      <div className="mt-5 grid grid-cols-2 gap-4">
 
-                </div>
-                                {/* ===============================
-                    Pagination
-                =============================== */}
+                        {/* Role */}
 
-                <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row">
+                        <div>
 
-                  <p className="text-sm text-gray-500">
-                    Page{" "}
-                    <span className="font-semibold">
-                      {page}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-semibold">
-                      {totalPages}
-                    </span>
-                  </p>
+                          <p className="text-sm text-gray-500">
+                            Role
+                          </p>
 
-                  <div className="flex gap-3">
+                          <span className="
+                            mt-1
+                            inline-block
+                            rounded-full
+                            bg-blue-100
+                            px-3
+                            py-1
+                            text-sm
+                            font-medium
+                            capitalize
+                            text-blue-700
+                          ">
+                            {user.role}
+                          </span>
 
-                    <button
-                      disabled={page === 1}
-                      onClick={() =>
-                        setPage((prev) => prev - 1)
-                      }
-                      className="
-                        rounded-xl
-                        border
-                        border-gray-300
-                        bg-white
-                        px-5
-                        py-2.5
-                        font-medium
-                        transition
-                        hover:bg-gray-100
-                        disabled:cursor-not-allowed
-                        disabled:opacity-50
-                      "
-                    >
-                      Previous
-                    </button>
+                        </div>
 
-                    <button
-                      disabled={page === totalPages}
-                      onClick={() =>
-                        setPage((prev) => prev + 1)
-                      }
-                      className="
-                        rounded-xl
-                        bg-green-600
-                        px-5
-                        py-2.5
-                        font-medium
-                        text-white
-                        transition
-                        hover:bg-green-700
-                        disabled:cursor-not-allowed
-                        disabled:bg-gray-400
-                      "
-                    >
-                      Next
-                    </button>
+                        {/* Status */}
 
-                  </div>
+                        <div>
 
-                </div>
+                          <p className="text-sm text-gray-500">
+                            Status
+                          </p>
 
-              </>
+                          <span
+                            className={`
+                              mt-1
+                              inline-block
+                              rounded-full
+                              px-3
+                              py-1
+                              text-sm
+                              font-medium
+                              ${
+                                user.isBlocked
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-green-100 text-green-700"
+                              }
+                            `}
+                          >
+                            {user.isBlocked
+                              ? "Blocked"
+                              : "Active"}
+                          </span>
 
-            )}
+                        </div>
+
+                      </div>
+
+                      {/* View Profile */}
+
+                      <Link
+                        to={`/admin/users/${user._id}`}
+                        className="
+                          mt-6
+                          flex
+                          w-full
+                          items-center
+                          justify-center
+                          gap-2
+                          rounded-xl
+                          bg-blue-600
+                          py-3
+                          font-medium
+                          text-white
+                          transition
+                          hover:bg-blue-700
+                        "
+                      >
+                        <Eye size={18} />
+                        View Profile
+                      </Link>
+
+                    </div>
+
+                  ))
+
+                )}
+
+              </div>
+
+            </div>
+
+            {/* ==================================================
+                Pagination
+            ================================================== */}
+
+            <div className="
+              mt-8
+              flex
+              flex-col
+              items-center
+              justify-between
+              gap-4
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              p-5
+              shadow-sm
+              sm:flex-row
+            ">
+
+              <p className="text-sm text-gray-500">
+
+                Page{" "}
+
+                <span className="font-semibold">
+                  {page}
+                </span>{" "}
+
+                of{" "}
+
+                <span className="font-semibold">
+                  {totalPages}
+                </span>
+
+              </p>
+
+              <div className="flex gap-3">
+
+                {/* Previous */}
+
+                <button
+                  disabled={page === 1 || loading}
+                  onClick={() =>
+                    setPage((prev) => prev - 1)
+                  }
+                  className="
+                    rounded-xl
+                    border
+                    border-gray-300
+                    bg-white
+                    px-5
+                    py-2.5
+                    font-medium
+                    transition
+                    hover:bg-gray-100
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
+                  "
+                >
+                  Previous
+                </button>
+
+                {/* Next */}
+
+                <button
+                  disabled={
+                    page === totalPages ||
+                    loading
+                  }
+                  onClick={() =>
+                    setPage((prev) => prev + 1)
+                  }
+                  className="
+                    rounded-xl
+                    bg-green-600
+                    px-5
+                    py-2.5
+                    font-medium
+                    text-white
+                    transition
+                    hover:bg-green-700
+                    disabled:cursor-not-allowed
+                    disabled:bg-gray-400
+                  "
+                >
+                  Next
+                </button>
+
+              </div>
+
+            </div>
 
           </main>
 
