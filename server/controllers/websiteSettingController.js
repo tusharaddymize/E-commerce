@@ -3,7 +3,7 @@ import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 
 /* ============================================================
-   Helper Function
+   GET / CREATE WEBSITE SETTINGS DOCUMENT
 ============================================================ */
 
 const getSettingsDocument = async () => {
@@ -17,107 +17,121 @@ const getSettingsDocument = async () => {
 };
 
 /* ============================================================
-   Get Website Settings
+   CLOUDINARY UPLOAD HELPER
+============================================================ */
+
+const uploadToCloudinary = async (
+  file,
+  folder
+) => {
+  return new Promise((resolve, reject) => {
+    if (!file?.buffer) {
+      return reject(
+        new Error("Invalid file buffer.")
+      );
+    }
+
+    const stream =
+      cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error) {
+            return reject(error);
+          }
+
+          resolve(result);
+        }
+      );
+
+    streamifier
+      .createReadStream(file.buffer)
+      .pipe(stream);
+  });
+};
+
+/* ============================================================
+   GET WEBSITE SETTINGS
    GET /api/website-settings
 ============================================================ */
 
-export const getWebsiteSettings = async (req, res) => {
+export const getWebsiteSettings = async (
+  req,
+  res
+) => {
   try {
-    const settings = await getSettingsDocument();
+    const settings =
+      await getSettingsDocument();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Website settings fetched successfully.",
+      message:
+        "Website settings fetched successfully.",
       data: settings,
     });
   } catch (error) {
-    console.error("Get Website Settings Error:", error);
+    console.error(
+      "Get Website Settings Error:",
+      error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Failed to fetch website settings.",
+      message:
+        "Failed to fetch website settings.",
       error: error.message,
     });
   }
 };
 
 /* ============================================================
-   Update Website Logo
+   UPDATE LOGO + FAVICON
    PUT /api/website-settings/logo
 ============================================================ */
 
-export const updateLogo = async (req, res) => {
+export const updateLogo = async (
+  req,
+  res
+) => {
   try {
-    const settings = await getSettingsDocument();
+    const settings =
+      await getSettingsDocument();
 
-    // =========================
-    // Upload Logo
-    // =========================
+    /* =========================
+       LOGO
+    ========================= */
 
     if (req.files?.logo?.[0]) {
-      const uploadResult = await new Promise(
-        (resolve, reject) => {
-          const stream =
-            cloudinary.uploader.upload_stream(
-              {
-                folder: "website/logo",
-              },
-              (error, result) => {
-                if (error) {
-                  return reject(error);
-                }
+      const result =
+        await uploadToCloudinary(
+          req.files.logo[0],
+          "website/logo"
+        );
 
-                resolve(result);
-              }
-            );
-
-          streamifier
-            .createReadStream(
-              req.files.logo[0].buffer
-            )
-            .pipe(stream);
-        }
-      );
-
-      settings.logo = uploadResult.secure_url;
+      settings.logo =
+        result.secure_url;
     }
 
-    // =========================
-    // Upload Favicon
-    // =========================
+    /* =========================
+       FAVICON
+    ========================= */
 
     if (req.files?.favicon?.[0]) {
-      const uploadResult = await new Promise(
-        (resolve, reject) => {
-          const stream =
-            cloudinary.uploader.upload_stream(
-              {
-                folder: "website/favicon",
-              },
-              (error, result) => {
-                if (error) {
-                  return reject(error);
-                }
-
-                resolve(result);
-              }
-            );
-
-          streamifier
-            .createReadStream(
-              req.files.favicon[0].buffer
-            )
-            .pipe(stream);
-        }
-      );
+      const result =
+        await uploadToCloudinary(
+          req.files.favicon[0],
+          "website/favicon"
+        );
 
       settings.favicon =
-        uploadResult.secure_url;
+        result.secure_url;
     }
 
     await settings.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:
         "Logo and favicon updated successfully.",
@@ -129,7 +143,7 @@ export const updateLogo = async (req, res) => {
       error
     );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message:
         "Failed to update logo and favicon.",
@@ -139,8 +153,28 @@ export const updateLogo = async (req, res) => {
 };
 
 /* ============================================================
-   Update Hero Banners
+   UPDATE HERO BANNERS
    PUT /api/website-settings/hero-banners
+
+   IMPORTANT:
+
+   Frontend sends:
+
+   heroBanners = [
+      {
+        image: "existing cloudinary url"
+      },
+      {
+        image: File
+      },
+      {
+        image: "existing cloudinary url"
+      }
+   ]
+
+   imageIndexes = [1]
+
+   images[0] = banner index 1
 ============================================================ */
 
 export const updateHeroBanners = async (
@@ -148,16 +182,12 @@ export const updateHeroBanners = async (
   res
 ) => {
   try {
-    // ==========================================
-    // Get Website Settings
-    // ==========================================
-
     const settings =
       await getSettingsDocument();
 
-    // ==========================================
-    // Get Hero Banners
-    // ==========================================
+    /* ========================================================
+       1. READ BANNER DATA
+    ======================================================== */
 
     let heroBanners =
       req.body.heroBanners;
@@ -165,13 +195,22 @@ export const updateHeroBanners = async (
     if (
       typeof heroBanners === "string"
     ) {
-      heroBanners =
-        JSON.parse(heroBanners);
-    }
+      try {
+        heroBanners =
+          JSON.parse(heroBanners);
+      } catch (parseError) {
+        console.error(
+          "Hero Banner JSON Parse Error:",
+          parseError
+        );
 
-    // ==========================================
-    // Validate Hero Banners
-    // ==========================================
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid heroBanners JSON.",
+        });
+      }
+    }
 
     if (!Array.isArray(heroBanners)) {
       return res.status(400).json({
@@ -181,182 +220,243 @@ export const updateHeroBanners = async (
       });
     }
 
-    // ==========================================
-    // Uploaded Files
-    // ==========================================
+    /* ========================================================
+       2. READ UPLOADED FILES
+    ======================================================== */
 
     const uploadedFiles =
-      req.files || [];
+      Array.isArray(req.files)
+        ? req.files
+        : [];
 
-    // ==========================================
-    // Image Index Mapping
-    // ==========================================
-    //
-    // Example:
-    //
-    // Banner 1 → existing
-    // Banner 2 → existing
-    // Banner 3 → NEW IMAGE
-    // Banner 4 → existing
-    //
-    // imageIndexes = [2]
-    //
-    // This tells backend that uploadedFiles[0]
-    // belongs to banner index 2.
-    // ==========================================
+    /* ========================================================
+       3. READ IMAGE INDEXES
+    ======================================================== */
 
     let imageIndexes =
-      req.body.imageIndexes || "[]";
+      req.body.imageIndexes;
 
     if (
       typeof imageIndexes === "string"
     ) {
-      imageIndexes =
-        JSON.parse(imageIndexes);
+      try {
+        imageIndexes =
+          JSON.parse(imageIndexes);
+      } catch (error) {
+        imageIndexes = [];
+      }
     }
 
     if (!Array.isArray(imageIndexes)) {
       imageIndexes = [];
     }
 
-    // ==========================================
-    // Final Banner Array
-    // ==========================================
+    /*
+      Convert indexes to numbers.
+
+      Example:
+      ["1", "3"]
+
+      becomes:
+
+      [1, 3]
+    */
+
+    imageIndexes =
+      imageIndexes
+        .map((index) => Number(index))
+        .filter(
+          (index) =>
+            Number.isInteger(index) &&
+            index >= 0
+        );
+
+    console.log(
+      "========================================"
+    );
+
+    console.log(
+      "HERO BANNER UPDATE"
+    );
+
+    console.log(
+      "Total Banners:",
+      heroBanners.length
+    );
+
+    console.log(
+      "Uploaded Files:",
+      uploadedFiles.length
+    );
+
+    console.log(
+      "Image Indexes:",
+      imageIndexes
+    );
+
+    console.log(
+      "========================================"
+    );
+
+    /* ========================================================
+       4. CREATE FINAL BANNER ARRAY
+    ======================================================== */
 
     const formattedBanners = [];
 
-    // ==========================================
-    // Process Every Banner
-    // ==========================================
-
     for (
-      let i = 0;
-      i < heroBanners.length;
-      i++
+      let index = 0;
+      index < heroBanners.length;
+      index++
     ) {
       const banner =
-        heroBanners[i];
+        heroBanners[index] || {};
 
-      // ========================================
-      // Keep Existing Image
-      // ========================================
+      /* ======================================================
+         EXISTING IMAGE
+      ====================================================== */
 
       let imageUrl =
-        banner?.image || "";
+        typeof banner.image === "string"
+          ? banner.image
+          : "";
 
-      // ========================================
-      // Find Uploaded File For This Banner
-      // ========================================
+      /* ======================================================
+         FIND FILE FOR CURRENT BANNER
+      ====================================================== */
 
-      const uploadedFileIndex =
-        imageIndexes.indexOf(i);
+      const filePosition =
+        imageIndexes.indexOf(index);
 
-      // ========================================
-      // New Image Exists
-      // ========================================
+      /* ======================================================
+         NEW / REPLACEMENT IMAGE
+      ====================================================== */
 
       if (
-        uploadedFileIndex !== -1 &&
-        uploadedFiles[
-          uploadedFileIndex
-        ]
+        filePosition !== -1 &&
+        uploadedFiles[filePosition]
       ) {
         const file =
-          uploadedFiles[
-            uploadedFileIndex
-          ];
+          uploadedFiles[filePosition];
 
-        // ======================================
-        // Upload To Cloudinary
-        // ======================================
+        console.log(
+          `Uploading image for banner ${index + 1}`
+        );
 
         const uploadResult =
-          await new Promise(
-            (resolve, reject) => {
-              const stream =
-                cloudinary.uploader.upload_stream(
-                  {
-                    folder:
-                      "website/hero-banners",
-                  },
-                  (
-                    error,
-                    result
-                  ) => {
-                    if (error) {
-                      return reject(
-                        error
-                      );
-                    }
-
-                    resolve(result);
-                  }
-                );
-
-              streamifier
-                .createReadStream(
-                  file.buffer
-                )
-                .pipe(stream);
-            }
+          await uploadToCloudinary(
+            file,
+            "website/hero-banners"
           );
-
-        // ======================================
-        // Replace Existing Image
-        // ======================================
 
         imageUrl =
           uploadResult.secure_url;
+
+        console.log(
+          `Image uploaded for banner ${index + 1}:`,
+          imageUrl
+        );
       }
 
-      // ========================================
-      // Save Banner
-      // ========================================
+      /* ======================================================
+         PRESERVE MONGODB _id
+      ====================================================== */
 
-      formattedBanners.push({
+      const existingBanner =
+        settings.heroBanners?.[index];
+
+      /* ======================================================
+         FINAL BANNER
+      ====================================================== */
+
+      const finalBanner = {
         title:
-          banner?.title || "",
+          banner.title || "",
 
         subtitle:
-          banner?.subtitle || "",
+          banner.subtitle || "",
 
         description:
-          banner?.description || "",
+          banner.description || "",
 
-        image: imageUrl,
+        image:
+          imageUrl,
 
         buttonText:
-          banner?.buttonText ||
+          banner.buttonText ||
           "Shop Now",
 
         buttonLink:
-          banner?.buttonLink ||
+          banner.buttonLink ||
           "/products",
 
         active:
-          banner?.active === undefined
+          banner.active === undefined
             ? true
-            : banner.active,
+            : Boolean(banner.active),
 
-        order:
-          banner?.order === undefined
-            ? i
-            : banner.order,
-      });
+        order: index,
+      };
+
+      /*
+        Preserve existing MongoDB ID
+        when banner already exists.
+      */
+
+      if (existingBanner?._id) {
+        finalBanner._id =
+          existingBanner._id;
+      }
+
+      formattedBanners.push(
+        finalBanner
+      );
     }
 
-    // ==========================================
-    // Save All Hero Banners
-    // ==========================================
+    /* ========================================================
+       5. REMOVE EMPTY BANNERS
+       
+       IMPORTANT:
+       Agar admin ne Add Banner kiya hai
+       but image select nahi ki,
+       us blank banner ko database me
+       permanently save nahi karenge.
+    ======================================================== */
+
+    const validBanners =
+      formattedBanners.filter(
+        (banner) =>
+          banner.image &&
+          banner.image.trim() !== ""
+      );
+
+    /* ========================================================
+       6. RESET ORDER
+    ======================================================== */
+
+    validBanners.forEach(
+      (banner, index) => {
+        banner.order = index;
+      }
+    );
+
+    /* ========================================================
+       7. SAVE
+    ======================================================== */
 
     settings.heroBanners =
-      formattedBanners;
+      validBanners;
 
     await settings.save();
 
-    // ==========================================
-    // Success Response
-    // ==========================================
+    /* ========================================================
+       8. RESPONSE
+    ======================================================== */
+
+    console.log(
+      "Final Hero Banners:",
+      settings.heroBanners
+    );
 
     return res.status(200).json({
       success: true,
@@ -379,685 +479,618 @@ export const updateHeroBanners = async (
       message:
         "Failed to update hero banners.",
 
-      error:
-        error.message,
+      error: error.message,
     });
   }
 };
 
 /* ============================================================
-   Update Homepage Settings
+   UPDATE HOMEPAGE SETTINGS
    PUT /api/website-settings/homepage
 ============================================================ */
 
-export const updateHomepageSettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updateHomepageSettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      homepageBanners,
-      homepageSections,
-    } = req.body;
+      const {
+        homepageBanners,
+        homepageSections,
+      } = req.body;
 
-    /* =========================
-       Homepage Banners
-    ========================= */
+      /* =========================
+         Homepage Banners
+      ========================= */
 
-    if (homepageBanners !== undefined) {
       if (
-        !Array.isArray(homepageBanners)
+        homepageBanners !== undefined
       ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "homepageBanners must be an array.",
-        });
+        if (
+          !Array.isArray(
+            homepageBanners
+          )
+        ) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "homepageBanners must be an array.",
+          });
+        }
+
+        settings.homepageBanners =
+          homepageBanners.map(
+            (banner, index) => ({
+              title:
+                banner?.title || "",
+
+              image:
+                banner?.image || "",
+
+              link:
+                banner?.link || "",
+
+              active:
+                banner?.active ===
+                undefined
+                  ? true
+                  : banner.active,
+
+              order:
+                banner?.order ===
+                undefined
+                  ? index
+                  : banner.order,
+            })
+          );
       }
 
-      settings.homepageBanners =
-        homepageBanners.map(
-          (banner, index) => ({
-            title:
-              banner.title || "",
+      /* =========================
+         Homepage Sections
+      ========================= */
 
-            image:
-              banner.image || "",
+      if (homepageSections) {
+        const current =
+          settings.homepageSections ||
+          {};
 
-            link:
-              banner.link || "",
+        settings.homepageSections = {
+          hero:
+            homepageSections.hero ??
+            current.hero ??
+            true,
 
-            active:
-              banner.active === undefined
-                ? true
-                : banner.active,
+          categories:
+            homepageSections.categories ??
+            current.categories ??
+            true,
 
-            order:
-              banner.order === undefined
-                ? index
-                : banner.order,
-          })
-        );
+          flashDeals:
+            homepageSections.flashDeals ??
+            current.flashDeals ??
+            true,
+
+          featuredProducts:
+            homepageSections.featuredProducts ??
+            current.featuredProducts ??
+            true,
+
+          bestSelling:
+            homepageSections.bestSelling ??
+            current.bestSelling ??
+            true,
+
+          newArrivals:
+            homepageSections.newArrivals ??
+            current.newArrivals ??
+            true,
+
+          features:
+            homepageSections.features ??
+            current.features ??
+            true,
+
+          testimonials:
+            homepageSections.testimonials ??
+            current.testimonials ??
+            true,
+
+          newsletter:
+            homepageSections.newsletter ??
+            current.newsletter ??
+            true,
+        };
+      }
+
+      await settings.save();
+
+      return res.status(200).json({
+        success: true,
+
+        message:
+          "Homepage settings updated successfully.",
+
+        data: {
+          homepageBanners:
+            settings.homepageBanners,
+
+          homepageSections:
+            settings.homepageSections,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Homepage Settings Error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update homepage settings.",
+        error: error.message,
+      });
     }
-
-    /* =========================
-       Homepage Sections
-    ========================= */
-
-    if (homepageSections) {
-      settings.homepageSections = {
-        hero:
-          homepageSections.hero ??
-          settings.homepageSections
-            ?.hero ??
-          true,
-
-        categories:
-          homepageSections.categories ??
-          settings.homepageSections
-            ?.categories ??
-          true,
-
-        flashDeals:
-          homepageSections.flashDeals ??
-          settings.homepageSections
-            ?.flashDeals ??
-          true,
-
-        featuredProducts:
-          homepageSections.featuredProducts ??
-          settings.homepageSections
-            ?.featuredProducts ??
-          true,
-
-        bestSelling:
-          homepageSections.bestSelling ??
-          settings.homepageSections
-            ?.bestSelling ??
-          true,
-
-        newArrivals:
-          homepageSections.newArrivals ??
-          settings.homepageSections
-            ?.newArrivals ??
-          true,
-
-        features:
-          homepageSections.features ??
-          settings.homepageSections
-            ?.features ??
-          true,
-
-        testimonials:
-          homepageSections.testimonials ??
-          settings.homepageSections
-            ?.testimonials ??
-          true,
-
-        newsletter:
-          homepageSections.newsletter ??
-          settings.homepageSections
-            ?.newsletter ??
-          true,
-      };
-    }
-
-    await settings.save();
-
-    res.status(200).json({
-      success: true,
-      message:
-        "Homepage settings updated successfully.",
-      data: {
-        homepageBanners:
-          settings.homepageBanners,
-
-        homepageSections:
-          settings.homepageSections,
-      },
-    });
-  } catch (error) {
-    console.error(
-      "Homepage Settings Error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update homepage settings.",
-      error: error.message,
-    });
-  }
-};
+  };
 
 /* ============================================================
-   Update Contact Settings
+   UPDATE CONTACT SETTINGS
    PUT /api/website-settings/contact
 ============================================================ */
 
-export const updateContactSettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updateContactSettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      companyName,
-      email,
-      phone,
-      whatsapp,
-      address,
-      googleMap,
-      businessHours,
-      supportHours,
-      heading,
-      description,
-    } = req.body;
+      const current =
+        settings.contact || {};
 
-    settings.contact = {
-      companyName:
-        companyName ??
-        settings.contact?.companyName ??
-        "",
+      settings.contact = {
+        companyName:
+          req.body.companyName ??
+          current.companyName ??
+          "",
 
-      email:
-        email ??
-        settings.contact?.email ??
-        "",
+        email:
+          req.body.email ??
+          current.email ??
+          "",
 
-      phone:
-        phone ??
-        settings.contact?.phone ??
-        "",
+        phone:
+          req.body.phone ??
+          current.phone ??
+          "",
 
-      whatsapp:
-        whatsapp ??
-        settings.contact?.whatsapp ??
-        "",
+        whatsapp:
+          req.body.whatsapp ??
+          current.whatsapp ??
+          "",
 
-      address:
-        address ??
-        settings.contact?.address ??
-        "",
+        address:
+          req.body.address ??
+          current.address ??
+          "",
 
-      googleMap:
-        googleMap ??
-        settings.contact?.googleMap ??
-        "",
+        googleMap:
+          req.body.googleMap ??
+          current.googleMap ??
+          "",
 
-      businessHours:
-        businessHours ??
-        settings.contact
-          ?.businessHours ??
-        "",
+        businessHours:
+          req.body.businessHours ??
+          current.businessHours ??
+          "",
 
-      supportHours:
-        supportHours ??
-        settings.contact
-          ?.supportHours ??
-        "",
+        supportHours:
+          req.body.supportHours ??
+          current.supportHours ??
+          "",
 
-      heading:
-        heading ??
-        settings.contact?.heading ??
-        "",
+        heading:
+          req.body.heading ??
+          current.heading ??
+          "",
 
-      description:
-        description ??
-        settings.contact
-          ?.description ??
-        "",
-    };
+        description:
+          req.body.description ??
+          current.description ??
+          "",
+      };
 
-    await settings.save();
+      await settings.save();
 
-    res.status(200).json({
-      success: true,
-      message:
-        "Contact settings updated successfully.",
-      data: settings.contact,
-    });
-  } catch (error) {
-    console.error(
-      "Contact Settings Error:",
-      error
-    );
+      return res.status(200).json({
+        success: true,
+        message:
+          "Contact settings updated successfully.",
+        data: settings.contact,
+      });
+    } catch (error) {
+      console.error(
+        "Contact Settings Error:",
+        error
+      );
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update contact settings.",
-      error: error.message,
-    });
-  }
-};
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update contact settings.",
+        error: error.message,
+      });
+    }
+  };
 
 /* ============================================================
-   Update Social Settings
+   UPDATE SOCIAL SETTINGS
    PUT /api/website-settings/social
 ============================================================ */
 
-export const updateSocialSettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updateSocialSettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      facebook,
-      instagram,
-      twitter,
-      linkedin,
-      youtube,
-      whatsapp,
-      telegram,
-      github,
-    } = req.body;
+      const current =
+        settings.social || {};
 
-    settings.social = {
-      facebook:
-        facebook ??
-        settings.social?.facebook ??
-        "",
+      settings.social = {
+        facebook:
+          req.body.facebook ??
+          current.facebook ??
+          "",
 
-      instagram:
-        instagram ??
-        settings.social?.instagram ??
-        "",
+        instagram:
+          req.body.instagram ??
+          current.instagram ??
+          "",
 
-      twitter:
-        twitter ??
-        settings.social?.twitter ??
-        "",
+        twitter:
+          req.body.twitter ??
+          current.twitter ??
+          "",
 
-      linkedin:
-        linkedin ??
-        settings.social?.linkedin ??
-        "",
+        linkedin:
+          req.body.linkedin ??
+          current.linkedin ??
+          "",
 
-      youtube:
-        youtube ??
-        settings.social?.youtube ??
-        "",
+        youtube:
+          req.body.youtube ??
+          current.youtube ??
+          "",
 
-      whatsapp:
-        whatsapp ??
-        settings.social?.whatsapp ??
-        "",
+        whatsapp:
+          req.body.whatsapp ??
+          current.whatsapp ??
+          "",
 
-      telegram:
-        telegram ??
-        settings.social?.telegram ??
-        "",
+        telegram:
+          req.body.telegram ??
+          current.telegram ??
+          "",
 
-      github:
-        github ??
-        settings.social?.github ??
-        "",
-    };
+        github:
+          req.body.github ??
+          current.github ??
+          "",
+      };
 
-    await settings.save();
+      await settings.save();
 
-    res.status(200).json({
-      success: true,
-      message:
-        "Social settings updated successfully.",
-      data: settings.social,
-    });
-  } catch (error) {
-    console.error(
-      "Update Social Settings Error:",
-      error
-    );
+      return res.status(200).json({
+        success: true,
+        message:
+          "Social settings updated successfully.",
+        data: settings.social,
+      });
+    } catch (error) {
+      console.error(
+        "Update Social Settings Error:",
+        error
+      );
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update social settings.",
-      error: error.message,
-    });
-  }
-};
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update social settings.",
+        error: error.message,
+      });
+    }
+  };
 
 /* ============================================================
-   Update About Settings
+   UPDATE ABOUT SETTINGS
    PUT /api/website-settings/about
 ============================================================ */
 
-export const updateAboutSettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updateAboutSettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      title,
-      subtitle,
-      description,
-      mission,
-      vision,
-      experience,
-      customers,
-      projects,
-    } = req.body;
+      const current =
+        settings.about || {};
 
-    settings.about = {
-      title:
-        title ??
-        settings.about?.title ??
-        "",
+      settings.about = {
+        title:
+          req.body.title ??
+          current.title ??
+          "",
 
-      subtitle:
-        subtitle ??
-        settings.about?.subtitle ??
-        "",
+        subtitle:
+          req.body.subtitle ??
+          current.subtitle ??
+          "",
 
-      description:
-        description ??
-        settings.about
-          ?.description ??
-        "",
+        description:
+          req.body.description ??
+          current.description ??
+          "",
 
-      mission:
-        mission ??
-        settings.about?.mission ??
-        "",
+        mission:
+          req.body.mission ??
+          current.mission ??
+          "",
 
-      vision:
-        vision ??
-        settings.about?.vision ??
-        "",
+        vision:
+          req.body.vision ??
+          current.vision ??
+          "",
 
-      experience:
-        experience !== undefined &&
-        experience !== ""
-          ? Number(experience)
-          : settings.about
-              ?.experience ?? 0,
+        experience:
+          req.body.experience !==
+            undefined &&
+          req.body.experience !== ""
+            ? Number(
+                req.body.experience
+              )
+            : current.experience ?? 0,
 
-      customers:
-        customers !== undefined &&
-        customers !== ""
-          ? Number(customers)
-          : settings.about
-              ?.customers ?? 0,
+        customers:
+          req.body.customers !==
+            undefined &&
+          req.body.customers !== ""
+            ? Number(
+                req.body.customers
+              )
+            : current.customers ?? 0,
 
-      projects:
-        projects !== undefined &&
-        projects !== ""
-          ? Number(projects)
-          : settings.about
-              ?.projects ?? 0,
-    };
+        projects:
+          req.body.projects !==
+            undefined &&
+          req.body.projects !== ""
+            ? Number(
+                req.body.projects
+              )
+            : current.projects ?? 0,
+      };
 
-    await settings.save();
+      await settings.save();
 
-    res.status(200).json({
-      success: true,
-      message:
-        "About settings updated successfully.",
-      data: settings.about,
-    });
-  } catch (error) {
-    console.error(
-      "Update About Settings Error:",
-      error
-    );
+      return res.status(200).json({
+        success: true,
+        message:
+          "About settings updated successfully.",
+        data: settings.about,
+      });
+    } catch (error) {
+      console.error(
+        "Update About Settings Error:",
+        error
+      );
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update About settings.",
-      error: error.message,
-    });
-  }
-};
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update About settings.",
+        error: error.message,
+      });
+    }
+  };
 
 /* ============================================================
-   Update Policy Settings
+   UPDATE POLICY SETTINGS
    PUT /api/website-settings/policies
 ============================================================ */
 
-export const updatePolicySettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updatePolicySettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      privacyPolicy,
-      termsConditions,
-      refundPolicy,
-      shippingPolicy,
-      cancellationPolicy,
-    } = req.body;
+      const current =
+        settings.policies || {};
 
-    settings.policies = {
-      privacyPolicy:
-        privacyPolicy ??
-        settings.policies
-          ?.privacyPolicy ??
-        "",
+      settings.policies = {
+        privacyPolicy:
+          req.body.privacyPolicy ??
+          current.privacyPolicy ??
+          "",
 
-      termsConditions:
-        termsConditions ??
-        settings.policies
-          ?.termsConditions ??
-        "",
+        termsConditions:
+          req.body.termsConditions ??
+          current.termsConditions ??
+          "",
 
-      refundPolicy:
-        refundPolicy ??
-        settings.policies
-          ?.refundPolicy ??
-        "",
+        refundPolicy:
+          req.body.refundPolicy ??
+          current.refundPolicy ??
+          "",
 
-      shippingPolicy:
-        shippingPolicy ??
-        settings.policies
-          ?.shippingPolicy ??
-        "",
+        shippingPolicy:
+          req.body.shippingPolicy ??
+          current.shippingPolicy ??
+          "",
 
-      cancellationPolicy:
-        cancellationPolicy ??
-        settings.policies
-          ?.cancellationPolicy ??
-        "",
-    };
+        cancellationPolicy:
+          req.body.cancellationPolicy ??
+          current.cancellationPolicy ??
+          "",
+      };
 
-    await settings.save();
+      await settings.save();
 
-    res.status(200).json({
-      success: true,
-      message:
-        "Policy settings updated successfully.",
-      data: settings.policies,
-    });
-  } catch (error) {
-    console.error(
-      "Update Policy Settings Error:",
-      error
-    );
+      return res.status(200).json({
+        success: true,
+        message:
+          "Policy settings updated successfully.",
+        data: settings.policies,
+      });
+    } catch (error) {
+      console.error(
+        "Update Policy Settings Error:",
+        error
+      );
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update policy settings.",
-      error: error.message,
-    });
-  }
-};
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update policy settings.",
+        error: error.message,
+      });
+    }
+  };
 
 /* ============================================================
-   Update SEO Settings
+   UPDATE SEO SETTINGS
    PUT /api/website-settings/seo
 ============================================================ */
 
-export const updateSEOSettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updateSEOSettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      title,
-      description,
-      keywords,
-      ogImage,
-    } = req.body;
+      const current =
+        settings.seo || {};
 
-    settings.seo = {
-      title:
-        title ??
-        settings.seo?.title ??
-        "",
+      settings.seo = {
+        title:
+          req.body.title ??
+          current.title ??
+          "",
 
-      description:
-        description ??
-        settings.seo
-          ?.description ??
-        "",
+        description:
+          req.body.description ??
+          current.description ??
+          "",
 
-      keywords:
-        keywords ??
-        settings.seo?.keywords ??
-        "",
+        keywords:
+          req.body.keywords ??
+          current.keywords ??
+          "",
 
-      ogImage:
-        ogImage ??
-        settings.seo?.ogImage ??
-        "",
-    };
+        ogImage:
+          req.body.ogImage ??
+          current.ogImage ??
+          "",
+      };
 
-    await settings.save();
+      await settings.save();
 
-    res.status(200).json({
-      success: true,
-      message:
-        "SEO settings updated successfully.",
-      data: settings.seo,
-    });
-  } catch (error) {
-    console.error(
-      "Update SEO Settings Error:",
-      error
-    );
+      return res.status(200).json({
+        success: true,
+        message:
+          "SEO settings updated successfully.",
+        data: settings.seo,
+      });
+    } catch (error) {
+      console.error(
+        "Update SEO Settings Error:",
+        error
+      );
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update SEO settings.",
-      error: error.message,
-    });
-  }
-};
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update SEO settings.",
+        error: error.message,
+      });
+    }
+  };
 
 /* ============================================================
-   Update Theme Settings
+   UPDATE THEME SETTINGS
    PUT /api/website-settings/theme
 ============================================================ */
 
-export const updateThemeSettings = async (
-  req,
-  res
-) => {
-  try {
-    const settings =
-      await getSettingsDocument();
+export const updateThemeSettings =
+  async (req, res) => {
+    try {
+      const settings =
+        await getSettingsDocument();
 
-    const {
-      primaryColor,
-      secondaryColor,
-      accentColor,
-      buttonColor,
-      darkMode,
-      fontFamily,
-      borderRadius,
-      containerWidth,
-    } = req.body;
+      const current =
+        settings.theme || {};
 
-    settings.theme = {
-      primaryColor:
-        primaryColor ??
-        settings.theme
-          ?.primaryColor ??
-        "#355E3B",
+      settings.theme = {
+        primaryColor:
+          req.body.primaryColor ??
+          current.primaryColor ??
+          "#355E3B",
 
-      secondaryColor:
-        secondaryColor ??
-        settings.theme
-          ?.secondaryColor ??
-        "#1E3422",
+        secondaryColor:
+          req.body.secondaryColor ??
+          current.secondaryColor ??
+          "#1E3422",
 
-      accentColor:
-        accentColor ??
-        settings.theme
-          ?.accentColor ??
-        "#f59e0b",
+        accentColor:
+          req.body.accentColor ??
+          current.accentColor ??
+          "#f59e0b",
 
-      buttonColor:
-        buttonColor ??
-        settings.theme
-          ?.buttonColor ??
-        "#355E3B",
+        buttonColor:
+          req.body.buttonColor ??
+          current.buttonColor ??
+          "#355E3B",
 
-      darkMode:
-        darkMode ??
-        settings.theme
-          ?.darkMode ??
-        false,
+        darkMode:
+          req.body.darkMode ??
+          current.darkMode ??
+          false,
 
-      fontFamily:
-        fontFamily ??
-        settings.theme
-          ?.fontFamily ??
-        "Inter",
+        fontFamily:
+          req.body.fontFamily ??
+          current.fontFamily ??
+          "Inter",
 
-      borderRadius:
-        borderRadius ??
-        settings.theme
-          ?.borderRadius ??
-        "12px",
+        borderRadius:
+          req.body.borderRadius ??
+          current.borderRadius ??
+          "12px",
 
-      containerWidth:
-        containerWidth ??
-        settings.theme
-          ?.containerWidth ??
-        "1280px",
-    };
+        containerWidth:
+          req.body.containerWidth ??
+          current.containerWidth ??
+          "1280px",
+      };
 
-    await settings.save();
+      await settings.save();
 
-    res.status(200).json({
-      success: true,
-      message:
-        "Theme settings updated successfully.",
-      data: settings.theme,
-    });
-  } catch (error) {
-    console.error(
-      "Update Theme Settings Error:",
-      error
-    );
+      return res.status(200).json({
+        success: true,
+        message:
+          "Theme settings updated successfully.",
+        data: settings.theme,
+      });
+    } catch (error) {
+      console.error(
+        "Update Theme Settings Error:",
+        error
+      );
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to update theme settings.",
-      error: error.message,
-    });
-  }
-};
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update theme settings.",
+        error: error.message,
+      });
+    }
+  };

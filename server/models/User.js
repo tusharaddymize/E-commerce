@@ -196,6 +196,30 @@ const userSchema = new mongoose.Schema(
 );
 
 // ===============================
+// Auto-verify Admin Accounts
+// ===============================
+//
+// Admins are trusted internally created accounts,
+// they don't go through the email OTP verification
+// flow like normal customers. So whenever a user's
+// role is "admin" (or isAdmin is true), force
+// isVerified = true before saving.
+//
+// This prevents the exact bug where a newly created
+// or manually-inserted admin document has
+// isVerified: false (or missing), causing the
+// `protect` middleware to reject every admin request
+// with 403 "Please verify your email".
+// ===============================
+
+userSchema.pre("save", function (next) {
+  if (this.role === "admin" || this.isAdmin === true) {
+    this.isVerified = true;
+  }
+  next();
+});
+
+// ===============================
 // Hash Password Before Save
 // ===============================
 

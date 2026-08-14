@@ -17,7 +17,7 @@ const uploadToCloudinary = (file) => {
       return reject(
         new Error("Invalid image file.")
       );
-    }
+    } 
 
     const stream =
       cloudinary.uploader.upload_stream(
@@ -186,10 +186,28 @@ export const getProducts = async (
       maxPrice,
       rating,
       sort,
+      status,
     } = req.query;
 
     const query = {};
 
+    // =====================================
+    // Status Filter
+    // =====================================
+    //
+    // Public/homepage calls don't send status,
+    // so they default to "active" only.
+    //
+    // Admin Products page sends status=all
+    // explicitly to see everything.
+
+    if (status && status !== "all") {
+      query.status = status;
+    } else if (!status) {
+      query.status = "active";
+    }
+
+  
     // =====================================
     // Advanced Search
     // =====================================
@@ -351,7 +369,7 @@ export const getProducts = async (
     // Dynamic Attribute Filters
     // =====================================
 
-    const reservedKeys = [
+const reservedKeys = [
       "page",
       "limit",
       "category",
@@ -363,6 +381,7 @@ export const getProducts = async (
       "maxPrice",
       "rating",
       "sort",
+      "status",
     ];
 
     Object.entries(
