@@ -112,6 +112,7 @@ export const getAdminProducts = async ({
         category,
         brand,
         sort,
+        status: "all",
       },
     }
   );
