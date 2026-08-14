@@ -53,27 +53,51 @@ export const getProductAnalytics = async (req, res) => {
       0
     );
 
-    // Categories
-    const categoryAnalytics = await Product.aggregate([
-      {
-        $group: {
-          _id: "$category",
-          totalProducts: {
-            $sum: 1,
-          },
-        },
+// Categories
+const categoryAnalytics = await Product.aggregate([
+  {
+    $group: {
+      _id: "$category",
+      totalProducts: {
+        $sum: 1,
       },
-      {
-        $sort: {
-          totalProducts: -1,
-        },
+    },
+  },
+  {
+    $lookup: {
+      from: "categories",           // MongoDB collection name (lowercase plural of "Category" model)
+      localField: "_id",
+      foreignField: "_id",
+      as: "categoryInfo",
+    },
+  },
+  {
+    $addFields: {
+      categoryName: {
+        $ifNull: [
+          { $arrayElemAt: ["$categoryInfo.name", 0] },
+          "Uncategorized",
+        ],
       },
-    ]);
+    },
+  },
+  {
+    $project: {
+      categoryInfo: 0, // hide raw lookup array from response
+    },
+  },
+  {
+    $sort: {
+      totalProducts: -1,
+    },
+  },
+]);
 
     // Recent Products
-    const recentProducts = await Product.find()
-      .sort({ createdAt: -1 })
-      .limit(5);
+   const recentProducts = await Product.find()
+  .populate("category", "name")
+  .sort({ createdAt: -1 })
+  .limit(5);
 
     res.status(200).json({
       success: true,
