@@ -470,16 +470,16 @@ const ProductAnalytics = () => {
                               hover:bg-green-50
                             "
                           >
-                            <div className="min-w-0">
-                              <h3 className="truncate font-semibold text-gray-800">
-                                {item._id ||
-                                  "Uncategorized"}
-                              </h3>
+<div className="min-w-0">
+  <h3 className="truncate font-semibold text-gray-800">
+    {item.categoryName ||
+      "Uncategorized"}
+  </h3>
 
-                              <p className="text-sm text-gray-500">
-                                Product Category
-                              </p>
-                            </div>
+  <p className="text-sm text-gray-500">
+    Product Category
+  </p>
+</div>
 
                             <span className="flex-shrink-0 rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
                               {item.totalProducts ??
@@ -587,10 +587,10 @@ const ProductAnalytics = () => {
                                   "Unnamed Product"}
                               </h3>
 
-                              <p className="mt-1 truncate text-sm text-gray-500">
-                                {product.category ||
-                                  "Uncategorized"}
-                              </p>
+<p className="mt-1 truncate text-sm text-gray-500">
+  {product.category?.name ||
+    "Uncategorized"}
+</p>
 
                             </div>
 

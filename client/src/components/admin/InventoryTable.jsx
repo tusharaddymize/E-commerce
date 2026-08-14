@@ -4,16 +4,21 @@ import { Search } from "lucide-react";
 const InventoryTable = ({ products = [] }) => {
   const [search, setSearch] = useState("");
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const keyword = search.toLowerCase();
+const filteredProducts = useMemo(() => {
+  return products.filter((product) => {
+    const keyword = search.toLowerCase();
 
-      return (
-        product.name?.toLowerCase().includes(keyword) ||
-        product.category?.toLowerCase().includes(keyword)
-      );
-    });
-  }, [products, search]);
+    const categoryName =
+      typeof product.category === "string"
+        ? product.category
+        : product.category?.name || "";
+
+    return (
+      product.name?.toLowerCase().includes(keyword) ||
+      categoryName.toLowerCase().includes(keyword)
+    );
+  });
+}, [products, search]);
 
   const getStatus = (stock) => {
     if (stock === 0) {
@@ -146,11 +151,12 @@ const InventoryTable = ({ products = [] }) => {
 
                     </td>
 
-                    {/* Category */}
-
-                    <td className="p-3">
-                      {product.category}
-                    </td>
+{/* Category */}
+<td className="p-3">
+  {typeof product.category === "string"
+    ? product.category
+    : product.category?.name || "Uncategorized"}
+</td>
 
                     {/* Price */}
 
