@@ -29,6 +29,7 @@ import flashDealRoutes from "./routes/flashDealRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import filterRoutes from "./routes/filterRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
+import pincodeRoutes from "./routes/pincodeRoutes.js";
 const app = express();
 
 // =============================================
@@ -143,6 +144,10 @@ app.use("/api/flash-deals", flashDealRoutes);
 
 app.use("/api/coupons", couponRoutes);
 app.use("/api/filters", filterRoutes);
+app.use(
+  "/api/pincodes",
+  pincodeRoutes
+);
 // =============================================
 // Delivery Serviceability
 // =============================================
