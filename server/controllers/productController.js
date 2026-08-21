@@ -609,41 +609,43 @@ export const createProduct = async (
   res
 ) => {
   try {
-    const {
-      title,
-      description,
-      brand,
+const {
+  title,
+  description,
+  brand,
 
-      category,
-      menuGroup,
-      subCategory,
+  category,
+  menuGroup,
+  subCategory,
 
-      price,
-      oldPrice,
-      discount,
+  price,
+  oldPrice,
+  discount,
 
-      stock,
-      sku,
+  stock,
+  sku,
 
-      sizes,
-      colors,
+  sizes,
+  colors,
 
-      attributes,
-      highlights,
+  attributes,
+  highlights,
 
-      fabric,
-      pattern,
-      occasion,
-      country,
+  fabric,
+  pattern,
+  occasion,
+  country,
 
-      isFeatured,
-      isTrending,
-      isNewArrival,
-      isBestSelling,
+  isFeatured,
+  isTrending,
+  isNewArrival,
+  isBestSelling,
 
-      status,
-    } = req.body;
+  status,
 
+  // Delivery
+  delivery,
+} = req.body;
     // =====================================
     // Validation
     // =====================================
@@ -780,7 +782,43 @@ export const createProduct = async (
         attributes,
         {}
       );
+// =====================================
+// Delivery Settings
+// =====================================
 
+const parsedDelivery = parseJSON(
+  delivery,
+  {}
+);
+
+const deliverySettings = {
+  available:
+    parsedDelivery.available !== undefined
+      ? parseBoolean(parsedDelivery.available)
+      : true,
+
+  mode:
+    parsedDelivery.mode === "restricted"
+      ? "restricted"
+      : "all_india",
+
+  restrictedStates:
+    parseArray(
+      parsedDelivery.restrictedStates
+    ),
+
+  restrictedPincodes:
+    parseArray(
+      parsedDelivery.restrictedPincodes
+    ),
+
+  codAvailable:
+    parsedDelivery.codAvailable !== undefined
+      ? parseBoolean(
+          parsedDelivery.codAvailable
+        )
+      : true,
+};
     // =====================================
     // Create Product
     // =====================================
@@ -871,14 +909,21 @@ export const createProduct = async (
             isNewArrival
           ),
 
-        isBestSelling:
-          parseBoolean(
-            isBestSelling
-          ),
+isBestSelling:
+  parseBoolean(
+    isBestSelling
+  ),
 
-        status:
-          status ||
-          "active",
+// =====================================
+// Delivery Settings
+// =====================================
+
+delivery:
+  deliverySettings,
+
+status:
+  status ||
+  "active",
       });
 
     const populatedProduct =
@@ -1288,11 +1333,65 @@ export const updateProduct = async (
         );
     }
 
-    // =====================================
-    // Save
-    // =====================================
 
-    await product.save();
+
+
+    // =====================================
+// Delivery Settings
+// =====================================
+
+if (
+  req.body.delivery !==
+  undefined
+) {
+  const parsedDelivery =
+    parseJSON(
+      req.body.delivery,
+      {}
+    );
+
+  product.delivery = {
+    available:
+      parsedDelivery.available !==
+      undefined
+        ? parseBoolean(
+            parsedDelivery.available
+          )
+        : true,
+
+    mode:
+      parsedDelivery.mode ===
+      "restricted"
+        ? "restricted"
+        : "all_india",
+
+    restrictedStates:
+      parseArray(
+        parsedDelivery.restrictedStates
+      ),
+
+    restrictedPincodes:
+      parseArray(
+        parsedDelivery.restrictedPincodes
+      ),
+
+    codAvailable:
+      parsedDelivery.codAvailable !==
+      undefined
+        ? parseBoolean(
+            parsedDelivery.codAvailable
+          )
+        : true,
+  };
+}
+
+// =====================================
+// Save
+// =====================================
+
+await product.save();
+
+ 
 
     const updatedProduct =
       await Product.findById(
