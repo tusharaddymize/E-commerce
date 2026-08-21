@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 // ==========================================
 // Product Schema
 // ==========================================
-
 const productSchema = new mongoose.Schema(
   {
     // ========================================
@@ -284,7 +283,46 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+// ========================================
+// Delivery & Serviceability
+// ========================================
 
+delivery: {
+  available: {
+    type: Boolean,
+    default: true,
+  },
+
+  // Product can be delivered across India
+  mode: {
+    type: String,
+    enum: ["all_india", "restricted"],
+    default: "all_india",
+  },
+
+  // States where this particular product
+  // cannot be delivered
+  restrictedStates: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
+
+  // Specific pincodes that are exceptions
+  restrictedPincodes: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
+
+  // Optional: COD can be disabled for this product
+  codAvailable: {
+    type: Boolean,
+    default: true,
+  },
+},
     // ========================================
     // Product Status
     // ========================================

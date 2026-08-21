@@ -28,7 +28,7 @@ import websiteSettingRoutes from "./routes/websiteSettingRoutes.js";
 import flashDealRoutes from "./routes/flashDealRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import filterRoutes from "./routes/filterRoutes.js";
-
+import deliveryRoutes from "./routes/deliveryRoutes.js";
 const app = express();
 
 // =============================================
@@ -143,7 +143,11 @@ app.use("/api/flash-deals", flashDealRoutes);
 
 app.use("/api/coupons", couponRoutes);
 app.use("/api/filters", filterRoutes);
+// =============================================
+// Delivery Serviceability
+// =============================================
 
+app.use("/api/delivery", deliveryRoutes);
 // =============================================
 // Website Settings
 // =============================================
