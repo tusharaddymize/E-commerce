@@ -25,7 +25,9 @@ import {
 import {
   createProduct,
 } from "../../services/productService";
-
+import {
+  getPincodesByState,
+} from "../../services/pincodeService";
 import {
   getCategories,
 } from "../../services/categoryService";
@@ -186,13 +188,43 @@ const AddProduct = () => {
     isTrending: false,
     isNewArrival: false,
     isBestSelling: false,
+// ==========================================
+// Delivery Settings
+// ==========================================
 
+deliveryAvailable: true,
+
+deliveryMode: "all_india",
+
+restrictedStates: [],
+restrictedPincodes: [],
+
+codAvailable: true,
     status: "active",
   });
+// ==========================================
+// Pincode Settings
+// ==========================================
 
-  // ==========================================
-  // Load Categories / Groups / Subcategories
-  // ==========================================
+const [
+  availablePincodes,
+  setAvailablePincodes,
+] = useState([]);
+
+const [
+  pincodeLoading,
+  setPincodeLoading,
+] = useState(false);
+
+const [
+  pincodeSearch,
+  setPincodeSearch,
+] = useState("");
+
+
+// ==========================================
+// Load Categories / Groups / Subcategories
+// ==========================================
 
   useEffect(() => {
     const loadData = async () => {
@@ -289,6 +321,45 @@ const AddProduct = () => {
       setDynamicFilters([]);
     }
   };
+
+  // ==========================================
+// Load Pincodes By State
+//
+// This is the SINGLE source of truth for loading
+// pincodes. It is called directly from the state
+// <select> onChange below whenever the admin picks
+// a state, so we don't need (and must NOT also run)
+// a duplicate useEffect watching form.restrictedStates
+// -- that used to fire a second, redundant API call
+// every time a state was selected.
+// ==========================================
+
+const loadPincodes = async (state) => {
+  try {
+    if (!state) {
+      setAvailablePincodes([]);
+      return;
+    }
+
+    setPincodeLoading(true);
+
+    const res =
+      await getPincodesByState(state);
+
+    setAvailablePincodes(
+      res?.pincodes || []
+    );
+  } catch (error) {
+    console.error(
+      "Failed to load pincodes:",
+      error
+    );
+
+    setAvailablePincodes([]);
+  } finally {
+    setPincodeLoading(false);
+  }
+};
 
   // ==========================================
   // Handle Normal Form Change
@@ -401,6 +472,36 @@ const AddProduct = () => {
       loadDynamicFilters(
         value
       );
+
+      return;
+    }
+
+    // ========================================
+    // Delivery Mode Changed
+    //
+    // Switching back to "all_india" should clear any
+    // restricted state/pincode selections so stale
+    // restriction data never gets submitted with an
+    // all-india product.
+    // ========================================
+
+    if (name === "deliveryMode") {
+      if (value === "all_india") {
+        setForm((prev) => ({
+          ...prev,
+          deliveryMode: value,
+          restrictedStates: [],
+          restrictedPincodes: [],
+        }));
+
+        setAvailablePincodes([]);
+        setPincodeSearch("");
+      } else {
+        setForm((prev) => ({
+          ...prev,
+          deliveryMode: value,
+        }));
+      }
 
       return;
     }
@@ -763,17 +864,51 @@ const AddProduct = () => {
 
       // ======================================
       // Normal Form Fields
+      //
+      // restrictedStates / restrictedPincodes are
+      // arrays -- they must NOT go through this
+      // generic loop, otherwise FormData silently
+      // stringifies them via Array.toString()
+      // (comma separated, not valid JSON), which the
+      // backend can't JSON.parse() correctly. They
+      // are appended separately below instead.
       // ======================================
 
       Object.entries(
         form
       ).forEach(
         ([key, value]) => {
+          if (
+            key === "restrictedStates" ||
+            key === "restrictedPincodes"
+          ) {
+            return;
+          }
+
           formData.append(
             key,
             value
           );
         }
+      );
+
+      // ======================================
+      // Delivery Restriction Arrays
+      // Sent as JSON strings, pincode-only values
+      // ======================================
+
+      formData.append(
+        "restrictedStates",
+        JSON.stringify(
+          form.restrictedStates || []
+        )
+      );
+
+      formData.append(
+        "restrictedPincodes",
+        JSON.stringify(
+          form.restrictedPincodes || []
+        )
       );
 
       // ======================================
@@ -1724,6 +1859,780 @@ const AddProduct = () => {
                     />
                   </div>
                 </section>
+
+
+
+
+
+{/* ==================================
+    DELIVERY SETTINGS
+================================== */}
+
+<section
+  className="
+    bg-white
+    border
+    border-gray-200
+    rounded-2xl
+    shadow-sm
+    p-4
+    sm:p-6
+  "
+>
+  <div className="mb-6">
+    <h2
+      className="
+        text-lg
+        sm:text-xl
+        font-bold
+        text-gray-800
+      "
+    >
+      Delivery Settings
+    </h2>
+
+    <p className="mt-1 text-sm text-gray-500">
+      Control where this particular product can
+      be delivered.
+    </p>
+  </div>
+
+  {/* ==================================
+      Delivery Available + COD
+  ================================== */}
+
+  <div
+    className="
+      grid
+      grid-cols-1
+      md:grid-cols-2
+      gap-5
+    "
+  >
+
+    {/* Delivery Available */}
+
+    <div
+      className="
+        border
+        border-gray-200
+        rounded-xl
+        p-4
+      "
+    >
+      <div className="flex items-center justify-between gap-4">
+
+        <div>
+          <h3 className="font-semibold text-gray-800">
+            Product Delivery
+          </h3>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Enable or disable delivery for this product.
+          </p>
+        </div>
+
+        <label className="relative inline-flex items-center cursor-pointer">
+
+          <input
+            type="checkbox"
+            name="deliveryAvailable"
+            checked={form.deliveryAvailable}
+            onChange={handleChange}
+            className="sr-only peer"
+          />
+
+          <div
+            className="
+              w-11
+              h-6
+              bg-gray-300
+              rounded-full
+              peer
+              peer-checked:bg-green-600
+              after:content-['']
+              after:absolute
+              after:top-[2px]
+              after:left-[2px]
+              after:bg-white
+              after:border-gray-300
+              after:border
+              after:rounded-full
+              after:h-5
+              after:w-5
+              after:transition-all
+              peer-checked:after:translate-x-full
+              peer-checked:after:border-white
+            "
+          />
+
+        </label>
+
+      </div>
+    </div>
+
+    {/* COD */}
+
+    <div
+      className="
+        border
+        border-gray-200
+        rounded-xl
+        p-4
+      "
+    >
+      <div className="flex items-center justify-between gap-4">
+
+        <div>
+          <h3 className="font-semibold text-gray-800">
+            Cash on Delivery
+          </h3>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Allow COD for this product.
+          </p>
+        </div>
+
+        <label className="relative inline-flex items-center cursor-pointer">
+
+          <input
+            type="checkbox"
+            name="codAvailable"
+            checked={form.codAvailable}
+            onChange={handleChange}
+            className="sr-only peer"
+          />
+
+          <div
+            className="
+              w-11
+              h-6
+              bg-gray-300
+              rounded-full
+              peer
+              peer-checked:bg-green-600
+              after:content-['']
+              after:absolute
+              after:top-[2px]
+              after:left-[2px]
+              after:bg-white
+              after:border-gray-300
+              after:border
+              after:rounded-full
+              after:h-5
+              after:w-5
+              after:transition-all
+              peer-checked:after:translate-x-full
+              peer-checked:after:border-white
+            "
+          />
+
+        </label>
+
+      </div>
+    </div>
+
+  </div>
+
+  {/* ==================================
+      Delivery Mode
+  ================================== */}
+
+  <div className="mt-5">
+
+    <label
+      className="
+        block
+        text-sm
+        font-semibold
+        text-gray-700
+        mb-2
+      "
+    >
+      Delivery Coverage
+    </label>
+
+    <select
+      name="deliveryMode"
+      value={form.deliveryMode}
+      onChange={handleChange}
+      disabled={!form.deliveryAvailable}
+      className="
+        w-full
+        h-12
+        border
+        border-gray-300
+        rounded-xl
+        px-4
+        bg-white
+        outline-none
+        disabled:bg-gray-100
+        disabled:cursor-not-allowed
+        focus:border-green-500
+        focus:ring-2
+        focus:ring-green-100
+      "
+    >
+      <option value="all_india">
+        All India
+      </option>
+
+      <option value="restricted">
+        Restricted Areas
+      </option>
+    </select>
+
+    <p className="text-xs text-gray-400 mt-2">
+      Select All India unless this product has
+      specific delivery restrictions.
+    </p>
+
+  </div>
+
+{/* ==================================
+    RESTRICTED DELIVERY AREAS
+================================== */}
+
+{form.deliveryMode === "restricted" && (
+  <div className="mt-5">
+
+    {/* ================================
+        STATE SELECTION
+    ================================= */}
+
+    <div>
+      <label
+        className="
+          block
+          text-sm
+          font-semibold
+          text-gray-700
+          mb-2
+        "
+      >
+        Select Restricted State
+      </label>
+
+      <select
+        value={form.restrictedStates[0] || ""}
+        onChange={(e) => {
+          const selectedState =
+            e.target.value;
+
+          setForm((prev) => ({
+            ...prev,
+
+            restrictedStates:
+              selectedState
+                ? [selectedState]
+                : [],
+
+            restrictedPincodes: [],
+          }));
+
+          setPincodeSearch("");
+
+          loadPincodes(
+            selectedState
+          );
+        }}
+        disabled={!form.deliveryAvailable}
+        className="
+          w-full
+          h-12
+          border
+          border-gray-300
+          rounded-xl
+          px-4
+          bg-white
+          outline-none
+
+          disabled:bg-gray-100
+          disabled:cursor-not-allowed
+
+          focus:border-green-500
+          focus:ring-2
+          focus:ring-green-100
+        "
+      >
+
+        <option value="">
+          Select State
+        </option>
+
+        <option value="Andhra Pradesh">
+          Andhra Pradesh
+        </option>
+
+        <option value="Assam">
+          Assam
+        </option>
+
+        <option value="Bihar">
+          Bihar
+        </option>
+
+        <option value="Delhi">
+          Delhi
+        </option>
+
+        <option value="Gujarat">
+          Gujarat
+        </option>
+
+        <option value="Haryana">
+          Haryana
+        </option>
+
+        <option value="Jharkhand">
+          Jharkhand
+        </option>
+
+        <option value="Karnataka">
+          Karnataka
+        </option>
+
+        <option value="Kerala">
+          Kerala
+        </option>
+
+        <option value="Madhya Pradesh">
+          Madhya Pradesh
+        </option>
+
+        <option value="Maharashtra">
+          Maharashtra
+        </option>
+
+        <option value="Odisha">
+          Odisha
+        </option>
+
+        <option value="Punjab">
+          Punjab
+        </option>
+
+        <option value="Rajasthan">
+          Rajasthan
+        </option>
+
+        <option value="Tamil Nadu">
+          Tamil Nadu
+        </option>
+
+        <option value="Telangana">
+          Telangana
+        </option>
+
+        <option value="Uttar Pradesh">
+          Uttar Pradesh
+        </option>
+
+        <option value="Uttarakhand">
+          Uttarakhand
+        </option>
+
+        <option value="West Bengal">
+          West Bengal
+        </option>
+
+      </select>
+
+      <p className="text-xs text-gray-400 mt-2">
+        Select a state to load its available
+        pincodes.
+      </p>
+    </div>
+
+
+    {/* ================================
+        PINCODE SECTION
+    ================================= */}
+
+    {form.restrictedStates.length > 0 && (
+      <div className="mt-5">
+
+        {/* Heading */}
+
+        <div
+          className="
+            flex
+            flex-col
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            gap-3
+            mb-3
+          "
+        >
+
+          <div>
+
+            <label
+              className="
+                block
+                text-sm
+                font-semibold
+                text-gray-700
+              "
+            >
+              Restricted Pincodes
+            </label>
+
+            <p className="
+              text-xs
+              text-gray-400
+              mt-1
+            ">
+              Select the pincodes where this
+              product should NOT be delivered.
+            </p>
+
+          </div>
+
+          {/* Selected Count */}
+
+          <span
+            className="
+              self-start
+              bg-green-50
+              text-green-700
+              border
+              border-green-200
+              px-3
+              py-1.5
+              rounded-full
+              text-xs
+              font-semibold
+            "
+          >
+            {
+              form.restrictedPincodes.length
+            }{" "}
+            Selected
+          </span>
+
+        </div>
+
+
+        {/* Search */}
+
+        <input
+          type="text"
+          placeholder="Search pincode..."
+          value={pincodeSearch}
+          onChange={(e) =>
+            setPincodeSearch(
+              e.target.value
+            )
+          }
+          className="
+            w-full
+            h-11
+            border
+            border-gray-300
+            rounded-xl
+            px-4
+            mb-4
+            outline-none
+
+            focus:border-green-500
+            focus:ring-2
+            focus:ring-green-100
+          "
+        />
+
+
+        {/* Select All / Clear */}
+
+        <div
+          className="
+            flex
+            flex-wrap
+            gap-2
+            mb-4
+          "
+        >
+
+          <button
+            type="button"
+            onClick={() => {
+
+              // Select All should act on the pincodes
+              // that are actually visible right now
+              // (i.e. respecting the search filter),
+              // not the full unfiltered list.
+
+              const visiblePincodes =
+                availablePincodes.filter((item) =>
+                  item.pincode.includes(
+                    pincodeSearch
+                  )
+                );
+
+              setForm((prev) => {
+                const merged = new Set([
+                  ...prev.restrictedPincodes,
+                  ...visiblePincodes.map(
+                    (item) => item.pincode
+                  ),
+                ]);
+
+                return {
+                  ...prev,
+                  restrictedPincodes:
+                    Array.from(merged),
+                };
+              });
+
+            }}
+            className="
+              px-4
+              py-2
+              rounded-lg
+              bg-green-50
+              text-green-700
+              border
+              border-green-200
+              text-xs
+              font-semibold
+              hover:bg-green-100
+            "
+          >
+            Select All
+          </button>
+
+
+          <button
+            type="button"
+            onClick={() => {
+
+              setForm((prev) => ({
+                ...prev,
+                restrictedPincodes: [],
+              }));
+
+            }}
+            className="
+              px-4
+              py-2
+              rounded-lg
+              bg-gray-100
+              text-gray-700
+              border
+              border-gray-200
+              text-xs
+              font-semibold
+              hover:bg-gray-200
+            "
+          >
+            Clear All
+          </button>
+
+        </div>
+
+
+        {/* Pincode List */}
+
+        <div
+          className="
+            max-h-72
+            overflow-y-auto
+            border
+            border-gray-200
+            rounded-xl
+            bg-white
+          "
+        >
+
+          {pincodeLoading ? (
+
+            <div
+              className="
+                p-8
+                text-center
+                text-sm
+                text-gray-500
+              "
+            >
+              Loading pincodes...
+            </div>
+
+          ) : (
+
+            availablePincodes
+              .filter((item) =>
+                item.pincode.includes(
+                  pincodeSearch
+                )
+              )
+              .map((item) => {
+
+                const isSelected =
+                  form.restrictedPincodes.includes(
+                    item.pincode
+                  );
+
+                return (
+                  <label
+                    key={item.pincode}
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      p-3
+                      border-b
+                      border-gray-100
+                      cursor-pointer
+                      hover:bg-gray-50
+                    "
+                  >
+
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {
+
+                        setForm((prev) => {
+
+                          if (
+                            prev.restrictedPincodes.includes(
+                              item.pincode
+                            )
+                          ) {
+
+                            return {
+                              ...prev,
+
+                              restrictedPincodes:
+                                prev.restrictedPincodes.filter(
+                                  (pincode) =>
+                                    pincode !==
+                                    item.pincode
+                                ),
+                            };
+
+                          }
+
+                          return {
+                            ...prev,
+
+                            restrictedPincodes: [
+                              ...prev.restrictedPincodes,
+
+                              item.pincode,
+                            ],
+                          };
+
+                        });
+
+                      }}
+                      className="
+                        w-4
+                        h-4
+                        accent-green-600
+                        shrink-0
+                      "
+                    />
+
+
+                    <div>
+
+                      <p
+                        className="
+                          text-sm
+                          font-semibold
+                          text-gray-700
+                        "
+                      >
+                        {item.pincode}
+                      </p>
+
+                      {(item.city ||
+                        item.district) && (
+
+                        <p
+                          className="
+                            text-xs
+                            text-gray-400
+                            mt-0.5
+                          "
+                        >
+                          {item.city}
+
+                          {item.city &&
+                            item.district &&
+                            ", "}
+
+                          {item.district}
+                        </p>
+
+                      )}
+
+                    </div>
+
+                  </label>
+                );
+              })
+
+          )}
+
+
+          {/* No Pincode */}
+
+          {!pincodeLoading &&
+            availablePincodes.length === 0 && (
+
+              <div
+                className="
+                  p-8
+                  text-center
+                  text-sm
+                  text-gray-500
+                "
+              >
+                No pincodes found for this
+                state.
+              </div>
+
+            )}
+
+        </div>
+
+      </div>
+    )}
+
+  </div>
+)}
+  {/* ==================================
+      Information Box
+  ================================== */}
+
+  <div
+    className="
+      mt-5
+      rounded-xl
+      bg-green-50
+      border
+      border-green-200
+      p-4
+    "
+  >
+
+    <p className="text-sm text-green-800">
+      <strong>How this works:</strong>{" "}
+      All India means the product can normally be
+      delivered anywhere supported by Shiprocket.
+      Restricted areas let you block specific states
+      or pincodes for this product.
+    </p>
+
+  </div>
+
+</section>
+
+
+
 
                 {/* ==================================
                     PRODUCT HIGHLIGHTS

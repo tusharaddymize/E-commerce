@@ -8,51 +8,130 @@ import {
   FaUndoAlt,
 } from "react-icons/fa";
 
-const DeliverySection = () => {
-  const [pincode, setPincode] =
-    useState("");
+const DeliverySection = ({ product }) => {
+const [pincode, setPincode] = useState("");
 
-  const [checked, setChecked] =
-    useState(false);
+const [loading, setLoading] = useState(false);
+
+const [result, setResult] = useState(null);
 
   // ==========================================
   // Pincode Change
   // ==========================================
 
-  const handlePincodeChange = (e) => {
-    // Only allow numbers
-    const value = e.target.value.replace(
-      /\D/g,
-      ""
-    );
+const handlePincodeChange = (e) => {
+  const value = e.target.value.replace(/\D/g, "");
 
-    setPincode(value);
+  setPincode(value);
 
-    // Hide previous result if pincode changes
-    setChecked(false);
-  };
+  // Old API result remove
+  setResult(null);
+};
 
   // ==========================================
   // Check Delivery
   // ==========================================
+const handleCheck = async () => {
+  // ==========================================
+  // Validate Pincode
+  // ==========================================
 
-  const handleCheck = () => {
-    if (/^\d{6}$/.test(pincode)) {
-      setChecked(true);
-
-      toast.success(
-        "Delivery available for this pincode."
-      );
-
-      return;
-    }
-
-    setChecked(false);
+  if (!/^\d{6}$/.test(pincode)) {
+    setResult(null);
 
     toast.error(
       "Please enter a valid 6-digit pincode."
     );
-  };
+
+    return;
+  }
+
+  // ==========================================
+  // Check Product
+  // ==========================================
+
+  if (!product?._id) {
+    toast.error(
+      "Product information is missing."
+    );
+
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setResult(null);
+
+    // ========================================
+    // API Call
+    // ========================================
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/delivery/check`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          productId: product._id,
+          pincode: pincode,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    // ========================================
+    // API Error
+    // ========================================
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Unable to check delivery."
+      );
+    }
+
+    // ========================================
+    // Save Result
+    // ========================================
+
+    setResult(data);
+
+    // ========================================
+    // Success / Failure Toast
+    // ========================================
+
+    if (data.available) {
+      toast.success(
+        "Delivery is available for this pincode."
+      );
+    } else {
+      toast.error(
+        "Delivery is not available for this pincode."
+      );
+    }
+
+  } catch (error) {
+    console.error(
+      "Delivery Check Error:",
+      error
+    );
+
+    setResult(null);
+
+    toast.error(
+      error.message ||
+        "Unable to check delivery."
+    );
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section className="mt-14">
@@ -157,9 +236,10 @@ const DeliverySection = () => {
 
           {/* Check Button */}
 
-          <button
-            type="button"
-            onClick={handleCheck}
+<button
+  type="button"
+  onClick={handleCheck}
+  disabled={loading}
             className="
               h-14
 
@@ -181,7 +261,7 @@ const DeliverySection = () => {
                 "var(--border-radius, 12px)",
             }}
           >
-            Check
+           {loading ? "Checking..." : "Check"}
           </button>
 
         </div>
@@ -190,83 +270,144 @@ const DeliverySection = () => {
         {/* Result */}
         {/* ====================================== */}
 
-        {checked && (
-          <div className="mt-8 space-y-5">
+{result && (
+  <div className="mt-8">
 
-            {/* Delivery */}
+    {/* ====================================== */}
+    {/* Delivery Available */}
+    {/* ====================================== */}
 
-            <div className="flex items-start gap-4">
+    {result.available ? (
+      <div className="space-y-5">
 
-              <FaTruck
-                className="
-                  text-2xl
-                  shrink-0
-                  text-[var(--color-primary,#355E3B)]
-                "
-              />
+        {/* Delivery */}
 
-              <div>
-                <h4 className="font-bold">
-                  Delivery by Tomorrow
-                </h4>
+        <div className="flex items-start gap-4">
 
-                <p className="text-gray-500 text-sm mt-1">
-                  Free delivery on eligible orders.
-                </p>
-              </div>
+          <FaTruck
+            className="
+              text-2xl
+              shrink-0
+              text-[var(--color-primary,#355E3B)]
+            "
+          />
 
-            </div>
+          <div>
+<h4 className="font-bold">
+  Delivery Available
+</h4>
 
-            {/* Cash On Delivery */}
+<p className="text-gray-500 text-sm mt-1">
+  {result.message ||
+    "We can deliver this product to your pincode."}
+</p>
 
-            <div className="flex items-start gap-4">
+{result.data?.estimatedDelivery && (
+  <p className="text-gray-600 text-sm mt-2">
+    Estimated delivery:{" "}
+    <span className="font-semibold">
+      {result.data.estimatedDelivery} days
+    </span>
+  </p>
+)}
 
-              <FaMoneyBillWave
-                className="
-                  text-2xl
-                  shrink-0
-                  text-[var(--color-primary,#355E3B)]
-                "
-              />
+<p className="text-gray-600 text-sm mt-1">
+  Delivery charge:{" "}
+  <span className="font-semibold">
+    ₹{Number(result.data?.deliveryCharge || 0).toFixed(2)}
+  </span>
+</p>
+          </div>
 
-              <div>
-                <h4 className="font-bold">
-                  Cash on Delivery Available
-                </h4>
+        </div>
 
-                <p className="text-gray-500 text-sm mt-1">
-                  Pay when your order arrives.
-                </p>
-              </div>
+        {/* COD */}
 
-            </div>
+        {/* COD */}
 
-            {/* Return */}
+{result.data?.codAvailable !== false && (
+          <div className="flex items-start gap-4">
 
-            <div className="flex items-start gap-4">
+            <FaMoneyBillWave
+              className="
+                text-2xl
+                shrink-0
+                text-[var(--color-primary,#355E3B)]
+              "
+            />
 
-              <FaUndoAlt
-                className="
-                  text-2xl
-                  shrink-0
-                  text-[var(--color-primary,#355E3B)]
-                "
-              />
+            <div>
+              <h4 className="font-bold">
+                Cash on Delivery Available
+              </h4>
 
-              <div>
-                <h4 className="font-bold">
-                  Easy Returns
-                </h4>
-
-                <p className="text-gray-500 text-sm mt-1">
-                  7 Days Return Policy.
-                </p>
-              </div>
-
+              <p className="text-gray-500 text-sm mt-1">
+                Pay when your order arrives.
+              </p>
             </div>
 
           </div>
         )}
+
+        {/* Return */}
+
+        <div className="flex items-start gap-4">
+
+          <FaUndoAlt
+            className="
+              text-2xl
+              shrink-0
+              text-[var(--color-primary,#355E3B)]
+            "
+          />
+
+          <div>
+            <h4 className="font-bold">
+              Easy Returns
+            </h4>
+
+            <p className="text-gray-500 text-sm mt-1">
+              7 Days Return Policy.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    ) : (
+
+      /* ====================================== */
+      /* Delivery NOT Available */
+      /* ====================================== */
+
+      <div
+        className="
+          border
+          border-red-200
+          bg-red-50
+          p-5
+        "
+        style={{
+          borderRadius:
+            "var(--border-radius, 12px)",
+        }}
+      >
+
+        <h4 className="font-bold text-red-600">
+          Delivery Not Available
+        </h4>
+
+        <p className="text-red-500 text-sm mt-2">
+          {result.message ||
+            "Sorry, this product cannot be delivered to this pincode."}
+        </p>
+
+      </div>
+    )}
+
+  </div>
+)}
 
       </div>
 
