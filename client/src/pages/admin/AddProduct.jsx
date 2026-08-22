@@ -40,6 +40,24 @@ import {
   getSubCategories,
 } from "../../services/subCategoryService";
 
+
+
+import CustomSelect from "../../components/admin/common/CustomSelect";
+
+
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Assam", "Bihar", "Delhi", "Gujarat", "Haryana",
+  "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra",
+  "Odisha", "Punjab", "Rajasthan", "Tamil Nadu", "Telangana",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal",
+].map((state) => ({ label: state, value: state }));
+
+
+const DELIVERY_MODE_OPTIONS = [
+  { label: "All India", value: "all_india" },
+  { label: "Restricted Areas", value: "restricted" },
+];
+
 const AddProduct = () => {
   const navigate = useNavigate();
 
@@ -2052,35 +2070,30 @@ const loadPincodes = async (state) => {
       Delivery Coverage
     </label>
 
-    <select
-      name="deliveryMode"
+    <CustomSelect
       value={form.deliveryMode}
-      onChange={handleChange}
-      disabled={!form.deliveryAvailable}
-      className="
-        w-full
-        h-12
-        border
-        border-gray-300
-        rounded-xl
-        px-4
-        bg-white
-        outline-none
-        disabled:bg-gray-100
-        disabled:cursor-not-allowed
-        focus:border-green-500
-        focus:ring-2
-        focus:ring-green-100
-      "
-    >
-      <option value="all_india">
-        All India
-      </option>
+      onChange={(selectedMode) => {
+        if (selectedMode === "all_india") {
+          setForm((prev) => ({
+            ...prev,
+            deliveryMode: selectedMode,
+            restrictedStates: [],
+            restrictedPincodes: [],
+          }));
 
-      <option value="restricted">
-        Restricted Areas
-      </option>
-    </select>
+          setAvailablePincodes([]);
+          setPincodeSearch("");
+        } else {
+          setForm((prev) => ({
+            ...prev,
+            deliveryMode: selectedMode,
+          }));
+        }
+      }}
+      options={DELIVERY_MODE_OPTIONS}
+      placeholder="Select Delivery Coverage"
+      disabled={!form.deliveryAvailable}
+    />
 
     <p className="text-xs text-gray-400 mt-2">
       Select All India unless this product has
@@ -2113,130 +2126,22 @@ const loadPincodes = async (state) => {
         Select Restricted State
       </label>
 
-      <select
+      <CustomSelect
         value={form.restrictedStates[0] || ""}
-        onChange={(e) => {
-          const selectedState =
-            e.target.value;
-
+        onChange={(selectedState) => {
           setForm((prev) => ({
             ...prev,
-
-            restrictedStates:
-              selectedState
-                ? [selectedState]
-                : [],
-
+            restrictedStates: selectedState ? [selectedState] : [],
             restrictedPincodes: [],
           }));
 
           setPincodeSearch("");
-
-          loadPincodes(
-            selectedState
-          );
+          loadPincodes(selectedState);
         }}
+        options={INDIAN_STATES}
+        placeholder="Select State"
         disabled={!form.deliveryAvailable}
-        className="
-          w-full
-          h-12
-          border
-          border-gray-300
-          rounded-xl
-          px-4
-          bg-white
-          outline-none
-
-          disabled:bg-gray-100
-          disabled:cursor-not-allowed
-
-          focus:border-green-500
-          focus:ring-2
-          focus:ring-green-100
-        "
-      >
-
-        <option value="">
-          Select State
-        </option>
-
-        <option value="Andhra Pradesh">
-          Andhra Pradesh
-        </option>
-
-        <option value="Assam">
-          Assam
-        </option>
-
-        <option value="Bihar">
-          Bihar
-        </option>
-
-        <option value="Delhi">
-          Delhi
-        </option>
-
-        <option value="Gujarat">
-          Gujarat
-        </option>
-
-        <option value="Haryana">
-          Haryana
-        </option>
-
-        <option value="Jharkhand">
-          Jharkhand
-        </option>
-
-        <option value="Karnataka">
-          Karnataka
-        </option>
-
-        <option value="Kerala">
-          Kerala
-        </option>
-
-        <option value="Madhya Pradesh">
-          Madhya Pradesh
-        </option>
-
-        <option value="Maharashtra">
-          Maharashtra
-        </option>
-
-        <option value="Odisha">
-          Odisha
-        </option>
-
-        <option value="Punjab">
-          Punjab
-        </option>
-
-        <option value="Rajasthan">
-          Rajasthan
-        </option>
-
-        <option value="Tamil Nadu">
-          Tamil Nadu
-        </option>
-
-        <option value="Telangana">
-          Telangana
-        </option>
-
-        <option value="Uttar Pradesh">
-          Uttar Pradesh
-        </option>
-
-        <option value="Uttarakhand">
-          Uttarakhand
-        </option>
-
-        <option value="West Bengal">
-          West Bengal
-        </option>
-
-      </select>
+      />
 
       <p className="text-xs text-gray-400 mt-2">
         Select a state to load its available
