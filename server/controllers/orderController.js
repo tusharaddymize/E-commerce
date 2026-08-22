@@ -43,6 +43,100 @@ const {
       });
     }
 
+
+    // ==========================================
+// DELIVERY SERVICEABILITY CHECK
+// ==========================================
+
+if (!shippingAddress?.pincode) {
+  return res.status(400).json({
+    success: false,
+    message: "Shipping pincode is required.",
+  });
+}
+
+const customerPincode = String(
+  shippingAddress.pincode
+).trim();
+
+const customerState = String(
+  shippingAddress.state || ""
+).trim();
+
+// ==========================================
+// Check every product in cart
+// ==========================================
+
+for (const item of items) {
+  const productId = item.productId || item._id;
+
+  const product = await Product.findById(productId);
+
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: `Product not found: ${item.title || productId}`,
+    });
+  }
+
+  // ========================================
+  // Product delivery disabled
+  // ========================================
+
+  if (
+    product.delivery &&
+    product.delivery.available === false
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: `"${product.title}" is not available for delivery.`,
+    });
+  }
+
+  // ========================================
+  // Check restricted pincode
+  // ========================================
+
+  const restrictedPincodes =
+    product.delivery?.restrictedPincodes || [];
+
+  const isPincodeRestricted =
+    restrictedPincodes.some(
+      (pincode) =>
+        String(pincode).trim() ===
+        customerPincode
+    );
+
+  if (isPincodeRestricted) {
+    return res.status(400).json({
+      success: false,
+      message: `"${product.title}" cannot be delivered to pincode ${customerPincode}.`,
+    });
+  }
+
+  // ========================================
+  // Check restricted state
+  // ========================================
+
+  const restrictedStates =
+    product.delivery?.restrictedStates || [];
+
+  const isStateRestricted =
+    customerState &&
+    restrictedStates.some(
+      (state) =>
+        String(state).trim().toLowerCase() ===
+        customerState.toLowerCase()
+    );
+
+  if (isStateRestricted) {
+    return res.status(400).json({
+      success: false,
+      message: `"${product.title}" cannot be delivered to ${customerState}.`,
+    });
+  }
+}
+
 const orderItems = items.map((item) => ({
   productId: item.productId || item._id,
   title: item.title,
