@@ -609,6 +609,9 @@ export const createProduct = async (
   res
 ) => {
   try {
+
+
+
 const {
   title,
   description,
@@ -644,8 +647,20 @@ const {
   status,
 
   // Delivery
-  delivery,
+  // AddProduct.jsx sends these as flat top-level
+  // FormData fields (NOT a single nested "delivery"
+  // JSON object), so they must be read individually.
+  deliveryAvailable,
+  deliveryMode,
+  restrictedStates,
+  restrictedPincodes,
+  codAvailable,
 } = req.body;
+
+
+
+
+
     // =====================================
     // Validation
     // =====================================
@@ -784,41 +799,43 @@ const {
       );
 // =====================================
 // Delivery Settings
+//
+// restrictedStates / restrictedPincodes arrive as
+// JSON-stringified arrays (frontend JSON.stringify's
+// them before appending to FormData) -> parseJSON()
+// first, then parseArray() to trim/clean each entry.
+// deliveryAvailable, deliveryMode and codAvailable
+// arrive as plain FormData string values, not JSON.
 // =====================================
-
-const parsedDelivery = parseJSON(
-  delivery,
-  {}
-);
 
 const deliverySettings = {
   available:
-    parsedDelivery.available !== undefined
-      ? parseBoolean(parsedDelivery.available)
+    deliveryAvailable !== undefined
+      ? parseBoolean(deliveryAvailable)
       : true,
 
   mode:
-    parsedDelivery.mode === "restricted"
+    deliveryMode === "restricted"
       ? "restricted"
       : "all_india",
 
-  restrictedStates:
-    parseArray(
-      parsedDelivery.restrictedStates
-    ),
+  restrictedStates: parseArray(
+    parseJSON(restrictedStates, [])
+  ),
 
-  restrictedPincodes:
-    parseArray(
-      parsedDelivery.restrictedPincodes
-    ),
+  restrictedPincodes: parseArray(
+    parseJSON(restrictedPincodes, [])
+  ),
 
   codAvailable:
-    parsedDelivery.codAvailable !== undefined
-      ? parseBoolean(
-          parsedDelivery.codAvailable
-        )
+    codAvailable !== undefined
+      ? parseBoolean(codAvailable)
       : true,
 };
+
+
+
+
     // =====================================
     // Create Product
     // =====================================
@@ -882,7 +899,9 @@ const deliverySettings = {
         fabric:
           fabric || "",
 
-        pattern:
+     
+
+   pattern:
           pattern || "",
 
         occasion:
@@ -1338,52 +1357,61 @@ export const updateProduct = async (
 
     // =====================================
 // Delivery Settings
+//
+// Same flat-field fix as createProduct. Any field
+// the admin didn't send in this particular request
+// keeps the product's existing saved value instead
+// of silently resetting to a default.
 // =====================================
 
-if (
-  req.body.delivery !==
-  undefined
-) {
-  const parsedDelivery =
-    parseJSON(
-      req.body.delivery,
-      {}
-    );
+const hasDeliveryUpdate =
+  req.body.deliveryAvailable !== undefined ||
+  req.body.deliveryMode !== undefined ||
+  req.body.restrictedStates !== undefined ||
+  req.body.restrictedPincodes !== undefined ||
+  req.body.codAvailable !== undefined;
+
+if (hasDeliveryUpdate) {
+  const existingDelivery = product.delivery || {};
 
   product.delivery = {
     available:
-      parsedDelivery.available !==
-      undefined
-        ? parseBoolean(
-            parsedDelivery.available
-          )
-        : true,
+      req.body.deliveryAvailable !== undefined
+        ? parseBoolean(req.body.deliveryAvailable)
+        : existingDelivery.available ?? true,
 
     mode:
-      parsedDelivery.mode ===
-      "restricted"
+      req.body.deliveryMode === "restricted"
         ? "restricted"
-        : "all_india",
+        : req.body.deliveryMode === "all_india"
+        ? "all_india"
+        : existingDelivery.mode ?? "all_india",
 
     restrictedStates:
-      parseArray(
-        parsedDelivery.restrictedStates
-      ),
+      req.body.restrictedStates !== undefined
+        ? parseArray(
+            parseJSON(req.body.restrictedStates, [])
+          )
+        : existingDelivery.restrictedStates ?? [],
 
     restrictedPincodes:
-      parseArray(
-        parsedDelivery.restrictedPincodes
-      ),
+      req.body.restrictedPincodes !== undefined
+        ? parseArray(
+            parseJSON(req.body.restrictedPincodes, [])
+          )
+        : existingDelivery.restrictedPincodes ?? [],
 
     codAvailable:
-      parsedDelivery.codAvailable !==
-      undefined
-        ? parseBoolean(
-            parsedDelivery.codAvailable
-          )
-        : true,
+      req.body.codAvailable !== undefined
+        ? parseBoolean(req.body.codAvailable)
+        : existingDelivery.codAvailable ?? true,
   };
 }
+
+
+
+
+
 
 // =====================================
 // Save
